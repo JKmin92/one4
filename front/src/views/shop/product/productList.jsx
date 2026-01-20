@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Heading, HStack, RatingGroup, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, HStack, RatingGroup, SimpleGrid, Stack, Text } from "@chakra-ui/react";
 import { calcDiscountPercent, formatNumber } from "../../../utils/simpleUtils";
 
 function ProductList() {
@@ -33,9 +33,9 @@ function ProductList() {
                     <Button variant="ghost" fontSize="sm">최신순</Button>
                 </HStack>
             </Stack>
-            <Flex wrap="wrap" gap="8">
+            <SimpleGrid columns={5} gap="8">
                 {productList.map((product) => (
-                    <Stack flexBasis="15%" key={product.id}>
+                    <Stack key={product.id}>
                         <Box bg="bg.emphasized" aspectRatio="square" rounded="md"></Box>
                         <Text fontSize="md" fontWeight="medium">{product.title}</Text>
                         {product.discount_price ? (
@@ -55,7 +55,7 @@ function ProductList() {
                         </RatingGroup.Root>
                     </Stack>
                 ))}
-            </Flex>
+            </SimpleGrid >
         </Stack>
     )
 }

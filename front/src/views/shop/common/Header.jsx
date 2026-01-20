@@ -1,4 +1,4 @@
-import { Avatar, CloseButton, Flex, HStack, Icon, Image, Input, InputGroup, Link, Stack, Text } from "@chakra-ui/react";
+import { Avatar, Button, CloseButton, Flex, HStack, Icon, Image, Input, InputGroup, Link, Menu, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { LuAlignJustify, LuBell, LuSearch, LuUserRound } from "react-icons/lu";
 
@@ -32,8 +32,6 @@ function Header() {
                             <Input rounded="full" value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
                         </InputGroup>
                     </form>
-                    
-                    
                     <Icon size="md"><LuBell /></Icon>
                     <Avatar.Root>
                         <LuUserRound />
@@ -41,7 +39,25 @@ function Header() {
                 </HStack>
             </Flex>
             <HStack gap="16" {...headerLineStyle}>
-                <Icon size="lg"><LuAlignJustify /></Icon>
+                <Menu.Root>
+                    <Menu.Trigger asChild>
+                        <Button variant="ghost">
+                            <Icon size="lg"><LuAlignJustify /></Icon>
+                        </Button>
+                    </Menu.Trigger>
+                    <Menu.Positioner>
+                        <Menu.Content>
+                            <Stack gap="2">
+                                <Menu.Item><Link href="/categorys/12345">카테고리 1</Link></Menu.Item>
+                                <Menu.Item>카테고리 2</Menu.Item>
+                                <Menu.Item>카테고리 3</Menu.Item>
+                                <Menu.Item>카테고리 4</Menu.Item>
+                            </Stack>
+                            
+                        </Menu.Content>
+                    </Menu.Positioner>
+                </Menu.Root>
+                
                 <HStack gap="12">
                     <Link href="/categorys/12345"><Text fontSize="md" fontWeight="medium">카테고리 1</Text></Link>
                     <Link href="/"><Text fontSize="md" fontWeight="medium">카테고리 2</Text></Link>
