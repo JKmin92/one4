@@ -1,7 +1,11 @@
-import { Box, Button, Flex, Heading, HStack, RatingGroup, SimpleGrid, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, HStack, Link, RatingGroup, SimpleGrid, Stack, Text } from "@chakra-ui/react";
 import { calcDiscountPercent, formatNumber } from "../../../utils/simpleUtils";
+import { useParams } from "react-router-dom";
 
 function ProductList() {
+
+    const {id} = useParams();
+    1 == id ? console.log('dd') : console.log('aa');
 
     /**
      * TODO : 제품, 할인, 리뷰 DB 연동
@@ -21,41 +25,70 @@ function ProductList() {
         {id:12, title:'제품명 12', regular_price:20000, discount_price:14000, review_scoure : 1, review_count:110},
     ];
 
+    /**
+     * 카테고리 DB 연결
+     */
+    const subCategorys = [
+        {id:12345, title:'전체'},
+        {id:1, title:'서브 카테고리 1'},
+        {id:2, title:'서브 카테고리 4'},
+        {id:3, title:'서브 카테고리 5'},
+        {id:4, title:'서브 카테고리 6'},
+        {id:5, title:'서브 카테고리 7'},
+    ]
+
     return (
-        <Stack padding="80px 0" px='layoutX' gap="6">
-            <Box width="full" height="250px" rounded="md" bg="bg.emphasized"></Box>
-            <Stack>
-                <Heading>카테고리 1</Heading>
-                <HStack bg="bg.muted" rounded="md">
-                    <Button variant="ghost" fontSize="sm">추천순</Button>
-                    <Button variant="ghost" fontSize="sm">낮은가격순</Button>
-                    <Button variant="ghost" fontSize="sm">높은가격순</Button>
-                    <Button variant="ghost" fontSize="sm">최신순</Button>
-                </HStack>
-            </Stack>
-            <SimpleGrid columns={5} gap="8">
-                {productList.map((product) => (
-                    <Stack key={product.id}>
-                        <Box bg="bg.emphasized" aspectRatio="square" rounded="md"></Box>
-                        <Text fontSize="md" fontWeight="medium">{product.title}</Text>
-                        {product.discount_price ? (
-                            <Stack gap="0">
-                                <Text fontSize="xs" textDecoration="line-through">{formatNumber(product.regular_price)}</Text>
-                                <HStack alignItems="end">
-                                    <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(product.regular_price, product.discount_price)}%</Text>
-                                    <Text fontWeight="medium">{formatNumber(product.discount_price)}</Text>
-                                </HStack>
-                            </Stack>
-                        ) : (
-                            <Text fontWeight="medium">{product.regular_price}</Text>
-                        )}
-                        <RatingGroup.Root readOnly allowHalf count={5} defaultValue={product.review_scoure} size="sm" colorPalette="yellow">
-                            <RatingGroup.HiddenInput />
-                            <RatingGroup.Control />
-                        </RatingGroup.Root>
+        <Stack padding="80px 0" px='layoutX' >
+            <Stack direction="row" gap="10">
+                <Stack width="3xs" position="relative">
+                    <Stack position="sticky" left="0" top="5">
+                        <Heading>카테고리 1</Heading>
+                        <Stack marginTop="15px" paddingTop="15px" borderTop="3px solid" borderTopColor="main">
+                            {subCategorys.map((subCategory) => (
+                                <Button variant="plain" key={subCategory.id} justifyContent="start" padding="0">
+                                    <Link href={`/categorys/${subCategory.id}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.title}</Link>
+                                </Button>
+                            ))}
+                        </Stack>
                     </Stack>
-                ))}
-            </SimpleGrid >
+                </Stack>
+                <Stack gap="6" width="full">
+                    <Box width="full" height="250px" rounded="md" bg="bg.emphasized"></Box>
+                    <Stack>
+                        <HStack bg="bg.muted" rounded="md">
+                            <Button variant="ghost" fontSize="sm">추천순</Button>
+                            <Button variant="ghost" fontSize="sm">낮은가격순</Button>
+                            <Button variant="ghost" fontSize="sm">높은가격순</Button>
+                            <Button variant="ghost" fontSize="sm">최신순</Button>
+                        </HStack>
+                    </Stack>
+                    <SimpleGrid columns={5} gap="8">
+                        {productList.map((product) => (
+                            <Link href={`/products/${product.id}`} key={product.id}>
+                                <Stack width="full">
+                                    <Box bg="bg.emphasized" aspectRatio="square" rounded="md"></Box>
+                                    <Text fontSize="md" fontWeight="medium">{product.title}</Text>
+                                    {product.discount_price ? (
+                                        <Stack gap="0">
+                                            <Text fontSize="xs" textDecoration="line-through">{formatNumber(product.regular_price)}</Text>
+                                            <HStack alignItems="end">
+                                                <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(product.regular_price, product.discount_price)}%</Text>
+                                                <Text fontWeight="medium">{formatNumber(product.discount_price)}</Text>
+                                            </HStack>
+                                        </Stack>
+                                    ) : (
+                                        <Text fontWeight="medium">{product.regular_price}</Text>
+                                    )}
+                                    <RatingGroup.Root readOnly allowHalf count={5} defaultValue={product.review_scoure} size="sm" colorPalette="yellow">
+                                        <RatingGroup.HiddenInput />
+                                        <RatingGroup.Control />
+                                    </RatingGroup.Root>
+                                </Stack>
+                            </Link>
+                        ))}
+                    </SimpleGrid >
+                </Stack>
+            </Stack>
         </Stack>
     )
 }
