@@ -22,3 +22,8 @@ export function formatDate (isoString) {
 
     return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
 };
+
+export function scrollViewPosition(id) {
+    const el = document.getElementById(id);
+    el?.scrollIntoView({behavior:'smooth'});
+}

@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "checkJs": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"]
+}
