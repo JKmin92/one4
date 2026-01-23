@@ -5,7 +5,6 @@ import { useParams } from "react-router-dom";
 function ProductList() {
 
     const {id} = useParams();
-    1 == id ? console.log('dd') : console.log('aa');
 
     /**
      * TODO : 제품, 할인, 리뷰 DB 연동
@@ -38,7 +37,7 @@ function ProductList() {
     ]
 
     return (
-        <Stack padding="80px 0" px='layoutX' >
+        <Stack p="80px 0" px='layoutX' >
             <Stack direction="row" gap="10">
                 <Stack width="3xs" position="relative">
                     <Stack position="sticky" left="0" top="5">

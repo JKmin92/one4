@@ -1,6 +1,6 @@
-import { Avatar, Button, CloseButton, Flex, HStack, Icon, Image, Input, InputGroup, Link, Menu, Stack, Text } from "@chakra-ui/react";
+import { Avatar, Button, Circle, CloseButton, Flex, Float, Group, HStack, Icon, Image, Input, InputGroup, Link, Menu, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
-import { LuAlignJustify, LuBell, LuSearch, LuUserRound } from "react-icons/lu";
+import { LuAlignJustify, LuBell, LuSearch, LuShoppingCart, LuUserRound } from "react-icons/lu";
 
 function Header() {
 
@@ -32,6 +32,12 @@ function Header() {
                             <Input rounded="full" value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
                         </InputGroup>
                     </form>
+                    <Group>
+                        <Link href="/cart">
+                            <Icon size="md"><LuShoppingCart /></Icon>
+                            <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
+                        </Link>
+                    </Group>
                     <Icon size="md"><LuBell /></Icon>
                     <Avatar.Root>
                         <LuUserRound />

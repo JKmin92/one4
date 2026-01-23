@@ -340,7 +340,7 @@ function Detail() {
     
 
     return (
-        <Stack padding="80px 0" px="layoutX" gap="12" width="6xl" margin="auto">
+        <Stack p="80px 0" px="layoutX" gap="12" width="6xl" margin="auto">
             <Stack gap="6">
                 <Flex className="brandIntro" justifyContent="space-between">
                     <HStack gap="6" alignItems="center">
