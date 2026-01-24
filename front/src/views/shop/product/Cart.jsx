@@ -174,7 +174,7 @@ function Cart() {
 
     return (
         <Stack p="80px 0" px="layoutX" width="6xl" margin="auto" gap="6">
-            <Heading>장바구니</Heading>
+            <Heading size="2xl">장바구니</Heading>
             <Stack direction="row">
                 <Box borderWidth="1px" rounded="md" p="10px" width="3/4">
                     {productList.length > 0 ? (

@@ -1,4 +1,4 @@
-import { Accordion, Box, Button, Flex, Heading, HStack, RadioGroup, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Accordion, Box, Button, DataList, Flex, Heading, HStack, RadioGroup, Separator, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { formatNumber } from "../../../utils/simpleUtils";
 
@@ -91,13 +91,6 @@ function Payment() {
                         <Accordion.Item key={kind.value} value={kind.value} p="10px">
                             <Accordion.ItemTrigger>
                                 {kind.label}
-                                {/** 
-                                <RadioGroup.Item value={kind.value}>
-                                    <RadioGroup.ItemHiddenInput />
-                                    <RadioGroup.ItemIndicator />
-                                    <RadioGroup.ItemText></RadioGroup.ItemText>
-                                </RadioGroup.Item>
-                                */}
                                 <Accordion.ItemIndicator />
                             </Accordion.ItemTrigger>
                             <Accordion.ItemContent>
@@ -152,7 +145,7 @@ function Order() {
 
     return (
         <Stack p="80px 0" px="layoutX" width="6xl" margin="auto" gap="6">
-            <Heading>주문/결제</Heading>
+            <Heading size="2xl">주문/결제</Heading>
             <Stack direction="row">
                 <Box width="3/4">
                     <Stack>
@@ -162,8 +155,26 @@ function Order() {
                     </Stack>
                 </Box>
                 <Box width="1/4" position="relative">
-                    <Stack gap="4" position="sticky" top="10px" borderWidth="1px" rounded="md" p="10px">
-
+                    <Stack gap="6" position="sticky" top="10px" borderWidth="1px" rounded="md" p="10px">
+                        <Heading>최종 결제 금액</Heading>
+                        <DataList.Root orientation="horizontal">
+                            <DataList.Item>
+                                <DataList.ItemLabel>총 상품 가격</DataList.ItemLabel>
+                                <DataList.ItemValue justifyContent="end">{formatNumber(10000)}</DataList.ItemValue>
+                            </DataList.Item>
+                            <DataList.Item>
+                                <DataList.ItemLabel>배송비</DataList.ItemLabel>
+                                <DataList.ItemValue justifyContent="end">{formatNumber(3500)}</DataList.ItemValue>
+                            </DataList.Item>
+                        </DataList.Root>
+                        <Separator/>
+                        <DataList.Root orientation="horizontal">
+                            <DataList.Item fontWeight="medium">
+                                <DataList.ItemLabel>총 결제 금액</DataList.ItemLabel>
+                                <DataList.ItemValue justifyContent="end" fontSize="xl">{formatNumber(13500)}</DataList.ItemValue>
+                            </DataList.Item>
+                        </DataList.Root>
+                        <Button>결제하기</Button>
                     </Stack>
                 </Box>
             </Stack>

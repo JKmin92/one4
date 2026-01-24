@@ -41,7 +41,7 @@ function ProductList() {
             <Stack direction="row" gap="10">
                 <Stack width="3xs" position="relative">
                     <Stack position="sticky" left="0" top="5">
-                        <Heading>카테고리 1</Heading>
+                        <Heading size="2xl">카테고리 1</Heading>
                         <Stack marginTop="15px" paddingTop="15px" borderTop="3px solid" borderTopColor="main">
                             {subCategorys.map((subCategory) => (
                                 <Button variant="plain" key={subCategory.id} justifyContent="start" padding="0">
