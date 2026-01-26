@@ -16,6 +16,8 @@ function Header() {
         console.log(keyword);
     }
 
+    const user = null;
+
     return (
         <Stack gap="0">
             <Flex {...headerLineStyle} justifyContent="space-between">
@@ -39,9 +41,14 @@ function Header() {
                         </Link>
                     </Group>
                     <Icon size="md"><LuBell /></Icon>
-                    <Avatar.Root>
-                        <LuUserRound />
-                    </Avatar.Root>
+                    {!user ? (
+                        <HStack gap="6">
+                            <Link href="/login" fontSize="sm">로그인</Link>
+                            <Link href="/join" fontSize="sm">회원가입</Link>
+                        </HStack>
+                    ) : (
+                        <Avatar.Root><LuUserRound /></Avatar.Root>
+                    )}
                 </HStack>
             </Flex>
             <HStack gap="16" {...headerLineStyle}>
