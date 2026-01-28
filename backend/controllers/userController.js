@@ -56,7 +56,7 @@ export const signIn = async(req, res, next) => {
 
 export const refreshToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
-    if(!refreshToken) return res.status(401).send({error:'refresh token not found'});
+    if(!refreshToken) return res.status(200).send({accessToken: null});
 
     try {
         const tokenRecord = await tokenModel.selectToken(refreshToken);
@@ -73,7 +73,7 @@ export const refreshToken = async (req, res) => {
     } catch(err) {
         res.clearCookie('refreshToken');
         await tokenModel.deleteToken(refreshToken);
-        return res.status(401).send({message:'Invalid Refresh Token'});
+        return res.status(403).send({message:'Invalid Refresh Token'});
     }
 }
 
@@ -91,6 +91,7 @@ export const signOut = async (req, res, next) => {
 export const me = (req, res, next) => {
     try {
         const user = req.user;
+        console.log('dd');
         if(!user) return res.status(201).send({message:'no user'});
         res.status(200).json(user);
     } catch(err) {
