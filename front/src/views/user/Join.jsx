@@ -1,7 +1,7 @@
-import { Button, Checkbox, Field, Heading, HStack, Image, Input, InputGroup, Stack, StackSeparator, Steps, Table, TableColumnHeader, Text } from "@chakra-ui/react";
+import { Button, Checkbox, Field, Heading, HStack, Image, Input, InputGroup, Link, Stack, StackSeparator, Steps, Table, TableColumnHeader, Text } from "@chakra-ui/react";
 import { LuLock, LuMail, LuSmartphone, LuUser } from "react-icons/lu";
 import { PasswordInput } from "../../components/ui/password-input";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toaster } from "../../components/ui/toaster";
 import axiosInstance from "../../utils/api";
@@ -11,6 +11,7 @@ function Join() {
 
     const {register, handleSubmit, formState: {errors}, setError} = useForm();
     const {setUser, setAccessToken} = useAuth();
+    const [step, setStep] = useState(0);
 
     const agreementInitValues = [
         {label : '이용 약관에 동의 하시겠습니까?', checked:false, value:'agree1', essential:true},
@@ -53,114 +54,119 @@ function Join() {
                 return false;
             }
 
-            const userData = {email : data.email, password:data.password, name:data.name, phone:data.phone};
+            const marketingAgree = agreementValues.find((agree) => agree.value == 'mkt').checked;
+            const userData = {email : data.email, password:data.password, name:data.name, phone:data.phone, marketingAgree:marketingAgree};
             const res = await axiosInstance.post(`/user/`, userData);
 
             const {accessToken, ...newUser} = res.data;
             setAccessToken(accessToken);
             setUser(newUser);
+
+            setStep(step + 1);
         } catch {
             toaster.create({title:'오류가 발생되었습니다. 재시도 부탁드립니다.', type:'error'});
         }
     }
 
     return (
-        <Stack padding="80px 0" px="layoutX" width="4xl" margin="auto" gap="6">
-            <Steps.Root defaultStep={0} count={1}>
+        <Stack p={{base:'100px 0', md:"200px 0"}} px={{base:'15px', md:'layoutX'}} width={{base:'full', md:"3xl"}} margin="auto" gap="6">
+            <Steps.Root defaultStep={0} step={step} onStepChange={(e)=>setStep(e.stap)} count={1}>
                 <Steps.Content index={0}>
                     <Stack gap="6">
                         <Image src="/resources/img/logo/logo.svg" alt="logo" width="120px" margin="auto" />
-                        <Stack direction="row" gap="6" separator={<StackSeparator />}>
-                            <form style={{width: "60%"}} onSubmit={handleSubmit(onSubmit)}>
-                                <Stack gap="6" separator={<StackSeparator />} w="full">
-                                    <Stack gap="6">
-                                        <Heading>회원가입</Heading>
-                                        <Stack gap="2">
-                                            <Field.Root invalid={!!errors.email}>
-                                                <InputGroup startAddon={<LuMail />}>
-                                                    <Input placeholder="이메일" {...register("email", {required:"이메일을 입력해주세요."})} />
-                                                </InputGroup>
-                                                <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
-                                            </Field.Root>
+                        <Stack direction={{base:'column', md:"row"}} gap="6" separator={<StackSeparator />} >
+                            <Stack width={{base:'full', md:'60%'}} order={{base:1, md:0}}>
+                                <form onSubmit={handleSubmit(onSubmit)}>
+                                    <Stack gap="6" separator={<StackSeparator />} w="full">
+                                        <Stack gap="6">
+                                            <Heading>회원가입</Heading>
+                                            <Stack gap="2">
+                                                <Field.Root invalid={!!errors.email}>
+                                                    <InputGroup startAddon={<LuMail />}>
+                                                        <Input placeholder="이메일" {...register("email", {required:"이메일을 입력해주세요."})} />
+                                                    </InputGroup>
+                                                    <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
+                                                </Field.Root>
 
-                                            <Field.Root invalid={!!errors.password}>
-                                                <InputGroup startAddon={<LuLock />}>
-                                                    <PasswordInput placeholder="비밀번호" {...register("password", { required: "비밀번호는 8자 이상 입력해주세요.", minLength: { value: 8, message: '8자 이상 입력해주세요.' } })} />
-                                                </InputGroup>
-                                                <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
-                                            </Field.Root>
-                                            
-                                            <Field.Root invalid={!!errors.password2}>
-                                                <InputGroup startAddon={<LuLock />}>
-                                                    <Input type="password" placeholder="비밀번호 재확인" {...register("password2", {required:"비밀번호를 다시 입력해주세요."})} />
-                                                </InputGroup>
-                                                <Field.ErrorText>{errors.password2?.message}</Field.ErrorText>
-                                            </Field.Root>
+                                                <Field.Root invalid={!!errors.password}>
+                                                    <InputGroup startAddon={<LuLock />}>
+                                                        <PasswordInput placeholder="비밀번호" {...register("password", { required: "비밀번호는 8자 이상 입력해주세요.", minLength: { value: 8, message: '8자 이상 입력해주세요.' } })} />
+                                                    </InputGroup>
+                                                    <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
+                                                </Field.Root>
+                                                
+                                                <Field.Root invalid={!!errors.password2}>
+                                                    <InputGroup startAddon={<LuLock />}>
+                                                        <Input type="password" placeholder="비밀번호 재확인" {...register("password2", {required:"비밀번호를 다시 입력해주세요."})} />
+                                                    </InputGroup>
+                                                    <Field.ErrorText>{errors.password2?.message}</Field.ErrorText>
+                                                </Field.Root>
 
-                                            <Field.Root invalid={!!errors.name}>
-                                                <InputGroup startAddon={<LuUser />}>
-                                                    <Input placeholder="이름" {...register("name", {required:"이름을 입력해주세요."})} />
-                                                </InputGroup>
-                                                <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
-                                            </Field.Root>
+                                                <Field.Root invalid={!!errors.name}>
+                                                    <InputGroup startAddon={<LuUser />}>
+                                                        <Input placeholder="이름" {...register("name", {required:"이름을 입력해주세요."})} />
+                                                    </InputGroup>
+                                                    <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
+                                                </Field.Root>
 
-                                            <Field.Root invalid={!!errors.phone}>
-                                                <InputGroup startAddon={<LuSmartphone />}>
-                                                    <Input placeholder="연락처" {...register("phone", {required:"연락처를 입력해주세요."})} />
-                                                </InputGroup>
-                                                <Field.ErrorText>{errors.phone?.message}</Field.ErrorText>
-                                            </Field.Root>
+                                                <Field.Root invalid={!!errors.phone}>
+                                                    <InputGroup startAddon={<LuSmartphone />}>
+                                                        <Input placeholder="연락처" {...register("phone", {required:"연락처를 입력해주세요."})} />
+                                                    </InputGroup>
+                                                    <Field.ErrorText>{errors.phone?.message}</Field.ErrorText>
+                                                </Field.Root>
+                                            </Stack>
                                         </Stack>
-                                    </Stack>
-                                    <Stack gap="6">
-                                        <Stack>
-                                            <Checkbox.Root 
-                                                checked={agreementIndeterminate ? 'indeterminate' : agreementAllCheck} 
-                                                onCheckedChange={(e) => setAgreementValues((current) => current.map((value) => ({...value, checked:!!e.checked})))}>
-                                                    <Checkbox.HiddenInput />
-                                                    <Checkbox.Control>
-                                                        <Checkbox.Indicator />
-                                                    </Checkbox.Control>
-                                                    <Checkbox.Label>전체동의</Checkbox.Label>
-                                            </Checkbox.Root>
-                                            {agreementValues.map((item, index) => (
+                                        <Stack gap="6">
+                                            <Stack>
                                                 <Checkbox.Root 
-                                                    key={item.value}
-                                                    checked={item.checked}
-                                                    onCheckedChange={(e) => {
-                                                        setAgreementValues((current) => {
-                                                            const newValues = [...current];
-                                                            newValues[index] = {...newValues[index], checked:!!e.checked};
-                                                            return newValues;
-                                                        })
-                                                    }}>
-                                                    <Checkbox.HiddenInput />
-                                                    <Checkbox.Control />
-                                                    <Checkbox.Label>{item.label} {item.essential ? '(필수)' : '(선택)'}</Checkbox.Label>
+                                                    checked={agreementIndeterminate ? 'indeterminate' : agreementAllCheck} 
+                                                    onCheckedChange={(e) => setAgreementValues((current) => current.map((value) => ({...value, checked:!!e.checked})))}>
+                                                        <Checkbox.HiddenInput />
+                                                        <Checkbox.Control>
+                                                            <Checkbox.Indicator />
+                                                        </Checkbox.Control>
+                                                        <Checkbox.Label>전체동의</Checkbox.Label>
                                                 </Checkbox.Root>
-                                            ))}
+                                                {agreementValues.map((item, index) => (
+                                                    <Checkbox.Root 
+                                                        key={item.value}
+                                                        checked={item.checked}
+                                                        onCheckedChange={(e) => {
+                                                            setAgreementValues((current) => {
+                                                                const newValues = [...current];
+                                                                newValues[index] = {...newValues[index], checked:!!e.checked};
+                                                                return newValues;
+                                                            })
+                                                        }}>
+                                                        <Checkbox.HiddenInput />
+                                                        <Checkbox.Control />
+                                                        <Checkbox.Label>{item.label} {item.essential ? '(필수)' : '(선택)'}</Checkbox.Label>
+                                                    </Checkbox.Root>
+                                                ))}
+                                            </Stack>
+                                            <Table.Root fontSize="xs" variant="outline" size="sm">
+                                                <Table.Header>
+                                                    <Table.Row>
+                                                        <TableColumnHeader textAlign="center">목적</TableColumnHeader>
+                                                        <TableColumnHeader textAlign="center">항목</TableColumnHeader>
+                                                        <TableColumnHeader textAlign="center">보유 및 이용기간</TableColumnHeader>
+                                                    </Table.Row>
+                                                </Table.Header>
+                                                <Table.Body>
+                                                    <Table.Row>
+                                                        <Table.Cell textAlign="center">이용자 식별 및<br></br>본인여부 확인</Table.Cell>
+                                                        <Table.Cell textAlign="center">이메일, 성함, 생년월일<br />비밀번호, 연락처</Table.Cell>
+                                                        <Table.Cell textAlign="center">회원탈퇴시까지</Table.Cell>
+                                                    </Table.Row>
+                                                </Table.Body>
+                                            </Table.Root>
                                         </Stack>
-                                        <Table.Root fontSize="xs" variant="outline" size="sm">
-                                            <Table.Header>
-                                                <Table.Row>
-                                                    <TableColumnHeader textAlign="center">목적</TableColumnHeader>
-                                                    <TableColumnHeader textAlign="center">항목</TableColumnHeader>
-                                                    <TableColumnHeader textAlign="center">보유 및 이용기간</TableColumnHeader>
-                                                </Table.Row>
-                                            </Table.Header>
-                                            <Table.Body>
-                                                <Table.Row>
-                                                    <Table.Cell textAlign="center">이용자 식별 및<br></br>본인여부 확인</Table.Cell>
-                                                    <Table.Cell textAlign="center">이메일, 성함, 생년월일<br />비밀번호, 연락처</Table.Cell>
-                                                    <Table.Cell textAlign="center">회원탈퇴시까지</Table.Cell>
-                                                </Table.Row>
-                                            </Table.Body>
-                                        </Table.Root>
+                                        <Button type="submit">회원 가입</Button>
                                     </Stack>
-                                    <Button type="submit">회원 가입</Button>
-                                </Stack>
-                            </form>
-                            <Stack gap="6">
+                                </form>
+                            </Stack>
+                            <Stack gap="6" order={{base:0, md:1}} width={{base:'full', md:'40%'}}>
                                 <Heading>SNS 계정으로 회원가입</Heading>
                                 <Stack gap="4">
                                     <Button {...kakao}>카카오톡으로 회원가입</Button>
@@ -179,7 +185,7 @@ function Join() {
                             <Heading>회원 가입해주셔서 감사합니다.</Heading>
                             <Text>저희 원포에 많은 활동을 부탁드립니다.</Text>
                         </Stack>
-                        <Button>홈으로</Button>
+                        <Button asChild><Link href="/">홈으로</Link></Button>
                     </Stack>
                 </Steps.CompletedContent>
             </Steps.Root>

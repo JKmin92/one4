@@ -10,11 +10,12 @@ const issueTokens = async (user, res) => {
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await tokenModel.create(user.user_code, refreshToken, expiresAt);
+
     res.cookie('refreshToken', refreshToken, {
         httpOnly:true,
-        secure:false, //배포시 true
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        secure:process.env.NODE_ENV == 'production',
+        sameSite: 'lax',
+        expires: expiresAt
     });
 
     return accesstoken;
@@ -25,7 +26,7 @@ export const createUser = async(req, res, next) => {
         const data = req.body;
         const newUser = await userService.createUser(data);
 
-        const accesstoken = await issueTokens(newUser);
+        const accesstoken = await issueTokens(newUser, res);
         res.status(201).json({...newUser, accesstoken});
     } catch(err){
         next(err);
@@ -47,8 +48,8 @@ export const signIn = async(req, res, next) => {
         const user = await userService.signIn(data);
         if(!user) return res.status(401).send({error:'확인되는 계정이 없습니다.'});
 
-        const accesstoken = await issueTokens(user);
-        res.status(200).json({...user, accesstoken});
+        const accessToken = await issueTokens(user, res);
+        res.status(200).json({...user, accessToken});
     } catch(err) {
         next(err);
     }
@@ -67,9 +68,10 @@ export const refreshToken = async (req, res) => {
         }
 
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-        const newAccessToken = jwt.sign(decode, process.env.ACCESS_TOKEN_SECRET, {expiresIn:'5m'});
+        const data = {user_code:decode.user.user_code, role:decode.user.role, status:decode.user.status, profile:decode.user.profile};
+        const newAccessToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, {expiresIn:'5m'});
 
-        res.status(200).json({accesstoken:newAccessToken});
+        res.status(200).json({accessToken:newAccessToken});
     } catch(err) {
         res.clearCookie('refreshToken');
         await tokenModel.deleteToken(refreshToken);
@@ -91,7 +93,6 @@ export const signOut = async (req, res, next) => {
 export const me = (req, res, next) => {
     try {
         const user = req.user;
-        console.log('dd');
         if(!user) return res.status(201).send({message:'no user'});
         res.status(200).json(user);
     } catch(err) {

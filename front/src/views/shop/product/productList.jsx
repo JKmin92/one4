@@ -37,12 +37,12 @@ function ProductList() {
     ]
 
     return (
-        <Stack p="80px 0" px='layoutX' >
-            <Stack direction="row" gap="10">
-                <Stack width="3xs" position="relative">
+        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} >
+            <Stack direction={{base:'column', md:"row"}} gap="10">
+                <Stack width={{base:'full', md:"3xs"}} position="relative">
                     <Stack position="sticky" left="0" top="5">
                         <Heading size="2xl">카테고리 1</Heading>
-                        <Stack marginTop="15px" paddingTop="15px" borderTop="3px solid" borderTopColor="main">
+                        <Stack direction={{base:'row', md:"column"}} marginTop="15px" gap="2" paddingTop="15px" borderTop="3px solid" borderTopColor="main" overflowX='auto'>
                             {subCategorys.map((subCategory) => (
                                 <Button variant="plain" key={subCategory.id} justifyContent="start" padding="0">
                                     <Link href={`/categorys/${subCategory.id}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.title}</Link>
@@ -61,9 +61,9 @@ function ProductList() {
                             <Button variant="ghost" fontSize="sm">최신순</Button>
                         </HStack>
                     </Stack>
-                    <SimpleGrid columns={5} gap="8">
+                    <SimpleGrid columns={{base:2, md:5}} gap="8">
                         {productList.map((product) => (
-                            <Link href={`/products/${product.id}`} key={product.id}>
+                            <Link href={`/products/${product.id}`} key={product.id} alignItems="start">
                                 <Stack width="full">
                                     <Box bg="bg.emphasized" aspectRatio="square" rounded="md"></Box>
                                     <Text fontSize="md" fontWeight="medium">{product.title}</Text>

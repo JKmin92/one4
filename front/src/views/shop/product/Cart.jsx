@@ -173,10 +173,10 @@ function Cart() {
     }
 
     return (
-        <Stack p="80px 0" px="layoutX" width="6xl" margin="auto" gap="6">
+        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} width={{base:'full', md:"6xl"}} margin="auto" gap="6">
             <Heading size="2xl">장바구니</Heading>
-            <Stack direction="row">
-                <Box borderWidth="1px" rounded="md" p="10px" width="3/4">
+            <Stack direction={{base:'column', md:"row"}}>
+                <Box borderWidth="1px" rounded="md" p="10px" width={{base:'full', md:"3/4"}}>
                     {productList.length > 0 ? (
                         <Stack gap="4" separator={<StackSeparator />}>
                             {productList.map((product) => {
@@ -213,8 +213,8 @@ function Cart() {
                         </EmptyState.Root>
                     )}
                 </Box>
-                <Box width="1/4" position="relative">
-                    <Stack gap="4" position="sticky" top="10px" borderWidth="1px" rounded="md" p="10px">
+                <Box width={{base:'full', md:"1/4"}} position={{base:'fixed', md:"relative"}} left="0" bg="white" bottom="0" zIndex="2">
+                    <Stack gap="4" position="sticky" top="10px" borderWidth="1px" rounded="md" p={{base:'15px', md:"10px"}}>
                         <Heading>주문 금액</Heading>
                         <DataList.Root orientation="horizontal" >
                             <DataList.Item>

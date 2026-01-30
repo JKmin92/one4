@@ -25,6 +25,36 @@ function Main() {
     const swiperPrev = {...swiperCustomButton, left:'-10px'};
     const swiperNext = {...swiperCustomButton, right:'-10px'};
 
+    const mainBannerSwiper = {
+        slidesPerView:1,
+        spaceBetween:30,
+        modules:[Navigation],
+        loop:true,
+        navigation:{prevEl:'.Mainbanner .swiper_prev', nextEl:'.Mainbanner .swiper_next'},
+        breakpoints:{
+            1024:{slidesPerView:3}
+        }
+    }
+
+    const todayDealSwiper = {
+        slidesPerView:2, 
+        spaceBetween:30,
+        modules:[Navigation],
+        loop:true,
+        navigation:{prevEl:'.todayDeal .swiper_prev', nextEl:'.todayDeal .swiper_next'},
+        breakpoints:{
+            1024 : {slidesPerView:6}
+        }
+    }
+
+    const recommendSwiper = {
+        slidesPerView : 1.2,
+        spaceBetween : 30,
+        breakpoints:{
+            1024:{slidesPerView:4}
+        }
+    }
+
     /**
      * TODO : DB연동
      */
@@ -38,8 +68,8 @@ function Main() {
         {id:7, label:'카테고리', icon : <LuBraces  />},
         {id:8, label:'카테고리', icon : <LuBraces  />},
     ]
-    const categoryButton = {width:'20', height:'20', rounded:'2xl'};
-    const categoryIcon = {width:'8', height:'8'};
+    const categoryButton = {width:{base:'14', xs:'16'}, height:{base:'14', xs:'16'}, rounded:'2xl', aspectRatio:"1/1", margin:'auto'};
+    const categoryIcon = {width:{base:'5', xs:'8'}, height:{base:'5', xs:'8'}};
 
     /**
      * TODO : 제품, 할인, 리뷰 DB 연동
@@ -94,12 +124,12 @@ function Main() {
     ]
 
     return (
-        <Stack padding="80px 0" px="layoutX" gap="20">
+        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} gap="20">
             <Stack gap="16">
                 <Box position="relative" className="Mainbanner">
                     <IconButton className="swiper_prev" {...swiperPrev}><LuChevronLeft /></IconButton>
                     <IconButton className="swiper_next" {...swiperNext}><LuChevronRight /></IconButton>
-                    <Swiper slidesPerView={3} spaceBetween={30} modules={[Navigation]} loop={true} navigation={{prevEl:'.Mainbanner .swiper_prev', nextEl:'.Mainbanner .swiper_next'}}>
+                    <Swiper {...mainBannerSwiper}>
                         {mainBanner.map((banner, index) => (
                             <SwiperSlide key={index}>
                                 <Flex bg="bg.emphasized" justifyContent="center" alignItems="center" height="300px" rounded="md">{banner.label} {banner.id}</Flex>
@@ -108,9 +138,9 @@ function Main() {
                     </Swiper>
                 </Box>
                 <Box width="100%" maxWidth="1400px" margin="auto">
-                    <Flex justifyContent="space-around" width="full">
+                    <Flex justifyContent="space-around" width="full" gap="6" flexWrap={{base:'wrap', md:'nowrap'}}>
                         {categoryIconButtons.map((category) => (
-                            <Stack key={category.id}>
+                            <Stack key={category.id} justifyContent="center" textAlign="center">
                                 <IconButton {...categoryButton}>
                                     <Icon {...categoryIcon}>{category.icon}</Icon>
                                 </IconButton>
@@ -125,7 +155,7 @@ function Main() {
                 <Box className="todayDeal" position="relative">
                     <IconButton className="swiper_prev" {...swiperPrev}><LuChevronLeft /></IconButton>
                     <IconButton className="swiper_next" {...swiperNext}><LuChevronRight /></IconButton>
-                    <Swiper slidesPerView={6} spaceBetween={30} modules={[Navigation]} loop={true} navigation={{prevEl:'.todayDeal .swiper_prev', nextEl:'.todayDeal .swiper_next'}}>
+                    <Swiper {...todayDealSwiper}>
                         {productList.map((product, index) => (
                             <SwiperSlide key={index}>
                                 <Stack gap="2">
@@ -155,32 +185,36 @@ function Main() {
             <Stack gap="4">
                 <Heading>추천 상품</Heading>
                 <HStack gap="8" alignItems="start">
+                    <Swiper {...recommendSwiper}>
                     {recommendProductList.map((recommend) => (
-                        <Stack key={recommend.id} width="full" >
-                            <Box bg="bg.emphasized" width="full" aspectRatio="wide" rounded="md"></Box>
-                            <Stack gap="4">
-                                {recommend.product.map((product) => (
-                                    <HStack gap="6" key={product.id}>
-                                        <Box bg="bg.emphasized" width="20" aspectRatio="square" rounded="md"></Box>
-                                        <Stack>
-                                            <Text>{product.title}</Text>
-                                            {product.discount_price ? (
-                                                <Stack gap="0">
-                                                    <Text fontSize="xs" textDecoration="line-through">{formatNumber(product.regular_price)}</Text>
-                                                    <HStack alignItems="end">
-                                                        <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(product.regular_price, product.discount_price)}%</Text>
-                                                        <Text fontWeight="medium">{formatNumber(product.discount_price)}</Text>
-                                                    </HStack>
-                                                </Stack>
-                                            ) : (
-                                                <Text fontWeight="medium">{product.regular_price}</Text>
-                                            )}
-                                        </Stack>
-                                    </HStack>
-                                ))}
+                        <SwiperSlide key={recommend.id} width="full">
+                            <Stack>
+                                <Box bg="bg.emphasized" width="full" aspectRatio="wide" rounded="md"></Box>
+                                <Stack gap="4">
+                                    {recommend.product.map((product) => (
+                                        <HStack gap="6" key={product.id}>
+                                            <Box bg="bg.emphasized" width="20" aspectRatio="square" rounded="md"></Box>
+                                            <Stack>
+                                                <Text>{product.title}</Text>
+                                                {product.discount_price ? (
+                                                    <Stack gap="0">
+                                                        <Text fontSize="xs" textDecoration="line-through">{formatNumber(product.regular_price)}</Text>
+                                                        <HStack alignItems="end">
+                                                            <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(product.regular_price, product.discount_price)}%</Text>
+                                                            <Text fontWeight="medium">{formatNumber(product.discount_price)}</Text>
+                                                        </HStack>
+                                                    </Stack>
+                                                ) : (
+                                                    <Text fontWeight="medium">{product.regular_price}</Text>
+                                                )}
+                                            </Stack>
+                                        </HStack>
+                                    ))}
+                                </Stack>
                             </Stack>
-                        </Stack>
+                        </SwiperSlide>
                     ))}
+                    </Swiper>
                 </HStack>
             </Stack>
         </Stack>

@@ -6,7 +6,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { LuChevronDown, LuChevronLeft, LuChevronRight, LuLock, LuMinus, LuPlus } from "react-icons/lu";
 import { calcDiscountPercent, formatDate, formatNumber, scrollViewPosition } from "../../../utils/simpleUtils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { InfoTip } from '../../../components/ui/toggle-tip';
 import { HiChevronLeft, HiChevronRight, HiX } from "react-icons/hi";
 
@@ -340,7 +340,7 @@ function Detail() {
     
 
     return (
-        <Stack p="80px 0" px="layoutX" gap="12" width="6xl" margin="auto">
+        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} gap="12" width={{base:'full', md:"6xl"}} margin="auto">
             <Stack gap="6">
                 <Flex className="brandIntro" justifyContent="space-between">
                     <HStack gap="6" alignItems="center">
@@ -352,8 +352,8 @@ function Detail() {
                     </HStack>
                     <Button variant="outline"><Link href="">BRAND HOME</Link></Button>
                 </Flex>
-                <Stack gap="10" direction="row">
-                    <Box position="relative" width="1/2" className="productImage">
+                <Stack gap="10" direction={{base:'column', md:"row"}}>
+                    <Box position="relative" width={{base:'full', md:"1/2"}} className="productImage">
                         <IconButton className="swiper_prev" {...swiperPrev}><LuChevronLeft /></IconButton>
                         <IconButton className="swiper_next" {...swiperNext}><LuChevronRight /></IconButton>
                         <Swiper slidesPerView={1} pagination={{clickable:true}} modules={[Navigation, SwiperPagination]} navigation={{prevEl:'.productImage .swiper_prev', nextEl:'.productImage .swiper_next'}}>
@@ -362,7 +362,7 @@ function Detail() {
                             <SwiperSlide><Box width="full" bg="bg.emphasized" aspectRatio="square" rounded="md"></Box></SwiperSlide>
                         </Swiper>
                     </Box>
-                    <Box width="1/2">
+                    <Box width={{base:'full', md:"1/2"}}>
                         <Stack gap="6" borderTop="2px solid #000" pt="30px">
                             <Heading size="2xl">제품명</Heading>
                             <HStack gap="5">

@@ -332,17 +332,17 @@ function Order() {
     }, []);
 
     return (
-        <Stack p="80px 0" px="layoutX" width="6xl" margin="auto" gap="6">
-            <Heading size="2xl">주문/결제</Heading>
-            <Stack direction="row">
-                <Box width="3/4">
+        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} width={{base:'full', md:"6xl"}} margin="auto" gap="6">
+            <Heading size='2xl'>주문/결제</Heading>
+            <Stack direction={{base:'column', md:"row"}}>
+                <Box width={{base:'full', md:"3/4"}}>
                     <Stack gap="6">
                         <ProductList productList={productList} optionList={optionList} productQuantity={productQuantity} />
                         <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
                         <Payment />
                     </Stack>
                 </Box>
-                <Box width="1/4" position="relative">
+                <Box width={{base:'full', md:"1/4"}} position="relative">
                     <Stack gap="6" position="sticky" top="10px" borderWidth="1px" rounded="md" p="10px">
                         <Heading>최종 결제 금액</Heading>
                         <DataList.Root orientation="horizontal">

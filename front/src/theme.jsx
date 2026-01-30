@@ -4,6 +4,15 @@ const config = defineConfig({
     ...defaultConfig,
     theme: {
         ...defaultConfig.theme,
+        breakpoints: {
+            '2xs':'344px',
+            xs:'430px',
+            sm:'480px',
+            md:'768px',
+            lg:'1024px',
+            xl:'1280px',
+            '2xl':'1536px'
+        },
         tokens : {
             ...defaultConfig.theme.tokens,
             colors:{

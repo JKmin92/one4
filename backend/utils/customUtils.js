@@ -1,4 +1,4 @@
-exports.generateUserCode = (email) => {
+export const generateUserCode = (email) => {
     if(!email || email.length < 3) throw new Error('이메일은 최소 3글자 이상');
 
     const prefix = email.slice(0, 3);

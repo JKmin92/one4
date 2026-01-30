@@ -1,17 +1,17 @@
 import db from '../config/db.js';
 
-export const insertUser = async ({data}) => {
+export const insertUser = async (data) => {
     await db.query(
-        `INSERT INTO user (user_code, email, name, phone, password, marketing) VALUES (?,?,?,?,?,?)`,
-        [data.user_code, data.email, data.name, data.phone, data.password, data.marketing]
+        `INSERT INTO user (user_code, email, name, phone, password, marketingAgree) VALUES (?,?,?,?,?,?)`,
+        [data.user_code, data.email, data.name, data.phone, data.password, data.marketingAgree]
     );
 
-    const [rows] = await db.query(`SELECT user_code, email, name, phone, marketing WHERE user_code`,[data.user_code]);
+    const [rows] = await db.query(`SELECT user_code, email, name, phone, marketingAgree FROM user WHERE user_code=?`,[data.user_code]);
     return rows[0];
 }
 
-export const login = async({email, password}) => {
-    const [rows] = await db.query(`SELECT user_code, email, nickName, marketingAgree, profile, role, status FROM user WHERE email = ? AND password = ? AND status != 'WITHDRAW'`, [email, password]);
+export const login = async({email}) => {
+    const [rows] = await db.query(`SELECT user_code, email, name, password, marketingAgree, profile, role, status FROM user WHERE email = ? AND status != 'WITHDRAW'`, [email]);
     if(rows[0]) await db.query(`UPDATE user SET last_login_at = NOW() WHERE user_code = ?`, [rows[0].user_code]);
     return rows[0];
 }
