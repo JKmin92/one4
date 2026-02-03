@@ -35,10 +35,10 @@ function Header() {
                             <Menu.Positioner>
                                 <Menu.Content>
                                     <Stack gap="2">
-                                        <Menu.Item><Link href="/categorys/12345">카테고리 1</Link></Menu.Item>
-                                        <Menu.Item>카테고리 2</Menu.Item>
-                                        <Menu.Item>카테고리 3</Menu.Item>
-                                        <Menu.Item>카테고리 4</Menu.Item>
+                                        <Menu.Item><Link href="/categorys/12345">제품</Link></Menu.Item>
+                                        <Menu.Item>지역</Menu.Item>
+                                        <Menu.Item>기자단</Menu.Item>
+                                        <Menu.Item>구매평</Menu.Item>
                                     </Stack>
                                 </Menu.Content>
                             </Menu.Positioner>
@@ -46,8 +46,8 @@ function Header() {
                         <Link href="/"><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                     </HStack>
                     <HStack gap="12" display={{base:'none', md:'flex'}}>
-                        <Link href="/"><Text fontSize="lg" fontWeight="medium">REVIEW</Text></Link>
-                        <Link href="/"><Text fontSize="lg" fontWeight="medium" color="main">SHOPPING</Text></Link>
+                        <Link href="/"><Text fontSize="lg" fontWeight="medium" color="main">REVIEW</Text></Link>
+                        <Link href="/"><Text fontSize="lg" fontWeight="medium">SHOPPING</Text></Link>
                     </HStack>
                 </HStack>
                 <HStack gap={{base:'4', md:'6'}}>
@@ -100,10 +100,10 @@ function Header() {
                     <Menu.Positioner>
                         <Menu.Content>
                             <Stack gap="2">
-                                <Menu.Item><Link href="/categorys/12345">카테고리 1</Link></Menu.Item>
-                                <Menu.Item>카테고리 2</Menu.Item>
-                                <Menu.Item>카테고리 3</Menu.Item>
-                                <Menu.Item>카테고리 4</Menu.Item>
+                                <Menu.Item><Link href="/categorys/12345">제품</Link></Menu.Item>
+                                <Menu.Item>지역</Menu.Item>
+                                <Menu.Item>기자단</Menu.Item>
+                                <Menu.Item>구매평</Menu.Item>
                             </Stack>
                             
                         </Menu.Content>
@@ -111,10 +111,10 @@ function Header() {
                 </Menu.Root>
                 
                 <HStack gap="12">
-                    <Link href="/categorys/12345"><Text fontSize="md" fontWeight="medium">카테고리 1</Text></Link>
-                    <Link href="/"><Text fontSize="md" fontWeight="medium">카테고리 2</Text></Link>
-                    <Link href="/"><Text fontSize="md" fontWeight="medium">카테고리 3</Text></Link>
-                    <Link href="/"><Text fontSize="md" fontWeight="medium">카테고리 4</Text></Link>
+                    <Link href="/categorys/12345"><Text fontSize="md" fontWeight="medium">제품</Text></Link>
+                    <Link href="/"><Text fontSize="md" fontWeight="medium">지역</Text></Link>
+                    <Link href="/"><Text fontSize="md" fontWeight="medium">기자단</Text></Link>
+                    <Link href="/"><Text fontSize="md" fontWeight="medium">구매평</Text></Link>
                 </HStack>
             </HStack>
         </Stack>

@@ -27,3 +27,18 @@ export function scrollViewPosition(id) {
     const el = document.getElementById(id);
     el?.scrollIntoView({behavior:'smooth'});
 }
+
+export function getDDay(targetDate) {
+    if(!targetDate) return '0';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const target = targetDate instanceof Date ? new Date(targetDate) : new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+
+    const diff = target - today;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    return `${Math.max(days, 0)}`;
+}

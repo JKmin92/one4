@@ -5,13 +5,13 @@ import { useState } from "react";
 
 function Header() {
     const [keyword, setKeyword] = useState('');
-    const headerLineStyle = {p:'15px', px:{base:'5px', md:'layoutX'}, width:'100%', borderBottom:'1px solid #e5e5e5'};
-    const {user} = useAuth();
+    const headerLineStyle = { p: '15px', px: { base: '5px', md: 'layoutX' }, width: '100%', borderBottom: '1px solid #e5e5e5' };
+    const { user } = useAuth();
 
     const keywordClearElement = keyword ? (
-            <CloseButton size="xs" onClick={() => setKeyword('')} rounded="full"/>
-        ) : null;
-    
+        <CloseButton size="xs" onClick={() => setKeyword('')} rounded="full" />
+    ) : null;
+
 
     const onSearchSubmit = (e) => {
         e.preventDefault();
@@ -24,7 +24,7 @@ function Header() {
                 <HStack gap="2">
                     <Menu.Root>
                         <Menu.Trigger asChild>
-                            <Button variant="ghost" display={{base:'block', md:'none'}}>
+                            <Button variant="ghost" display={{ base: 'block', md: 'none' }}>
                                 <Icon size="lg"><LuAlignJustify /></Icon>
                             </Button>
                         </Menu.Trigger>
@@ -41,7 +41,7 @@ function Header() {
                     </Menu.Root>
                     <Link href="/"><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                 </HStack>
-                <HStack gap="12" display={{base:'none', md:'flex'}}>
+                <HStack gap="12" display={{ base: 'none', md: 'flex' }}>
                     <Link href="/"><Text fontSize="lg" fontWeight="medium">REVIEW</Text></Link>
                     <Link href="/"><Text fontSize="lg" fontWeight="medium">SHOPPING</Text></Link>
                 </HStack>
@@ -49,16 +49,16 @@ function Header() {
             <HStack gap="6">
                 <form onSubmit={onSearchSubmit}>
                     <InputGroup startElement={<Icon size="md"><LuSearch /></Icon>} endElement={keywordClearElement}>
-                        <Input rounded="full" width="5"  value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
+                        <Input rounded="full" width={{ base: "5", md: 'auto' }} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
                     </InputGroup>
                 </form>
                 <Group>
                     <Link href="/cart">
                         <Icon size="md"><LuShoppingCart /></Icon>
                         <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
-                     </Link>
+                    </Link>
                 </Group>
-                
+
                 {!user ? (
                     <HStack gap="6">
                         <Link href="/login" fontSize="sm">로그인</Link>
@@ -66,11 +66,11 @@ function Header() {
                     </HStack>
                 ) : (
                     <>
-                    <Icon size="md"><LuBell /></Icon>
-                    <Avatar.Root><LuUserRound /></Avatar.Root>
+                        <Icon size="md"><LuBell /></Icon>
+                        <Avatar.Root><LuUserRound /></Avatar.Root>
                     </>
                 )}
-                
+
             </HStack>
         </Flex>
     )

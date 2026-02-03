@@ -17,9 +17,7 @@ const config = defineConfig({
             ...defaultConfig.theme.tokens,
             colors:{
                 ...defaultConfig.theme.tokens.colors,
-                main: {
-                    value:'#950101'
-                }
+                main: { value:'#950101' }
             },
             spacing : {
                 ...defaultConfig.theme.tokens.spacing,
@@ -27,7 +25,6 @@ const config = defineConfig({
             }
         }
     }
-    
 });
 
 export const system = createSystem(config);
