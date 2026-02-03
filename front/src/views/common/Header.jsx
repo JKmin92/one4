@@ -42,7 +42,7 @@ function Header() {
                     <Link href="/"><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                 </HStack>
                 <HStack gap="12" display={{ base: 'none', md: 'flex' }}>
-                    <Link href="/"><Text fontSize="lg" fontWeight="medium">REVIEW</Text></Link>
+                    <Link href="/review"><Text fontSize="lg" fontWeight="medium">REVIEW</Text></Link>
                     <Link href="/"><Text fontSize="lg" fontWeight="medium">SHOPPING</Text></Link>
                 </HStack>
             </HStack>

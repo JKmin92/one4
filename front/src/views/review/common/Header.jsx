@@ -6,10 +6,10 @@ import { useAuth } from "../../../utils/useAuth";
 function Header() {
 
     const [keyword, setKeyword] = useState('');
-    const headerLineStyle = {p:'15px', px:{base:'5px', md:'layoutX'}, width:'100%', borderBottom:'1px solid #e5e5e5'};
+    const headerLineStyle = { p: '15px', px: { base: '5px', md: 'layoutX' }, width: '100%', borderBottom: '1px solid #e5e5e5' };
 
     const keywordClearElement = keyword ? (
-        <CloseButton size="xs" onClick={() => setKeyword('')} rounded="full"/>
+        <CloseButton size="xs" onClick={() => setKeyword('')} rounded="full" />
     ) : null;
 
     const onSearchSubmit = (e) => {
@@ -17,7 +17,7 @@ function Header() {
         console.log(keyword);
     }
 
-    const {user, logout} = useAuth();
+    const { user, logout } = useAuth();
 
     const handleLogout = async () => await logout();
 
@@ -28,7 +28,7 @@ function Header() {
                     <HStack gap="2">
                         <Menu.Root>
                             <Menu.Trigger asChild>
-                                <Button variant="ghost" display={{base:'block', md:'none'}}>
+                                <Button variant="ghost" display={{ base: 'block', md: 'none' }}>
                                     <Icon size="lg"><LuAlignJustify /></Icon>
                                 </Button>
                             </Menu.Trigger>
@@ -45,15 +45,15 @@ function Header() {
                         </Menu.Root>
                         <Link href="/"><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                     </HStack>
-                    <HStack gap="12" display={{base:'none', md:'flex'}}>
-                        <Link href="/"><Text fontSize="lg" fontWeight="medium" color="main">REVIEW</Text></Link>
+                    <HStack gap="12" display={{ base: 'none', md: 'flex' }}>
+                        <Link href="/review"><Text fontSize="lg" fontWeight="medium" color="main">REVIEW</Text></Link>
                         <Link href="/"><Text fontSize="lg" fontWeight="medium">SHOPPING</Text></Link>
                     </HStack>
                 </HStack>
-                <HStack gap={{base:'4', md:'6'}}>
+                <HStack gap={{ base: '4', md: '6' }}>
                     <form onSubmit={onSearchSubmit}>
                         <InputGroup startElement={<Icon size="md"><LuSearch /></Icon>} endElement={keywordClearElement}>
-                            <Input rounded="full" width={{base:'5', md:"auto"}} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
+                            <Input rounded="full" width={{ base: '5', md: "auto" }} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
                         </InputGroup>
                     </form>
                     <Group>
@@ -62,35 +62,35 @@ function Header() {
                             <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
                         </Link>
                     </Group>
-                    
+
                     {!user ? (
-                        <HStack gap={{base:'2', md:"6"}}>
+                        <HStack gap={{ base: '2', md: "6" }}>
                             <Link href="/login" fontSize="sm">로그인</Link>
                             <Link href="/join" fontSize="sm">회원가입</Link>
                         </HStack>
                     ) : (
                         <>
-                        <Icon size="md"><LuBell /></Icon>
-                        <Menu.Root>
-                            <Menu.Trigger rounded="full">
-                                <Avatar.Root><LuUserRound /></Avatar.Root>
-                            </Menu.Trigger>
-                            <Menu.Positioner>
-                                <Menu.Content textAlign="center">
-                                    <Menu.Item display="block">
-                                        <Link href="#"><Text textStyle="sm">마이페이지</Text></Link>
-                                    </Menu.Item>
-                                    <Menu.Item display="block" onClick={handleLogout}>
-                                        <Text textStyle="sm">로그아웃</Text>
-                                    </Menu.Item>
-                                </Menu.Content>
-                            </Menu.Positioner>
-                        </Menu.Root>
+                            <Icon size="md"><LuBell /></Icon>
+                            <Menu.Root>
+                                <Menu.Trigger rounded="full">
+                                    <Avatar.Root><LuUserRound /></Avatar.Root>
+                                </Menu.Trigger>
+                                <Menu.Positioner>
+                                    <Menu.Content textAlign="center">
+                                        <Menu.Item display="block">
+                                            <Link href="#"><Text textStyle="sm">마이페이지</Text></Link>
+                                        </Menu.Item>
+                                        <Menu.Item display="block" onClick={handleLogout}>
+                                            <Text textStyle="sm">로그아웃</Text>
+                                        </Menu.Item>
+                                    </Menu.Content>
+                                </Menu.Positioner>
+                            </Menu.Root>
                         </>
                     )}
                 </HStack>
             </Flex>
-            <HStack gap="16" {...headerLineStyle} display={{md:'flex', base:'none'}}>
+            <HStack gap="16" {...headerLineStyle} display={{ md: 'flex', base: 'none' }}>
                 <Menu.Root>
                     <Menu.Trigger asChild>
                         <Button variant="ghost">
@@ -105,11 +105,11 @@ function Header() {
                                 <Menu.Item>기자단</Menu.Item>
                                 <Menu.Item>구매평</Menu.Item>
                             </Stack>
-                            
+
                         </Menu.Content>
                     </Menu.Positioner>
                 </Menu.Root>
-                
+
                 <HStack gap="12">
                     <Link href="/categorys/12345"><Text fontSize="md" fontWeight="medium">제품</Text></Link>
                     <Link href="/"><Text fontSize="md" fontWeight="medium">지역</Text></Link>
