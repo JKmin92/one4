@@ -35,7 +35,7 @@ function Header() {
                             <Menu.Positioner>
                                 <Menu.Content>
                                     <Stack gap="2">
-                                        <Menu.Item><Link href="/categorys/12345">제품</Link></Menu.Item>
+                                        <Menu.Item><Link href="/review/list/all">제품</Link></Menu.Item>
                                         <Menu.Item>지역</Menu.Item>
                                         <Menu.Item>기자단</Menu.Item>
                                         <Menu.Item>구매평</Menu.Item>
@@ -100,18 +100,17 @@ function Header() {
                     <Menu.Positioner>
                         <Menu.Content>
                             <Stack gap="2">
-                                <Menu.Item><Link href="/categorys/12345">제품</Link></Menu.Item>
+                                <Menu.Item><Link href="/review/list/all">제품</Link></Menu.Item>
                                 <Menu.Item>지역</Menu.Item>
                                 <Menu.Item>기자단</Menu.Item>
                                 <Menu.Item>구매평</Menu.Item>
                             </Stack>
-
                         </Menu.Content>
                     </Menu.Positioner>
                 </Menu.Root>
 
                 <HStack gap="12">
-                    <Link href="/categorys/12345"><Text fontSize="md" fontWeight="medium">제품</Text></Link>
+                    <Link href="/review/list/all"><Text fontSize="md" fontWeight="medium">제품</Text></Link>
                     <Link href="/"><Text fontSize="md" fontWeight="medium">지역</Text></Link>
                     <Link href="/"><Text fontSize="md" fontWeight="medium">기자단</Text></Link>
                     <Link href="/"><Text fontSize="md" fontWeight="medium">구매평</Text></Link>

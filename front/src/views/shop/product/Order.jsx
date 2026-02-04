@@ -4,7 +4,7 @@ import { formatNumber } from "../../../utils/simpleUtils";
 import { LuSearch } from "react-icons/lu";
 import { toaster } from "../../../components/ui/toaster";
 
-function ProductList({productList, optionList, productQuantity}) {
+function ProductList({ productList, optionList, productQuantity }) {
 
     return (
         <Box borderWidth="1px" rounded="md">
@@ -16,7 +16,7 @@ function ProductList({productList, optionList, productQuantity}) {
                     const options = optionList.filter((option) => option.id === product.id);
                     const quantity = productQuantity.filter((quantity) => quantity.id === product.id);
 
-                    return(
+                    return (
                         <Flex key={index} p="0 10px" justifyContent="space-between" alignItems="center">
                             <Stack gap="0">
                                 <Text fontSize="md">{product.name}</Text>
@@ -40,7 +40,7 @@ function ProductList({productList, optionList, productQuantity}) {
     )
 }
 
-function AddDelivery({deliveryList, setDeliveryList, setAddDeliveryStatus}) {
+function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus }) {
 
     const [isDaumLoaded, setIsDaumLoaded] = useState(false);
     const [isSearch, setIsSearch] = useState(false);
@@ -70,11 +70,11 @@ function AddDelivery({deliveryList, setDeliveryList, setAddDeliveryStatus}) {
                 oncomplete: (data) => {
                     let addr = '', extraAddr = '';
 
-                    if(data?.userSelectedType === 'R') addr = data?.roadAddress; 
-                    else addr = data?.jibunAddress; 
+                    if (data?.userSelectedType === 'R') addr = data?.roadAddress;
+                    else addr = data?.jibunAddress;
 
-                    if(data.userSelectedType === 'R') {
-                        if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
+                    if (data.userSelectedType === 'R') {
+                        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
                         if (data.buildingName !== "") extraAddr += extraAddr !== "" ? ", " + data.buildingName : data.buildingName;
                         if (extraAddr !== "") extraAddr = `(${extraAddr})`;
                     }
@@ -83,19 +83,19 @@ function AddDelivery({deliveryList, setDeliveryList, setAddDeliveryStatus}) {
                     setAddress(addr + extraAddr);
                     setIsSearch(false);
                     window.scrollTo(0, currentScroll);
-                }, onresize : (size) => {
-                    if(searchAddressRef.current) searchAddressRef.current.style.height = size.height + 'px'
-                }, width:'100%', height:'100%',
+                }, onresize: (size) => {
+                    if (searchAddressRef.current) searchAddressRef.current.style.height = size.height + 'px'
+                }, width: '100%', height: '100%',
             }).embed(searchAddressRef.current);
         }, 0);
     }
 
     const addAddress = () => {
         /** TODO : 별도 address Id 생성 */
-        const id = deliveryList.reduce((max,cur) => cur.id > max ? cur.id : max, 0) + 1;
+        const id = deliveryList.reduce((max, cur) => cur.id > max ? cur.id : max, 0) + 1;
         const phone = phoneRef.current.value.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
-        const newAddress = {id:id, name:nameRef.current.value, postcode:postcode, address:address, detailAddress:detailAddressRef.current.value, phone:phone};
-        
+        const newAddress = { id: id, name: nameRef.current.value, postcode: postcode, address: address, detailAddress: detailAddressRef.current.value, phone: phone };
+
         setDeliveryList(prev => [...prev, newAddress]);
         setAddDeliveryStatus(false);
     }
@@ -141,27 +141,27 @@ function AddDelivery({deliveryList, setDeliveryList, setAddDeliveryStatus}) {
     )
 }
 
-function Delivery({deliveryList, setDeliveryList}) {
+function Delivery({ deliveryList, setDeliveryList }) {
     const [addDeliveryStatus, setAddDeliveryStatus] = useState(false);
     const [delivery, setDelivery] = useState(null);
     const [selectedId, setSelectedId] = useState(0);
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        if(!deliveryList) return;
+        if (!deliveryList) return;
 
         const selected = deliveryList.find(d => d.selected === true);
-        if(selected) {
+        if (selected) {
             setDelivery(selected);
             setSelectedId(selected.id);
         }
-        
-        
+
+
     }, [deliveryList]);
 
     const selectAddress = () => {
         const selected = deliveryList.find(d => d.id === selectedId);
-        if(selected) {
+        if (selected) {
             setDelivery(selected);
             setOpen(false);
         }
@@ -224,7 +224,7 @@ function Delivery({deliveryList, setDeliveryList}) {
                         </Dialog.Content>
                     </Dialog.Positioner>
                 </Dialog.Root>
-                
+
             </Flex>
             {delivery ? (
                 <Stack gap="0" p="10px">
@@ -234,7 +234,7 @@ function Delivery({deliveryList, setDeliveryList}) {
             ) : (
                 <Button>배송지 추가</Button>
             )}
-            
+
         </Box>
     )
 }
@@ -245,19 +245,19 @@ function Payment() {
 
     const paymentKinds = [
         {
-            value:'card',
-            label:'신용/체크카드',
-            content:'신용/체크카드 결제 관련 내용 들어갈 예정'
+            value: 'card',
+            label: '신용/체크카드',
+            content: '신용/체크카드 결제 관련 내용 들어갈 예정'
         },
         {
-            value:'bank',
-            label:'무통장 결제',
-            content:'무통장 결제 관련 내용 들어갈 예정'
+            value: 'bank',
+            label: '무통장 결제',
+            content: '무통장 결제 관련 내용 들어갈 예정'
         },
         {
-            value:'escrow',
-            label:'에스크로',
-            content:'에스크로 결제 관련 내용 들어갈 예정'
+            value: 'escrow',
+            label: '에스크로',
+            content: '에스크로 결제 관련 내용 들어갈 예정'
         },
     ]
 
@@ -267,27 +267,27 @@ function Payment() {
                 <Heading>결제</Heading>
             </Flex>
             <Stack >
-                <RadioGroup.Root defaultValue={paymentType} value={paymentType} onValueChange={(e) =>setPaymentType(e.value)}>
+                <RadioGroup.Root defaultValue={paymentType} value={paymentType} onValueChange={(e) => setPaymentType(e.value)}>
                     <Stack separator={<StackSeparator />} gap="0">
                         {paymentKinds.map((kind) => (
                             <Stack p="15px 10px" >
-                            <RadioGroup.Item key={kind.value} value={kind.value}>
-                                <RadioGroup.ItemHiddenInput />
-                                <RadioGroup.ItemIndicator />
-                                <RadioGroup.ItemText>
-                                    {kind.label}
-                                </RadioGroup.ItemText>
-                            </RadioGroup.Item>
-                            <Collapsible.Root open={kind.value === paymentType ? true : false}>
-                                <Collapsible.Content>
-                                    {kind.content}
-                                </Collapsible.Content>
-                            </Collapsible.Root>
+                                <RadioGroup.Item key={kind.value} value={kind.value}>
+                                    <RadioGroup.ItemHiddenInput />
+                                    <RadioGroup.ItemIndicator />
+                                    <RadioGroup.ItemText>
+                                        {kind.label}
+                                    </RadioGroup.ItemText>
+                                </RadioGroup.Item>
+                                <Collapsible.Root open={kind.value === paymentType ? true : false}>
+                                    <Collapsible.Content>
+                                        {kind.content}
+                                    </Collapsible.Content>
+                                </Collapsible.Root>
                             </Stack>
                         ))}
                     </Stack>
                 </RadioGroup.Root>
-                
+
             </Stack>
         </Box>
     )
@@ -301,28 +301,28 @@ function Order() {
     const [deliveryList, setDeliveryList] = useState([]);
 
     useEffect(() => {
-        
+
         const products = [
-            {id:1, name:'상품 1', price:10000},
-            {id:2, name:'상품 2', price:10000},
-            {id:3, name:'상품 3', price:10000}
+            { id: 1, name: '상품 1', price: 10000 },
+            { id: 2, name: '상품 2', price: 10000 },
+            { id: 3, name: '상품 3', price: 10000 }
         ]
 
         const options = [
-            {id:1, label:'블루', value:'blue'},
-            {id:1, label:'M(medium)', value:'medium'},
-            {id:2, label:'블루', value:'blug'}
+            { id: 1, label: '블루', value: 'blue' },
+            { id: 1, label: 'M(medium)', value: 'medium' },
+            { id: 2, label: '블루', value: 'blug' }
         ]
 
         const quantitys = [
-            {id:1, quantity:1},
-            {id:2, quantity:2},
-            {id:3, quantity:1},
+            { id: 1, quantity: 1 },
+            { id: 2, quantity: 2 },
+            { id: 3, quantity: 1 },
         ]
 
         const deliverys = [
-            {id:1, name:'에이민', postcode:'21069', address:'인천광역시 계양구 오조산로 57번길 15, 명동빌딩', detailAddress:'721호', phone:'070-5147-1560', selected:true},
-            {id:2, name:'에이민2', postcode:'21069', address:'인천광역시 계양구 오조산로 57번길 15, 명동빌딩', detailAddress:'721호', phone:'070-5147-1560', selected:false}
+            { id: 1, name: '에이민', postcode: '21069', address: '인천광역시 계양구 오조산로 57번길 15, 명동빌딩', detailAddress: '721호', phone: '070-5147-1560', selected: true },
+            { id: 2, name: '에이민2', postcode: '21069', address: '인천광역시 계양구 오조산로 57번길 15, 명동빌딩', detailAddress: '721호', phone: '070-5147-1560', selected: false }
         ]
 
         setProductList(products);
@@ -332,17 +332,17 @@ function Order() {
     }, []);
 
     return (
-        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} width={{base:'full', md:"6xl"}} margin="auto" gap="6">
+        <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} width={{ base: 'full', md: "6xl" }} margin="auto" gap="6">
             <Heading size='2xl'>주문/결제</Heading>
-            <Stack direction={{base:'column', md:"row"}}>
-                <Box width={{base:'full', md:"3/4"}}>
+            <Stack direction={{ base: 'column', md: "row" }}>
+                <Box width={{ base: 'full', md: "3/4" }}>
                     <Stack gap="6">
                         <ProductList productList={productList} optionList={optionList} productQuantity={productQuantity} />
                         <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
                         <Payment />
                     </Stack>
                 </Box>
-                <Box width={{base:'full', md:"1/4"}} position="relative">
+                <Box width={{ base: 'full', md: "1/4" }} position="relative">
                     <Stack gap="6" position="sticky" top="10px" borderWidth="1px" rounded="md" p="10px">
                         <Heading>최종 결제 금액</Heading>
                         <DataList.Root orientation="horizontal">
@@ -355,7 +355,7 @@ function Order() {
                                 <DataList.ItemValue justifyContent="end">{formatNumber(3500)}</DataList.ItemValue>
                             </DataList.Item>
                         </DataList.Root>
-                        <Separator/>
+                        <Separator />
                         <DataList.Root orientation="horizontal">
                             <DataList.Item fontWeight="medium">
                                 <DataList.ItemLabel>총 결제 금액</DataList.ItemLabel>

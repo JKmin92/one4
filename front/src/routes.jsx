@@ -14,6 +14,8 @@ import ShopOrder from './views/shop/product/Order';
 
 import ReviewLayout from './views/review/common/Layout';
 import ReviewMain from './views/review/Main';
+import ReviewList from './views/review/List';
+import ReviewDetail from './views/review/Detail';
 
 import AdminLayout from './views/admin/common/Layout';
 import AdminProductList from './views/admin/shop/product/List';
@@ -22,35 +24,37 @@ import AdminProductCategory from './views/admin/shop/product/Category';
 
 const router = createBrowserRouter([
     {
-        path:'/',
-        element : <ShopLayout />,
-        children : [
-            {path:'', element:<ShopMain />},
-            {path:'/categorys/:id', element:<ShopProductList />},
-            {path:'/products/:id', element:<ShopProductDetail />},
-            {path:'/cart', element:<ShopCart />},
-            {path:'/order', element:<ShopOrder />}
+        path: '/',
+        element: <ShopLayout />,
+        children: [
+            { path: '', element: <ShopMain /> },
+            { path: '/categorys/:id', element: <ShopProductList /> },
+            { path: '/products/:id', element: <ShopProductDetail /> },
+            { path: '/cart', element: <ShopCart /> },
+            { path: '/order', element: <ShopOrder /> }
         ]
     }, {
-        path : '/',
-        element : <GeneralLayout />,
-        children : [
-            {path:'/login', element: <Login />},
-            {path:'/join', element: <Join />}
+        path: '/',
+        element: <GeneralLayout />,
+        children: [
+            { path: '/login', element: <Login /> },
+            { path: '/join', element: <Join /> }
         ]
     }, {
-        path:'/admin',
-        element:<AdminLayout />,
-        children:[
-            {path:'shop/product/list', element:<AdminProductList />},
-            {path:'shop/product/register', element: <AdminProductRegister />},
-            {path:'shop/product/category', element: <AdminProductCategory />}
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+            { path: 'shop/product/list', element: <AdminProductList /> },
+            { path: 'shop/product/register', element: <AdminProductRegister /> },
+            { path: 'shop/product/category', element: <AdminProductCategory /> }
         ]
     }, {
-        path:'/review',
-        element:<ReviewLayout />,
-        children : [
-            {path:'', element:<ReviewMain />}
+        path: '/review',
+        element: <ReviewLayout />,
+        children: [
+            { path: '', element: <ReviewMain /> },
+            { path: 'list/:id', element: <ReviewList /> },
+            { path: 'd/:id', element: <ReviewDetail /> }
         ]
     }
 ])

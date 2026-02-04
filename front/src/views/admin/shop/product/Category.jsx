@@ -1,31 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Heading, HStack, IconButton, Stack, Text, Input } from "@chakra-ui/react";
-import { LuPlus, LuTrash, LuChevronRight, LuChevronDown, LuArrowUp, LuArrowDown, LuFolder, LuFile } from "react-icons/lu";
+import { Box, Button, Heading, HStack, IconButton, Stack, Text, Input, Image, Tabs, Checkbox } from "@chakra-ui/react";
+import { LuPlus, LuTrash, LuChevronRight, LuChevronDown, LuArrowUp, LuArrowDown, LuFolder, LuFile, LuSave } from "react-icons/lu";
+import axiosInstance from '../../../../utils/api';
+import { toaster } from '../../../../components/ui/toaster';
 
-// Mock Data
-const initialCategories = [
-    {
-        id: '1',
-        name: '의류',
-        isVisible: true,
-        isOpen: true,
-        children: [
-            { id: '1-1', name: '남성', isVisible: true, isOpen: false, children: [] },
-            { id: '1-2', name: '여성', isVisible: true, isOpen: false, children: [] },
-        ]
-    },
-    {
-        id: '2',
-        name: '전자제품',
-        isVisible: true,
-        isOpen: false,
-        children: []
-    }
-];
 
 function Category() {
-    const [categories, setCategories] = useState(initialCategories);
+    const [categories, setCategories] = useState([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [editingCategory, setEditingCategory] = useState(null); // Local state for editing
+
+    // Helper: Build Tree from Flat List
+    const buildCategoryTree = (flatList) => {
+        const map = {};
+        const tree = [];
+        // Deep copy items to avoid mutating original list during transformation
+        // and ensure 'children' array exists.
+        const list = flatList.map(item => ({ ...item, children: [] }));
+
+        // Create Map
+        list.forEach((item) => {
+            map[item.id] = item;
+        });
+
+        // Assemble Tree
+        list.forEach((item) => {
+            const pid = item.parent_id || item.parentId; // Check both camel and snake case
+            if (pid && map[pid]) {
+                map[pid].children.push(item);
+            } else {
+                tree.push(item);
+            }
+        });
+
+        // Sort by sort_order
+        const sortRecursive = (items) => {
+            items.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+            items.forEach(item => {
+                if (item.children.length > 0) sortRecursive(item.children);
+            });
+        };
+        sortRecursive(tree);
+
+        return tree;
+    };
+
+    // Fetch Categories
+    const fetchCategories = async () => {
+        try {
+            const response = await axiosInstance.get('/admin/product/category');
+            if (response.data) {
+                const tree = buildCategoryTree(response.data);
+                setCategories(tree);
+            }
+        } catch (error) {
+            console.error("Failed to fetch categories:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const findCategory = (items, id) => {
         for (const item of items) {
@@ -38,7 +73,15 @@ function Category() {
         return null;
     };
 
-    const selectedCategory = selectedCategoryId ? findCategory(categories, selectedCategoryId) : null;
+    // When selection changes, update editingCategory
+    useEffect(() => {
+        if (selectedCategoryId) {
+            const category = findCategory(categories, selectedCategoryId);
+            setEditingCategory(category ? { ...category } : null);
+        } else {
+            setEditingCategory(null);
+        }
+    }, [selectedCategoryId, categories]);
 
     const toggleOpen = (id) => {
         const toggleRecursive = (items) => {
@@ -55,48 +98,77 @@ function Category() {
         setCategories(toggleRecursive(categories));
     };
 
-    const addCategory = (parentId = null) => {
-        const newCategory = {
-            id: Date.now().toString(),
+    const addCategory = async (parentId = null) => {
+        // Calculate Sort Order
+        let siblings = categories;
+        if (parentId) {
+            const parent = findCategory(categories, parentId);
+            siblings = parent ? (parent.children || []) : [];
+        }
+        const maxOrder = siblings.reduce((max, item) => Math.max(max, item.sort_order || 0), 0);
+        const nextOrder = maxOrder + 1;
+
+        const newCategoryDef = {
             name: '새 카테고리',
-            isVisible: true,
+            is_visible: true,
             isOpen: true,
-            children: []
+            sort_order: nextOrder,
+            children: [],
+            imagePc: null,
+            imageTablet: null,
+            imageMobile: null,
+            parentId: parentId
         };
 
-        if (parentId === null) {
-            setCategories([...categories, newCategory]);
-        } else {
-            const addRecursive = (items) => {
-                return items.map(item => {
-                    if (item.id === parentId) {
-                        return { ...item, isOpen: true, children: [...item.children, newCategory] };
-                    }
+        try {
+            // Server generates ID
+            const response = await axiosInstance.post('/admin/product/category', newCategoryDef);
+            const createdCategory = { ...newCategoryDef, ...response.data }; // Ensure ID is included
+
+            if (parentId === null) {
+                setCategories(prev => [...prev, createdCategory]);
+            } else {
+                const addRecursive = (items) => {
+                    return items.map(item => {
+                        if (item.id === parentId) {
+                            return { ...item, isOpen: true, children: [...(item.children || []), createdCategory] };
+                        }
+                        if (item.children) {
+                            return { ...item, children: addRecursive(item.children) };
+                        }
+                        return item;
+                    });
+                };
+                setCategories(prev => addRecursive(prev));
+            }
+            // Auto-select the new category
+            setSelectedCategoryId(createdCategory.id);
+        } catch (error) {
+            console.error("Failed to add category:", error);
+            toaster.create({ title: "카테고리 추가에 실패했습니다.", type: "error" });
+        }
+    };
+
+    const deleteCategory = async (id) => {
+        try {
+            await axiosInstance.delete(`/admin/product/category/${id}`);
+
+            const deleteRecursive = (items) => {
+                return items.filter(item => item.id !== id).map(item => {
                     if (item.children) {
-                        return { ...item, children: addRecursive(item.children) };
+                        return { ...item, children: deleteRecursive(item.children) };
                     }
                     return item;
                 });
             };
-            setCategories(addRecursive(categories));
+            setCategories(prev => deleteRecursive(prev));
+            if (selectedCategoryId === id) setSelectedCategoryId(null);
+        } catch (error) {
+            console.error("Failed to delete category:", error);
+            toaster.create({ title: "카테고리 삭제에 실패했습니다.", type: "error" });
         }
     };
 
-    // Delete Category
-    const deleteCategory = (id) => {
-        const deleteRecursive = (items) => {
-            return items.filter(item => item.id !== id).map(item => {
-                if (item.children) {
-                    return { ...item, children: deleteRecursive(item.children) };
-                }
-                return item;
-            });
-        };
-        setCategories(deleteRecursive(categories));
-        if (selectedCategoryId === id) setSelectedCategoryId(null);
-    };
-
-    // Move Category Up/Down
     const moveCategory = (id, direction) => {
         const moveRecursive = (items) => {
             const index = items.findIndex(item => item.id === id);
@@ -104,11 +176,19 @@ function Category() {
                 if (direction === 'up' && index > 0) {
                     const newItems = [...items];
                     [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+                    // Update sort_order locally for immediate feedback
+                    const tempOrder = newItems[index].sort_order;
+                    newItems[index].sort_order = newItems[index - 1].sort_order;
+                    newItems[index - 1].sort_order = tempOrder;
                     return newItems;
                 }
                 if (direction === 'down' && index < items.length - 1) {
                     const newItems = [...items];
                     [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+                    // Update sort_order locally
+                    const tempOrder = newItems[index].sort_order;
+                    newItems[index].sort_order = newItems[index + 1].sort_order;
+                    newItems[index + 1].sort_order = tempOrder;
                     return newItems;
                 }
                 return items;
@@ -120,23 +200,47 @@ function Category() {
                 return item;
             });
         };
-        setCategories(moveRecursive(categories));
+        const newCategories = moveRecursive(categories);
+        setCategories(newCategories);
+        // Note: Ordering changes are not currently saved to backend automatically. 
+        // Ideally should call an API to save new orders.
     };
 
-    const updateCategory = (id, updates) => {
-        const updateRecursive = (items) => {
-            return items.map(item => {
-                if (item.id === id) {
-                    return { ...item, ...updates };
-                }
-                if (item.children) {
-                    return { ...item, children: updateRecursive(item.children) };
-                }
-                return item;
-            });
-        };
-        setCategories(updateRecursive(categories));
+    // Update Local State Handler
+    const handleEditChange = (updates) => {
+        if (editingCategory) {
+            setEditingCategory(prev => ({ ...prev, ...updates }));
+        }
     };
+
+    // Save Logic
+    const handleSave = async () => {
+        if (!editingCategory) return;
+        console.log(editingCategory);
+        try {
+            await axiosInstance.put('/admin/product/category', editingCategory);
+
+            // Update the main categories state to reflect changes
+            const updateRecursive = (items) => {
+                return items.map(item => {
+                    if (item.id === editingCategory.id) {
+                        // Merge edits, preserve children
+                        return { ...item, ...editingCategory, children: item.children };
+                    }
+                    if (item.children) {
+                        return { ...item, children: updateRecursive(item.children) };
+                    }
+                    return item;
+                });
+            };
+            setCategories(prev => updateRecursive(prev));
+            toaster.create({ title: "저장되었습니다.", type: 'success' });
+        } catch (error) {
+            console.error("Failed to update category:", error);
+            toaster.create({ title: "수정에 실패했습니다.", type: 'error' });
+        }
+    };
+
 
     // Tree Item Component
     const CategoryItem = ({ item, depth = 0 }) => {
@@ -167,10 +271,10 @@ function Category() {
                             {hasChildren ? <LuFolder /> : <LuFile />}
                         </Box>
                         <Text fontWeight={isSelected ? "bold" : "normal"}>{item.name}</Text>
-                        {!item.isVisible && <Text fontSize="xs" color="red.500">(비노출)</Text>}
+                        {!item.is_visible && <Text fontSize="xs" color="red.500">(비노출)</Text>}
                     </HStack>
 
-                    <HStack opacity={isSelected ? 1 : 0} _groupHover={{ opacity: 1 }}>
+                    <HStack display={isSelected ? 'flex' : 'none'}>
                         <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); addCategory(item.id); }}><LuPlus /></IconButton>
                         <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); moveCategory(item.id, 'up'); }}><LuArrowUp /></IconButton>
                         <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); moveCategory(item.id, 'down'); }}><LuArrowDown /></IconButton>
@@ -188,6 +292,23 @@ function Category() {
             </Stack>
         );
     };
+
+    const handleImageUpload = (e, type) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                handleEditChange({ [type]: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const imageTypes = [
+        { key: 'imagePc', label: 'PC 이미지', size: '1920x400px' },
+        { key: 'imageTablet', label: '태블릿 이미지', size: '1024x300px' },
+        { key: 'imageMobile', label: '모바일 이미지', size: '768x200px' },
+    ];
 
     return (
         <Stack p="30px" px="layoutX" gap="6" height="calc(100vh - 100px)">
@@ -224,32 +345,86 @@ function Category() {
                         <Heading size="sm">상세 설정</Heading>
                     </Box>
                     <Box p={4}>
-                        {selectedCategory ? (
+                        {editingCategory ? (
                             <Stack gap={6} maxW="md">
                                 <Box>
                                     <Text mb={2} fontWeight="medium" fontSize="sm">카테고리 명</Text>
                                     <Input
-                                        value={selectedCategory.name}
-                                        onChange={(e) => updateCategory(selectedCategory.id, { name: e.target.value })}
+                                        value={editingCategory.name}
+                                        onChange={(e) => handleEditChange({ name: e.target.value })}
                                     />
                                 </Box>
 
                                 <Box display="flex" alignItems="center">
-                                    <Text mb={0} mr={3} fontWeight="medium" fontSize="sm">
-                                        노출 여부
-                                    </Text>
-                                    <input
-                                        type="checkbox"
-                                        id="is-visible"
-                                        checked={selectedCategory.isVisible}
-                                        onChange={(e) => updateCategory(selectedCategory.id, { isVisible: e.target.checked })}
-                                        style={{ width: '20px', height: '20px' }}
-                                    />
+                                    <Checkbox.Root checked={editingCategory.is_visible} onCheckedChange={(e) => handleEditChange({ is_visible: !!e.checked })}>
+                                        <Checkbox.Control />
+                                        <Checkbox.HiddenInput />
+                                        <Checkbox.Label>노출여부</Checkbox.Label>
+                                    </Checkbox.Root>
+                                </Box>
+
+                                <Box>
+                                    <Text mb={2} fontWeight="medium" fontSize="sm">카테고리 이미지</Text>
+                                    <Tabs.Root defaultValue="imagePc" variant="enclosed">
+                                        <Tabs.List>
+                                            {imageTypes.map((type) => (
+                                                <Tabs.Trigger key={type.key} value={type.key}>
+                                                    {type.label}
+                                                </Tabs.Trigger>
+                                            ))}
+                                        </Tabs.List>
+                                        {imageTypes.map((type) => (
+                                            <Tabs.Content key={type.key} value={type.key} p={4} borderWidth="1px" borderTopWidth="0">
+                                                <Stack gap={4}>
+                                                    <Box>
+                                                        <Text fontSize="xs" color="gray.500" mb={2}>권장 사이즈: {type.size}</Text>
+                                                        <Stack direction="row" alignItems="center" gap={4}>
+                                                            {editingCategory[type.key] ? (
+                                                                <Box position="relative" width="200px" height="100px" borderWidth="1px" borderRadius="md" overflow="hidden">
+                                                                    <Image src={editingCategory[type.key]} alt={type.label} width="100%" height="100%" objectFit="cover" />
+                                                                    <IconButton
+                                                                        size="xs"
+                                                                        colorScheme="red"
+                                                                        position="absolute"
+                                                                        top="1"
+                                                                        right="1"
+                                                                        icon={<LuTrash />}
+                                                                        onClick={() => handleEditChange({ [type.key]: null })}
+                                                                        aria-label={`Delete ${type.label}`}
+                                                                    />
+                                                                </Box>
+                                                            ) : (
+                                                                <Box width="200px" height="100px" borderWidth="1px" borderStyle="dashed" borderRadius="md" display="flex" alignItems="center" justifyContent="center" bg="gray.50" color="gray.400">
+                                                                    <Text fontSize="xs">이미지 없음</Text>
+                                                                </Box>
+                                                            )}
+                                                            <Box>
+                                                                <Input
+                                                                    type="file"
+                                                                    accept="image/*"
+                                                                    onChange={(e) => handleImageUpload(e, type.key)}
+                                                                    p={1}
+                                                                    border="none"
+                                                                    fontSize="sm"
+                                                                />
+                                                            </Box>
+                                                        </Stack>
+                                                    </Box>
+                                                </Stack>
+                                            </Tabs.Content>
+                                        ))}
+                                    </Tabs.Root>
+                                </Box>
+
+                                <Box pt={4}>
+                                    <Button colorScheme="blue" width="full" onClick={handleSave}>
+                                        <LuSave /> 저장
+                                    </Button>
                                 </Box>
 
                                 <Box p={4} bg="blue.50" borderRadius="md">
                                     <Text fontSize="sm" color="blue.600">
-                                        💡 팁: 드래그 앤 드롭 대신 화살표 버튼을 사용하여 순서를 변경할 수 있습니다.
+                                        💡 팁: 내용은 자동으로 저장되지 않습니다. 수정 후 반드시 [저장] 버튼을 눌러주세요.
                                     </Text>
                                 </Box>
                             </Stack>

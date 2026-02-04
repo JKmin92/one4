@@ -1,17 +1,17 @@
 
 
 export function formatNumber(num) {
-    if(num == null) return null;
+    if (num == null) return null;
     return Number(num).toLocaleString('ko-KR');
 }
 
 export function calcDiscountPercent(originalPrice, salePrice) {
-    if(!originalPrice || originalPrice <= 0) return 0;
+    if (!originalPrice || originalPrice <= 0) return 0;
     const percent = ((originalPrice - salePrice) / originalPrice) * 100;
-    return Math.round(percent); 
+    return Math.round(percent);
 }
 
-export function formatDate (isoString) {
+export function formatDate(isoString) {
     const date = new Date(isoString);
 
     const yyyy = String(date.getFullYear());
@@ -23,13 +23,22 @@ export function formatDate (isoString) {
     return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
 };
 
+export function formatDateToMonthDay(isoString) {
+    const date = new Date(isoString);
+
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+
+    return `${mm}.${dd}`;
+}
+
 export function scrollViewPosition(id) {
     const el = document.getElementById(id);
-    el?.scrollIntoView({behavior:'smooth'});
+    el?.scrollIntoView({ behavior: 'smooth' });
 }
 
 export function getDDay(targetDate) {
-    if(!targetDate) return '0';
+    if (!targetDate) return '0';
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
