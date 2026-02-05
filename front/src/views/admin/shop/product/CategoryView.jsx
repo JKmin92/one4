@@ -1,48 +1,41 @@
-import { Box, Button, HStack, IconButton, Popover, Stack, Text, Checkbox } from "@chakra-ui/react";
-import { useState } from "react";
+import { Box, Button, HStack, IconButton, Popover, Stack, Text, Checkbox, Span } from "@chakra-ui/react";
+import { useMemo, useState } from "react";
 import { LuChevronDown, LuChevronRight, LuFile, LuFolder, LuSearch } from "react-icons/lu";
 
-// Mock Data (Matched with Category.jsx)
-const initialCategories = [
-    {
-        id: '1',
-        name: '의류',
-        isVisible: true,
-        isOpen: true,
-        children: [
-            { id: '1-1', name: '남성', isVisible: true, isOpen: false, children: [] },
-            { id: '1-2', name: '여성', isVisible: true, isOpen: false, children: [] },
-        ]
-    },
-    {
-        id: '2',
-        name: '전자제품',
-        isVisible: true,
-        isOpen: false,
-        children: []
-    }
-];
-
-function CategoryView({ setSelectedCategory }) {
-    const [categories, setCategories] = useState(initialCategories);
+function CategoryView({ categories = [], setSelectedCategory }) {
     const [checkedIds, setCheckedIds] = useState([]);
+    const [openIds, setOpenIds] = useState([]);
+
+    const tree = useMemo(() => {
+        const map = {};
+        const roots = [];
+        // Deep copy to avoid mutating props
+        categories.forEach(cat => {
+            map[cat.id] = { ...cat, children: [] };
+        });
+        categories.forEach(cat => {
+            const node = map[cat.id];
+            const pid = cat.parent_id !== undefined ? cat.parent_id : cat.parentId;
+
+            if (pid === null || pid === undefined) {
+                roots.push(node);
+            } else if (map[pid]) {
+                map[pid].children.push(node);
+            }
+        });
+        return roots;
+    }, [categories]);
 
     const toggleOpen = (id) => {
-        const toggleRecursive = (items) => {
-            return items.map(item => {
-                if (item.id === id) {
-                    return { ...item, isOpen: !item.isOpen };
-                }
-                if (item.children) {
-                    return { ...item, children: toggleRecursive(item.children) };
-                }
-                return item;
-            });
-        };
-        setCategories(toggleRecursive(categories));
+        setOpenIds(prev =>
+            prev.includes(id)
+                ? prev.filter(oid => oid !== id)
+                : [...prev, id]
+        );
     };
 
     const handleCheck = (e, category) => {
+        e.stopPropagation(); // Stop event bubbling
         const isChecked = e.target.checked;
         const newCheckedIds = isChecked
             ? [...checkedIds, category.id]
@@ -65,33 +58,22 @@ function CategoryView({ setSelectedCategory }) {
     const CategoryTreeItem = ({ item, depth = 0 }) => {
         const hasChildren = item.children && item.children.length > 0;
         const isChecked = checkedIds.includes(item.id);
+        const isOpen = openIds.includes(item.id);
 
         return (
             <Stack gap={0}>
-                <HStack
-                    p={1.5}
-                    pl={depth * 4 + 2}
-                    _hover={{ bg: "gray.50" }}
-                    borderRadius="md"
-                    spacing={2}
-                >
+                <HStack p={1.5} pl={depth * 4 + 2} _hover={{ bg: "gray.50" }} borderRadius="md" spacing={2}>
                     <IconButton
                         size="xs"
                         variant="ghost"
                         visibility={hasChildren ? "visible" : "hidden"}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            toggleOpen(item.id);
-                        }}
-                        aria-label="Toggle Expand"
+                        onClick={(e) => toggleOpen(item.id)}
                         minW="4" h="4"
                     >
-                        {item.isOpen ? <LuChevronDown /> : <LuChevronRight />}
+                        {isOpen ? <LuChevronDown /> : <LuChevronRight />}
                     </IconButton>
 
-                    <Box color="gray.500">
-                        {hasChildren ? <LuFolder /> : <LuFile />}
-                    </Box>
+                    <Box color="gray.500">{hasChildren ? <LuFolder /> : <LuFile />}</Box>
 
                     <input
                         type="checkbox"
@@ -101,11 +83,11 @@ function CategoryView({ setSelectedCategory }) {
                     />
 
                     <Text fontSize="sm" cursor="default" onClick={() => toggleOpen(item.id)}>
-                        {item.name}
+                        {item.name}<Span color="red.500" fontSize='xs'>{!item.is_visible && `(미노출)`}</Span>
                     </Text>
                 </HStack>
 
-                {item.isOpen && hasChildren && (
+                {isOpen && hasChildren && (
                     <Stack gap={0} borderLeftWidth="1px" borderLeftColor="gray.100" ml={4}>
                         {item.children.map(child => (
                             <CategoryTreeItem key={child.id} item={child} depth={depth + 1} />
@@ -131,7 +113,7 @@ function CategoryView({ setSelectedCategory }) {
                     </Box>
                     <Box maxH="300px" overflowY="auto" p={2}>
                         <Stack gap={1}>
-                            {categories.map(category => (
+                            {tree.map(category => (
                                 <CategoryTreeItem key={category.id} item={category} />
                             ))}
                         </Stack>

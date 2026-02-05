@@ -14,16 +14,12 @@ function Category() {
     const buildCategoryTree = (flatList) => {
         const map = {};
         const tree = [];
-        // Deep copy items to avoid mutating original list during transformation
-        // and ensure 'children' array exists.
         const list = flatList.map(item => ({ ...item, children: [] }));
 
-        // Create Map
         list.forEach((item) => {
             map[item.id] = item;
         });
 
-        // Assemble Tree
         list.forEach((item) => {
             const pid = item.parent_id || item.parentId; // Check both camel and snake case
             if (pid && map[pid]) {

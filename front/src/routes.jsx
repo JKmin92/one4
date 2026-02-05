@@ -25,7 +25,7 @@ import AdminProductCategory from './views/admin/shop/product/Category';
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <ShopLayout />,
+        element: <GeneralLayout />,
         children: [
             { path: '', element: <ShopMain /> },
             { path: '/categorys/:id', element: <ShopProductList /> },

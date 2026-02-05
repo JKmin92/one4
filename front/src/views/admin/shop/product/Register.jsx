@@ -1,29 +1,42 @@
-import { Box, Button, CloseButton, Field, Heading, HStack, Image, Input, List, RadioGroup, Stack, Table, Text, Textarea } from "@chakra-ui/react";
+import { Box, Button, Checkbox, CloseButton, Field, Heading, HStack, Image, Input, List, RadioGroup, Stack, Table, Text, Textarea } from "@chakra-ui/react";
 import CategoryView from "./CategoryView";
 import { useEffect, useState } from "react";
 import { LuImage, LuPlus, LuTrash } from "react-icons/lu";
+import { toaster } from "../../../../components/ui/toaster";
+import axiosInstance from "../../../../utils/api";
+import ProductEditor from "./ProductEditor";
 
 function Register() {
 
+    const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState([]);
 
-    // Basic Info
     const [productName, setProductName] = useState("");
     const [productDetail, setProductDetail] = useState("");
 
-    // Stock & Options
     const [hasOptions, setHasOptions] = useState("off");
+    const [isUnlimitedStock, setIsUnlimitedStock] = useState(false);
     const [totalStock, setTotalStock] = useState(0);
     const [options, setOptions] = useState([]);
     const [newOption, setNewOption] = useState({ name: "", value: "", stock: 0 });
 
-    // Images
     const [mainImage, setMainImage] = useState(null);
     const [mainImagePreview, setMainImagePreview] = useState(null);
     const [subImages, setSubImages] = useState([]);
     const [subImagePreviews, setSubImagePreviews] = useState([]);
 
-    // Calculate Total Stock when options change
+    useEffect(() => {
+        const getCategories = async () => {
+            try {
+                const response = await axiosInstance.get("/admin/product/category");
+                setCategories(response.data);
+            } catch {
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
+            }
+        }
+        getCategories();
+    }, []);
+
     useEffect(() => {
         if (hasOptions === "on") {
             const calculatedStock = options.reduce((sum, opt) => sum + Number(opt.stock), 0);
@@ -119,7 +132,7 @@ function Register() {
                 <Stack direction="row" gap="12" alignItems="start">
                     <Field.Root maxW="sm">
                         <Field.Label mb="2">카테고리 선택</Field.Label>
-                        <CategoryView setSelectedCategory={setSelectedCategory} />
+                        <CategoryView categories={categories} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">선택된 카테고리</Field.Label>
@@ -147,7 +160,7 @@ function Register() {
                 </Field.Root>
                 <Field.Root>
                     <Field.Label mb="2">상세 설명</Field.Label>
-                    <Textarea placeholder="상품 상세 설명을 입력해주세요" rows={5} value={productDetail} onChange={(e) => setProductDetail(e.target.value)} />
+                    <ProductEditor content={productDetail} />
                 </Field.Root>
             </Stack>
 
@@ -174,9 +187,24 @@ function Register() {
                 </Field.Root>
 
                 {hasOptions === "off" ? (
-                    <Field.Root w="xs" required>
-                        <Field.Label mb="2">재고 수량</Field.Label>
-                        <Input type="number" value={totalStock} onChange={(e) => setTotalStock(Number(e.target.value))} />
+                    <Field.Root w="xs" required={!isUnlimitedStock}>
+                        <HStack justify="space-between" mb="2">
+                            <Field.Label css={{ mb: 0 }}>재고 수량</Field.Label>
+                            <Checkbox.Root
+                                checked={isUnlimitedStock}
+                                onCheckedChange={(e) => setIsUnlimitedStock(!!e.checked)}
+                            >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control />
+                                <Checkbox.Label>무제한</Checkbox.Label>
+                            </Checkbox.Root>
+                        </HStack>
+                        <Input
+                            type="number"
+                            value={isUnlimitedStock ? "" : totalStock}
+                            disabled={isUnlimitedStock}
+                            onChange={(e) => setTotalStock(Number(e.target.value))}
+                        />
                     </Field.Root>
                 ) : (
                     <Stack gap="4">

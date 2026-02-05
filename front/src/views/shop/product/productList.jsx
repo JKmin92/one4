@@ -1,51 +1,66 @@
 import { Box, Button, Flex, Heading, HStack, Link, RatingGroup, SimpleGrid, Stack, Text } from "@chakra-ui/react";
 import { calcDiscountPercent, formatNumber } from "../../../utils/simpleUtils";
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { toaster } from "../../../components/ui/toaster";
+import axiosInstance from "../../../utils/api";
 
 function ProductList() {
 
-    const {id} = useParams();
+    const { id } = useParams();
+    const [category, setCategory] = useState(null);
+    const [subCategorys, setSubCategorys] = useState([]);
+
+    useEffect(() => {
+        const getCateogry = async () => {
+            try {
+                const response = await axiosInstance.get(`/shop/product/category/${id}`);
+                setCategory(response.data);
+            } catch {
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
+            }
+        }
+        getCateogry();
+
+        const getSubCategorys = async () => {
+            try {
+                const response = await axiosInstance.get(`/shop/product/subCategory/${id}`);
+                setSubCategorys(response.data);
+            } catch {
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
+            }
+        }
+        getSubCategorys();
+    }, [id]);
 
     /**
      * TODO : 제품, 할인, 리뷰 DB 연동
      */
     const productList = [
-        {id:1, title:'제품명 1', regular_price:10000, discount_price:7000, review_scoure : 5, review_count:210},
-        {id:2, title:'제품명 2', regular_price:20000, discount_price:14000, review_scoure : 1, review_count:110},
-        {id:3, title:'제품명 3', regular_price:17450, discount_price:16980, review_scoure : 5, review_count:30},
-        {id:4, title:'제품명 4', regular_price:25000, discount_price:13000, review_scoure : 3, review_count:20},
-        {id:5, title:'제품명 5', regular_price:27500, discount_price:20000, review_scoure : 2.5, review_count:11},
-        {id:6, title:'제품명 6', regular_price:12500, discount_price:9500, review_scoure : 4.5, review_count:1540},
-        {id:7, title:'제품명 7', regular_price:5000, review_scoure : 5, review_count:100},
-        {id:8, title:'제품명 8', regular_price:15000, discount_price:10000, review_scoure : 2, review_count:354},
-        {id:9, title:'제품명 9', regular_price:10000, discount_price:9800, review_scoure : 1, review_count:20},
-        {id:10, title:'제품명 10', regular_price:154000, discount_price:99000, review_scoure : 4.5, review_count:430},
-        {id:11, title:'제품명 11', regular_price:10000, discount_price:7000, review_scoure : 5, review_count:210},
-        {id:12, title:'제품명 12', regular_price:20000, discount_price:14000, review_scoure : 1, review_count:110},
+        { id: 1, title: '제품명 1', regular_price: 10000, discount_price: 7000, review_scoure: 5, review_count: 210 },
+        { id: 2, title: '제품명 2', regular_price: 20000, discount_price: 14000, review_scoure: 1, review_count: 110 },
+        { id: 3, title: '제품명 3', regular_price: 17450, discount_price: 16980, review_scoure: 5, review_count: 30 },
+        { id: 4, title: '제품명 4', regular_price: 25000, discount_price: 13000, review_scoure: 3, review_count: 20 },
+        { id: 5, title: '제품명 5', regular_price: 27500, discount_price: 20000, review_scoure: 2.5, review_count: 11 },
+        { id: 6, title: '제품명 6', regular_price: 12500, discount_price: 9500, review_scoure: 4.5, review_count: 1540 },
+        { id: 7, title: '제품명 7', regular_price: 5000, review_scoure: 5, review_count: 100 },
+        { id: 8, title: '제품명 8', regular_price: 15000, discount_price: 10000, review_scoure: 2, review_count: 354 },
+        { id: 9, title: '제품명 9', regular_price: 10000, discount_price: 9800, review_scoure: 1, review_count: 20 },
+        { id: 10, title: '제품명 10', regular_price: 154000, discount_price: 99000, review_scoure: 4.5, review_count: 430 },
+        { id: 11, title: '제품명 11', regular_price: 10000, discount_price: 7000, review_scoure: 5, review_count: 210 },
+        { id: 12, title: '제품명 12', regular_price: 20000, discount_price: 14000, review_scoure: 1, review_count: 110 },
     ];
 
-    /**
-     * 카테고리 DB 연결
-     */
-    const subCategorys = [
-        {id:12345, title:'전체'},
-        {id:1, title:'서브 카테고리 1'},
-        {id:2, title:'서브 카테고리 4'},
-        {id:3, title:'서브 카테고리 5'},
-        {id:4, title:'서브 카테고리 6'},
-        {id:5, title:'서브 카테고리 7'},
-    ]
-
     return (
-        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} >
-            <Stack direction={{base:'column', md:"row"}} gap="10">
-                <Stack width={{base:'full', md:"3xs"}} position="relative">
+        <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} >
+            <Stack direction={{ base: 'column', md: "row" }} gap="10">
+                <Stack width={{ base: 'full', md: "3xs" }} position="relative">
                     <Stack position="sticky" left="0" top="5">
-                        <Heading size="2xl">카테고리 1</Heading>
-                        <Stack direction={{base:'row', md:"column"}} marginTop="15px" gap="2" paddingTop="15px" borderTop="3px solid" borderTopColor="main" overflowX='auto'>
+                        <Heading size="2xl">{category?.name}</Heading>
+                        <Stack direction={{ base: 'row', md: "column" }} marginTop="15px" gap="2" paddingTop="15px" borderTop="3px solid" borderTopColor="main" overflowX='auto'>
                             {subCategorys.map((subCategory) => (
                                 <Button variant="plain" key={subCategory.id} justifyContent="start" padding="0">
-                                    <Link href={`/categorys/${subCategory.id}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.title}</Link>
+                                    <Link href={`/categorys/${subCategory.id}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.name}</Link>
                                 </Button>
                             ))}
                         </Stack>
@@ -61,7 +76,7 @@ function ProductList() {
                             <Button variant="ghost" fontSize="sm">최신순</Button>
                         </HStack>
                     </Stack>
-                    <SimpleGrid columns={{base:2, md:5}} gap="8">
+                    <SimpleGrid columns={{ base: 2, md: 5 }} gap="8">
                         {productList.map((product) => (
                             <Link href={`/products/${product.id}`} key={product.id} alignItems="start">
                                 <Stack width="full">
