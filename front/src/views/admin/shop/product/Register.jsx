@@ -6,13 +6,34 @@ import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
 import ProductEditor from "./ProductEditor";
 
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable, } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useNavigate, useParams } from "react-router-dom";
+
+function SortableImage({ id, src, onRemove }) {
+    const { attributes, listeners, setNodeRef, transform, transition, } = useSortable({ id });
+
+    const style = { transform: CSS.Transform.toString(transform), transition, };
+
+    return (
+        <Box ref={setNodeRef} style={style} {...attributes} {...listeners} w="100px" h="100px" borderRadius="md" overflow="hidden" position="relative" borderWidth="1px" bg="white">
+            <Image src={src} objectFit="cover" w="full" h="full" />
+            <CloseButton size="xs" position="absolute" top="1" right="1" bg="white" onClick={(e) => { e.stopPropagation(); onRemove(id); }} />
+        </Box>
+    );
+}
+
 function Register() {
+    const navigate = useNavigate();
 
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState([]);
 
     const [productName, setProductName] = useState("");
     const [productDetail, setProductDetail] = useState("");
+    const [isDisplay, setIsDisplay] = useState("off");
+    const [isSale, setIsSale] = useState("off");
 
     const [hasOptions, setHasOptions] = useState("off");
     const [isUnlimitedStock, setIsUnlimitedStock] = useState(false);
@@ -22,20 +43,77 @@ function Register() {
 
     const [mainImage, setMainImage] = useState(null);
     const [mainImagePreview, setMainImagePreview] = useState(null);
+
     const [subImages, setSubImages] = useState([]);
-    const [subImagePreviews, setSubImagePreviews] = useState([]);
+
+    const { id } = useParams();
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     useEffect(() => {
-        const getCategories = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axiosInstance.get("/admin/product/category");
-                setCategories(response.data);
-            } catch {
-                toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
+                // 1. Fetch Categories (Always)
+                const categoryResponse = await axiosInstance.get("/admin/shop/product/category");
+                setCategories(categoryResponse.data);
+
+                // 2. Fetch Product Details (If ID exists)
+                if (id) {
+
+                    const productResponse = await axiosInstance.get(`/admin/shop/product/${id}`);
+                    const data = productResponse.data;
+
+                    setProductName(data.name);
+                    setProductDetail(data.description);
+                    setIsDisplay(data.is_display ? "on" : "off");
+                    setIsSale(data.is_sale ? "on" : "off");
+                    setHasOptions(data.has_options ? "on" : "off");
+                    setIsUnlimitedStock(!!data.is_unlimited_stock);
+                    setTotalStock(data.stock);
+
+                    // Categories
+                    setSelectedCategory(data.categories || []);
+
+                    // Options
+                    if (data.options && data.options.length > 0) {
+                        setOptions(data.options.map(opt => ({
+                            id: opt.id,
+                            name: opt.name,
+                            value: opt.value,
+                            stock: opt.stock
+                        })));
+                    }
+
+                    // Images
+                    if (data.images) {
+                        console.log(data.images);
+                        const main = data.images.find(img => img.is_main === 1);
+                        if (main) {
+                            setMainImagePreview(main.url); // Use URL directly
+                        }
+
+                        const subs = data.images.filter(img => img.is_main === 0);
+                        setSubImages(subs.map(img => ({
+                            id: img.id,
+                            file: null, // No file object for existing images
+                            preview: img.url,
+                            isExisting: true // Flag to identify existing images
+                        })));
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                toaster.create({ title: '데이터를 불러오는데 실패했습니다.', type: 'error' });
             }
-        }
-        getCategories();
-    }, []);
+        };
+
+        fetchData();
+    }, [id]);
 
     useEffect(() => {
         if (hasOptions === "on") {
@@ -54,6 +132,12 @@ function Register() {
         setOptions(options.filter(opt => opt.id !== id));
     };
 
+    const handleOptionChange = (id, field, value) => {
+        setOptions(options.map(opt =>
+            opt.id === id ? { ...opt, [field]: value } : opt
+        ));
+    };
+
     const handleMainImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -65,20 +149,79 @@ function Register() {
     const handleSubImagesChange = (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-            setSubImages([...subImages, ...files]);
-            const newPreviews = files.map(file => URL.createObjectURL(file));
-            setSubImagePreviews([...subImagePreviews, ...newPreviews]);
+            const newImages = files.map(file => ({
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                file: file,
+                preview: URL.createObjectURL(file)
+            }));
+            setSubImages((prev) => [...prev, ...newImages]);
         }
     };
 
-    const removeSubImage = (index) => {
-        const newImages = [...subImages];
-        newImages.splice(index, 1);
-        setSubImages(newImages);
+    const removeSubImage = (id) => {
+        setSubImages((prev) => prev.filter(img => img.id !== id));
+    };
 
-        const newPreviews = [...subImagePreviews];
-        newPreviews.splice(index, 1);
-        setSubImagePreviews(newPreviews);
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id) {
+            setSubImages((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
+
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!productName) {
+            toaster.create({ title: '상품명을 입력해주세요.', type: 'error' });
+            return;
+        }
+
+        if (selectedCategory.length === 0) {
+            toaster.create({ title: '카테고리를 선택해주세요.', type: 'error' });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("name", productName);
+        formData.append("description", productDetail);
+        formData.append("is_display", isDisplay);
+        formData.append("is_sale", isSale);
+
+        formData.append("has_options", hasOptions);
+        formData.append("is_unlimited_stock", isUnlimitedStock);
+        formData.append("stock", totalStock);
+
+        formData.append("category_ids", JSON.stringify(selectedCategory.map(c => c.id)));
+
+        if (hasOptions === "on") {
+            formData.append("options", JSON.stringify(options));
+        }
+
+        if (mainImage) {
+            formData.append("mainImage", mainImage);
+        }
+
+        subImages.forEach((img) => {
+            formData.append("subImages", img.file);
+        });
+
+        try {
+            await axiosInstance.post("/admin/shop/product", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            toaster.create({ title: '상품이 등록되었습니다.', type: 'success' });
+            navigate("/admin/shop/product/list");
+        } catch (error) {
+            console.error(error);
+            toaster.create({ title: '상품 등록에 실패했습니다.', type: 'error' });
+        }
     };
 
     return (
@@ -91,7 +234,7 @@ function Register() {
                 <HStack gap="12">
                     <Field.Root w="auto">
                         <Field.Label mb="2">진열 상태</Field.Label>
-                        <RadioGroup.Root defaultValue="off">
+                        <RadioGroup.Root value={isDisplay} onValueChange={(e) => setIsDisplay(e.value)}>
                             <HStack gap="6">
                                 <RadioGroup.Item value="on">
                                     <RadioGroup.ItemHiddenInput />
@@ -108,7 +251,7 @@ function Register() {
                     </Field.Root>
                     <Field.Root w="auto">
                         <Field.Label mb="2">판매 상태</Field.Label>
-                        <RadioGroup.Root defaultValue="off">
+                        <RadioGroup.Root value={isSale} onValueChange={(e) => setIsSale(e.value)}>
                             <HStack gap="6">
                                 <RadioGroup.Item value="on">
                                     <RadioGroup.ItemHiddenInput />
@@ -218,7 +361,7 @@ function Register() {
                                     <Field.Label fontSize="sm">옵션값 (예: 빨강)</Field.Label>
                                     <Input size="sm" bg="white" value={newOption.value} onChange={(e) => setNewOption({ ...newOption, value: e.target.value })} />
                                 </Field.Root>
-                                <Field.Root w="20">
+                                <Field.Root w="44">
                                     <Field.Label fontSize="sm">재고</Field.Label>
                                     <Input size="sm" type="number" bg="white" value={newOption.stock} onChange={(e) => setNewOption({ ...newOption, stock: Number(e.target.value) })} />
                                 </Field.Root>
@@ -238,9 +381,31 @@ function Register() {
                             <Table.Body>
                                 {options.map((opt) => (
                                     <Table.Row key={opt.id}>
-                                        <Table.Cell>{opt.name}</Table.Cell>
-                                        <Table.Cell>{opt.value}</Table.Cell>
-                                        <Table.Cell>{opt.stock}</Table.Cell>
+                                        <Table.Cell>
+                                            <Input
+                                                size="sm"
+                                                variant="subtle"
+                                                value={opt.name}
+                                                onChange={(e) => handleOptionChange(opt.id, 'name', e.target.value)}
+                                            />
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Input
+                                                size="sm"
+                                                variant="subtle"
+                                                value={opt.value}
+                                                onChange={(e) => handleOptionChange(opt.id, 'value', e.target.value)}
+                                            />
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Input
+                                                size="sm"
+                                                variant="subtle"
+                                                type="number"
+                                                value={opt.stock}
+                                                onChange={(e) => handleOptionChange(opt.id, 'stock', Number(e.target.value))}
+                                            />
+                                        </Table.Cell>
                                         <Table.Cell>
                                             <CloseButton size="xs" onClick={() => handleDeleteOption(opt.id)} />
                                         </Table.Cell>
@@ -296,45 +461,55 @@ function Register() {
                 </Field.Root>
 
                 <Field.Root>
-                    <Field.Label mb="2">추가 이미지 (여러장 가능)</Field.Label>
-                    <HStack gap="4" flexWrap="wrap">
-                        {subImagePreviews.map((src, idx) => (
-                            <Box key={idx} w="100px" h="100px" uri={src} borderRadius="md" overflow="hidden" position="relative" borderWidth="1px">
-                                <Image src={src} objectFit="cover" w="full" h="full" />
-                                <CloseButton
-                                    size="xs" position="absolute" top="1" right="1" bg="white"
-                                    onClick={() => removeSubImage(idx)}
-                                />
-                            </Box>
-                        ))}
-
-                        <Box
-                            w="100px" h="100px"
-                            borderWidth="1px" borderStyle="dashed" borderRadius="md"
-                            display="flex" alignItems="center" justifyContent="center"
-                            bg="gray.50" overflow="hidden" position="relative"
-                            cursor="pointer"
-                            _hover={{ bg: "gray.100" }}
+                    <Field.Label mb="2">추가 이미지 (여러장 가능, 드래그하여 순서 변경)</Field.Label>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={subImages.map(img => img.id)}
+                            strategy={rectSortingStrategy}
                         >
-                            <Stack alignItems="center" color="gray.400">
-                                <LuPlus size="20" />
-                                <Text fontSize="xs">추가</Text>
-                            </Stack>
-                            <Input
-                                type="file"
-                                position="absolute" top="0" left="0" w="full" h="full" opacity="0" cursor="pointer"
-                                accept="image/*"
-                                multiple
-                                onChange={handleSubImagesChange}
-                            />
-                        </Box>
-                    </HStack>
+                            <HStack gap="4" flexWrap="wrap">
+                                {subImages.map((img) => (
+                                    <SortableImage
+                                        key={img.id}
+                                        id={img.id}
+                                        src={img.preview}
+                                        onRemove={removeSubImage}
+                                    />
+                                ))}
+
+                                <Box
+                                    w="100px" h="100px"
+                                    borderWidth="1px" borderStyle="dashed" borderRadius="md"
+                                    display="flex" alignItems="center" justifyContent="center"
+                                    bg="gray.50" overflow="hidden" position="relative"
+                                    cursor="pointer"
+                                    _hover={{ bg: "gray.100" }}
+                                >
+                                    <Stack alignItems="center" color="gray.400">
+                                        <LuPlus size="20" />
+                                        <Text fontSize="xs">추가</Text>
+                                    </Stack>
+                                    <Input
+                                        type="file"
+                                        position="absolute" top="0" left="0" w="full" h="full" opacity="0" cursor="pointer"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleSubImagesChange}
+                                    />
+                                </Box>
+                            </HStack>
+                        </SortableContext>
+                    </DndContext>
                 </Field.Root>
             </Stack>
 
             <HStack justifyContent="flex-end" pt="10">
                 <Button variant="outline" size="lg">취소</Button>
-                <Button colorScheme="blue" size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>상품 등록하기</Button>
+                <Button colorScheme="blue" onClick={handleSubmit} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>상품 등록하기</Button>
             </HStack>
         </Stack>
     )

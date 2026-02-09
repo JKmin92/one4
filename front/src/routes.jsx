@@ -46,6 +46,7 @@ const router = createBrowserRouter([
         children: [
             { path: 'shop/product/list', element: <AdminProductList /> },
             { path: 'shop/product/register', element: <AdminProductRegister /> },
+            { path: 'shop/product/update/:id', element: <AdminProductRegister /> },
             { path: 'shop/product/category', element: <AdminProductCategory /> }
         ]
     }, {

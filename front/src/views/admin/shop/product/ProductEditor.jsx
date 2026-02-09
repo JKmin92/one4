@@ -7,7 +7,8 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import { useState } from "react";
 import { Box, Button, Dialog, FileUpload, Icon, Input, Tabs } from "@chakra-ui/react";
-import { LuImage, LuLink, LuUpload } from "react-icons/lu";
+import { LuGripVertical, LuImage, LuLink, LuUpload } from "react-icons/lu";
+import DragHandle from "@tiptap/extension-drag-handle-react";
 
 function InsertImageControl() {
     const { editor } = useRichTextEditorContext();
@@ -112,12 +113,15 @@ function ProductEditor({ content }) {
         ],
         content: content,
         shouldRerenderOnTransaction: true,
-        immediatelyRender: false
+        immediatelyRender: false,
+        onUpdate({ editor }) {
+            console.log(editor.getHTML());
+        }
     })
 
     return (
-        <RichTextEditor.Root editor={editor} w="full">
-            <RichTextEditor.Toolbar>
+        <RichTextEditor.Root editor={editor} w="full" h="500px" overflow="auto">
+            <RichTextEditor.Toolbar variant="sticky" roundedTop="l2" borderBottomWidth="1px">
                 <RichTextEditor.ControlGroup>
                     <Control.Bold />
                     <Control.Italic />
@@ -144,6 +148,24 @@ function ProductEditor({ content }) {
                     <InsertImageControl />
                 </RichTextEditor.ControlGroup>
             </RichTextEditor.Toolbar>
+            <Box position="relative">
+                <DragHandle editor={editor}>
+                    <Box
+                        position="relative"
+                        top="-0.5"
+                        insetStart="-1"
+                        cursor="grab"
+                        color="fg.muted"
+                        opacity=".6"
+                        _hover={{ opacity: 1, color: 'fg' }}
+                        _active={{ cursor: 'grabbing' }}
+                    >
+                        <Icon asChild boxSize="4">
+                            <LuGripVertical />
+                        </Icon>
+                    </Box>
+                </DragHandle>
+            </Box>
             <RichTextEditor.Content />
         </RichTextEditor.Root>
     )

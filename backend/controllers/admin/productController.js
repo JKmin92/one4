@@ -48,3 +48,24 @@ export const updateProductCategorySortOrder = async (req, res, next) => {
         next(e);
     }
 }
+
+export const createProduct = async (req, res, next) => {
+    try {
+        const productData = req.body;
+        const files = req.files;
+        const result = await productService.insertProduct(productData, files);
+        res.status(201).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const getProduct = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const result = await productService.getProductDetails(id);
+        res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
