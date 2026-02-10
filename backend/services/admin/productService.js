@@ -112,3 +112,114 @@ export const getProductDetails = async (id) => {
 
     return { ...product, options, images, categories };
 };
+
+export const getProductList = async () => {
+    const products = await model.selectProductList();
+    return products.map(product => {
+        if (product.images && typeof product.images === 'string') {
+            try {
+                product.images = JSON.parse(product.images);
+            } catch (e) {
+                console.error("Failed to parse images JSON for product", product.id, e);
+                product.images = [];
+            }
+        }
+        return product;
+    });
+};
+
+export const updateProduct = async (id, productData, files) => {
+    await model.updateProduct({ ...productData, id });
+
+    if (productData.category_ids) {
+        let categoryIds = [];
+        try {
+            categoryIds = typeof productData.category_ids === 'string' ? JSON.parse(productData.category_ids) : productData.category_ids;
+        } catch (e) {
+            console.error("Failed to parse category_ids JSON", e);
+        }
+
+        if (!Array.isArray(categoryIds)) {
+            categoryIds = [categoryIds];
+        }
+
+        await model.deleteProductCategoryConnect(id);
+
+        for (const catId of categoryIds) {
+            await model.insertProductCategoryConnect({ product_id: id, category_id: catId });
+        }
+    }
+
+    if (productData.has_options === 'on' && productData.options) {
+        let options = [];
+        try {
+            options = typeof productData.options === 'string' ? JSON.parse(productData.options) : productData.options;
+        } catch (e) {
+            console.error("Failed to parse options JSON", e);
+        }
+
+        await model.deleteProductOptions(id);
+
+        for (const opt of options) {
+            await model.insertProductOption({
+                product_id: id,
+                name: opt.name,
+                value: opt.value,
+                stock: opt.stock
+            });
+        }
+    } else {
+        await model.deleteProductOptions(id);
+    }
+
+    /**
+     * TODO : 이미지 실제 삭제 로직 필요
+     */
+    if (files.mainImage && files.mainImage[0]) {
+        const mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'product', id);
+        await model.deleteProductMainImage(id);
+        await model.insertProductImage({
+            product_id: id,
+            image_url: mainImageUrl,
+            is_main: 1,
+            sort_order: 1
+        });
+    }
+
+    /**
+     * TODO : 이미지 실제 삭제 로직 필요
+     */
+    let existingImageIds = [];
+    if (productData.existing_sub_images) {
+        try {
+            existingImageIds = typeof productData.existing_sub_images === 'string' ? JSON.parse(productData.existing_sub_images) : productData.existing_sub_images;
+        } catch (e) {
+            console.error("Failed to parse existing_sub_images JSON", e);
+        }
+    }
+
+    if (!Array.isArray(existingImageIds)) {
+        existingImageIds = [existingImageIds];
+    }
+
+    await model.deleteProductImages(id, existingImageIds);
+
+    let sortOrder = 1;
+    for (const imgId of existingImageIds) {
+        await model.updateProductImageSortOrder(imgId, sortOrder++);
+    }
+
+    if (files.subImages && files.subImages.length > 0) {
+        for (const file of files.subImages) {
+            const url = await fileUpload.uploadFile(file, 'product', id);
+            await model.insertProductImage({
+                product_id: id,
+                image_url: url,
+                is_main: 0,
+                sort_order: sortOrder++
+            });
+        }
+    }
+
+    return { success: true };
+};

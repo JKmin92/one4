@@ -10,6 +10,7 @@ function ProductList() {
     const { id } = useParams();
     const [category, setCategory] = useState(null);
     const [subCategorys, setSubCategorys] = useState([]);
+    const [productList, setProductList] = useState([]);
 
     useEffect(() => {
         const getCateogry = async () => {
@@ -31,25 +32,17 @@ function ProductList() {
             }
         }
         getSubCategorys();
-    }, [id]);
 
-    /**
-     * TODO : 제품, 할인, 리뷰 DB 연동
-     */
-    const productList = [
-        { id: 1, title: '제품명 1', regular_price: 10000, discount_price: 7000, review_scoure: 5, review_count: 210 },
-        { id: 2, title: '제품명 2', regular_price: 20000, discount_price: 14000, review_scoure: 1, review_count: 110 },
-        { id: 3, title: '제품명 3', regular_price: 17450, discount_price: 16980, review_scoure: 5, review_count: 30 },
-        { id: 4, title: '제품명 4', regular_price: 25000, discount_price: 13000, review_scoure: 3, review_count: 20 },
-        { id: 5, title: '제품명 5', regular_price: 27500, discount_price: 20000, review_scoure: 2.5, review_count: 11 },
-        { id: 6, title: '제품명 6', regular_price: 12500, discount_price: 9500, review_scoure: 4.5, review_count: 1540 },
-        { id: 7, title: '제품명 7', regular_price: 5000, review_scoure: 5, review_count: 100 },
-        { id: 8, title: '제품명 8', regular_price: 15000, discount_price: 10000, review_scoure: 2, review_count: 354 },
-        { id: 9, title: '제품명 9', regular_price: 10000, discount_price: 9800, review_scoure: 1, review_count: 20 },
-        { id: 10, title: '제품명 10', regular_price: 154000, discount_price: 99000, review_scoure: 4.5, review_count: 430 },
-        { id: 11, title: '제품명 11', regular_price: 10000, discount_price: 7000, review_scoure: 5, review_count: 210 },
-        { id: 12, title: '제품명 12', regular_price: 20000, discount_price: 14000, review_scoure: 1, review_count: 110 },
-    ];
+        const getProductList = async () => {
+            try {
+                const response = await axiosInstance.get(`/shop/product/list/${id}`);
+                setProductList(response.data);
+            } catch {
+                toaster.create({ title: '상품 목록을 불러오는데 실패했습니다.', type: 'error' })
+            }
+        }
+        getProductList();
+    }, [id]);
 
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} >
@@ -77,29 +70,39 @@ function ProductList() {
                         </HStack>
                     </Stack>
                     <SimpleGrid columns={{ base: 2, md: 5 }} gap="8">
-                        {productList.map((product) => (
-                            <Link href={`/products/${product.id}`} key={product.id} alignItems="start">
-                                <Stack width="full">
-                                    <Box bg="bg.emphasized" aspectRatio="square" rounded="md"></Box>
-                                    <Text fontSize="md" fontWeight="medium">{product.title}</Text>
-                                    {product.discount_price ? (
-                                        <Stack gap="0">
-                                            <Text fontSize="xs" textDecoration="line-through">{formatNumber(product.regular_price)}</Text>
-                                            <HStack alignItems="end">
-                                                <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(product.regular_price, product.discount_price)}%</Text>
-                                                <Text fontWeight="medium">{formatNumber(product.discount_price)}</Text>
-                                            </HStack>
-                                        </Stack>
-                                    ) : (
-                                        <Text fontWeight="medium">{product.regular_price}</Text>
-                                    )}
-                                    <RatingGroup.Root readOnly allowHalf count={5} defaultValue={product.review_scoure} size="sm" colorPalette="yellow">
-                                        <RatingGroup.HiddenInput />
-                                        <RatingGroup.Control />
-                                    </RatingGroup.Root>
-                                </Stack>
-                            </Link>
-                        ))}
+                        {productList.map((product) => {
+                            const mainImage = product.images && Array.isArray(product.images)
+                                ? product.images.find(img => img.is_main === 1)
+                                : null;
+                            const imageUrl = mainImage ? mainImage.url : '';
+
+                            return (
+                                <Link href={`/products/${product.id}`} key={product.id} alignItems="start">
+                                    <Stack width="full">
+                                        <Box bg="bg.emphasized" aspectRatio="square" rounded="md" overflow="hidden">
+                                            {imageUrl && <img src={imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                        </Box>
+                                        <Text fontSize="md" fontWeight="medium">{product.name}</Text>
+                                        {product.discount_price ? (
+                                            <Stack gap="0">
+                                                <Text fontSize="xs" textDecoration="line-through">{formatNumber(product.price)}</Text>
+                                                <HStack alignItems="end">
+                                                    <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(product.price, product.discount_price)}%</Text>
+                                                    <Text fontWeight="medium">{formatNumber(product.discount_price)}</Text>
+                                                </HStack>
+                                            </Stack>
+                                        ) : (
+                                            <Text fontWeight="medium">{formatNumber(product.price)}</Text>
+                                        )}
+                                        {/* Rating Mock Data - to be connected later if needed */}
+                                        <RatingGroup.Root readOnly allowHalf count={5} defaultValue={5} size="sm" colorPalette="yellow">
+                                            <RatingGroup.HiddenInput />
+                                            <RatingGroup.Control />
+                                        </RatingGroup.Root>
+                                    </Stack>
+                                </Link>
+                            )
+                        })}
                     </SimpleGrid >
                 </Stack>
             </Stack>

@@ -4,8 +4,9 @@ import StarterKit from "@tiptap/starter-kit";
 import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
 import TextAlign from "@tiptap/extension-text-align";
+import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Button, Dialog, FileUpload, Icon, Input, Tabs } from "@chakra-ui/react";
 import { LuGripVertical, LuImage, LuLink, LuUpload } from "react-icons/lu";
 import DragHandle from "@tiptap/extension-drag-handle-react";
@@ -94,8 +95,7 @@ function InsertImageControl() {
     )
 }
 
-function ProductEditor({ content }) {
-
+function ProductEditor({ content, setContent }) {
     const editor = useEditor({
         extensions: [
             StarterKit.configure({
@@ -110,14 +110,23 @@ function ProductEditor({ content }) {
             Superscript,
             TextAlign.configure({ types: ["paragraph", "heading"] }),
             Image,
+            Placeholder.configure({
+                placeholder: "여기에 내용을 입력해주세요.",
+            }),
         ],
         content: content,
         shouldRerenderOnTransaction: true,
         immediatelyRender: false,
         onUpdate({ editor }) {
-            console.log(editor.getHTML());
+            setContent(editor.getHTML());
         }
     })
+
+    useEffect(() => {
+        if (editor && content && !editor.isFocused && editor.getHTML() !== content) {
+            editor.commands.setContent(content);
+        }
+    }, [content, editor]);
 
     return (
         <RichTextEditor.Root editor={editor} w="full" h="500px" overflow="auto">

@@ -44,7 +44,7 @@ function Category() {
     // Fetch Categories
     const fetchCategories = async () => {
         try {
-            const response = await axiosInstance.get('/admin/product/category');
+            const response = await axiosInstance.get('/admin/shop/product/category');
             if (response.data) {
                 const tree = buildCategoryTree(response.data);
                 setCategories(tree);
@@ -118,7 +118,7 @@ function Category() {
 
         try {
             // Server generates ID
-            const response = await axiosInstance.post('/admin/product/category', newCategoryDef);
+            const response = await axiosInstance.post('/admin/shop/product/category', newCategoryDef);
             const createdCategory = { ...newCategoryDef, ...response.data }; // Ensure ID is included
 
             if (parentId === null) {

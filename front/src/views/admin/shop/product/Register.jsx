@@ -31,6 +31,7 @@ function Register() {
     const [selectedCategory, setSelectedCategory] = useState([]);
 
     const [productName, setProductName] = useState("");
+    const [price, setPrice] = useState(0);
     const [productDetail, setProductDetail] = useState("");
     const [isDisplay, setIsDisplay] = useState("off");
     const [isSale, setIsSale] = useState("off");
@@ -58,17 +59,15 @@ function Register() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Fetch Categories (Always)
                 const categoryResponse = await axiosInstance.get("/admin/shop/product/category");
                 setCategories(categoryResponse.data);
 
-                // 2. Fetch Product Details (If ID exists)
                 if (id) {
-
                     const productResponse = await axiosInstance.get(`/admin/shop/product/${id}`);
                     const data = productResponse.data;
 
                     setProductName(data.name);
+                    setPrice(data.price || 0);
                     setProductDetail(data.description);
                     setIsDisplay(data.is_display ? "on" : "off");
                     setIsSale(data.is_sale ? "on" : "off");
@@ -82,7 +81,7 @@ function Register() {
                     // Options
                     if (data.options && data.options.length > 0) {
                         setOptions(data.options.map(opt => ({
-                            id: opt.id,
+                            option_num: opt.option_num,
                             name: opt.name,
                             value: opt.value,
                             stock: opt.stock
@@ -91,18 +90,17 @@ function Register() {
 
                     // Images
                     if (data.images) {
-                        console.log(data.images);
                         const main = data.images.find(img => img.is_main === 1);
                         if (main) {
-                            setMainImagePreview(main.url); // Use URL directly
+                            setMainImagePreview(main.url);
                         }
 
                         const subs = data.images.filter(img => img.is_main === 0);
                         setSubImages(subs.map(img => ({
-                            id: img.id,
-                            file: null, // No file object for existing images
+                            id: img.i_num,
+                            file: null,
                             preview: img.url,
-                            isExisting: true // Flag to identify existing images
+                            isExisting: true
                         })));
                     }
                 }
@@ -124,7 +122,16 @@ function Register() {
 
     const handleAddOption = () => {
         if (!newOption.name || !newOption.value) return;
-        setOptions([...options, { ...newOption, id: Date.now() }]);
+
+        const values = newOption.value.split(',').map(v => v.trim()).filter(v => v !== "");
+        const newOptions = values.map((val, index) => ({
+            id: Date.now() + index,
+            name: newOption.name,
+            value: val,
+            stock: newOption.stock
+        }));
+
+        setOptions([...options, ...newOptions]);
         setNewOption({ name: "", value: "", stock: 0 });
     };
 
@@ -188,6 +195,7 @@ function Register() {
 
         const formData = new FormData();
         formData.append("name", productName);
+        formData.append("price", price);
         formData.append("description", productDetail);
         formData.append("is_display", isDisplay);
         formData.append("is_sale", isSale);
@@ -198,35 +206,43 @@ function Register() {
 
         formData.append("category_ids", JSON.stringify(selectedCategory.map(c => c.id)));
 
-        if (hasOptions === "on") {
-            formData.append("options", JSON.stringify(options));
-        }
+        if (hasOptions === "on") formData.append("options", JSON.stringify(options));
 
-        if (mainImage) {
-            formData.append("mainImage", mainImage);
-        }
+        if (mainImage) formData.append("mainImage", mainImage);
 
+        const existingSubImages = [];
         subImages.forEach((img) => {
-            formData.append("subImages", img.file);
+            if (img.file) {
+                formData.append("subImages", img.file);
+            } else if (img.isExisting) {
+                existingSubImages.push(img.id);
+            }
         });
 
+        if (existingSubImages.length > 0) formData.append("existing_sub_images", JSON.stringify(existingSubImages));
+
         try {
-            await axiosInstance.post("/admin/shop/product", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            toaster.create({ title: '상품이 등록되었습니다.', type: 'success' });
+            if (id) {
+                await axiosInstance.put(`/admin/shop/product/${id}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+                toaster.create({ title: '상품이 수정되었습니다.', type: 'success' });
+            } else {
+                await axiosInstance.post("/admin/shop/product", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+                toaster.create({ title: '상품이 등록되었습니다.', type: 'success' });
+            }
             navigate("/admin/shop/product/list");
         } catch (error) {
             console.error(error);
-            toaster.create({ title: '상품 등록에 실패했습니다.', type: 'error' });
+            toaster.create({ title: `상품 ${id ? '수정' : '등록'}에 실패했습니다.`, type: 'error' });
         }
     };
 
     return (
         <Stack p="30px" px="layoutX" gap="10" pb="20">
-            <Heading>상품 등록</Heading>
+            <Heading>상품 {id ? '수정' : '등록'}</Heading>
 
             {/* 1. 노출/판매 설정 */}
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
@@ -303,11 +319,20 @@ function Register() {
                 </Field.Root>
                 <Field.Root>
                     <Field.Label mb="2">상세 설명</Field.Label>
-                    <ProductEditor content={productDetail} />
+                    <ProductEditor content={productDetail} setContent={setProductDetail} />
                 </Field.Root>
             </Stack>
 
-            {/* 4. 옵션 및 재고 */}
+            {/* 4. 판매가 설정 */}
+            <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
+                <Heading size="md">판매가 설정</Heading>
+                <Field.Root required>
+                    <Field.Label mb="2">판매가</Field.Label>
+                    <Input type="number" placeholder="판매가를 입력해주세요" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+                </Field.Root>
+            </Stack>
+
+            {/* 5. 옵션 및 재고 */}
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
                 <Heading size="md">옵션 및 재고 설정</Heading>
 
@@ -358,8 +383,8 @@ function Register() {
                                     <Input size="sm" bg="white" value={newOption.name} onChange={(e) => setNewOption({ ...newOption, name: e.target.value })} />
                                 </Field.Root>
                                 <Field.Root>
-                                    <Field.Label fontSize="sm">옵션값 (예: 빨강)</Field.Label>
-                                    <Input size="sm" bg="white" value={newOption.value} onChange={(e) => setNewOption({ ...newOption, value: e.target.value })} />
+                                    <Field.Label fontSize="sm">옵션값 (예: 빨강, 파랑, 검정)</Field.Label>
+                                    <Input size="sm" bg="white" value={newOption.value} onChange={(e) => setNewOption({ ...newOption, value: e.target.value })} placeholder="쉼표(,)로 구분" />
                                 </Field.Root>
                                 <Field.Root w="44">
                                     <Field.Label fontSize="sm">재고</Field.Label>
@@ -380,7 +405,7 @@ function Register() {
                             </Table.Header>
                             <Table.Body>
                                 {options.map((opt) => (
-                                    <Table.Row key={opt.id}>
+                                    <Table.Row key={opt.option_num}>
                                         <Table.Cell>
                                             <Input
                                                 size="sm"
@@ -429,7 +454,7 @@ function Register() {
                 )}
             </Stack>
 
-            {/* 5. 이미지 */}
+            {/* 6. 이미지 */}
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
                 <Heading size="md">이미지 등록</Heading>
 
@@ -509,7 +534,7 @@ function Register() {
 
             <HStack justifyContent="flex-end" pt="10">
                 <Button variant="outline" size="lg">취소</Button>
-                <Button colorScheme="blue" onClick={handleSubmit} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>상품 등록하기</Button>
+                <Button onClick={handleSubmit} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>상품 {id ? '수정' : '등록'}하기</Button>
             </HStack>
         </Stack>
     )

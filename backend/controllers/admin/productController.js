@@ -60,10 +60,31 @@ export const createProduct = async (req, res, next) => {
     }
 }
 
+export const updateProduct = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const productData = req.body;
+        const files = req.files;
+        const result = await productService.updateProduct(id, productData, files);
+        res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
 export const getProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
         const result = await productService.getProductDetails(id);
+        res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const getProductList = async (req, res, next) => {
+    try {
+        const result = await productService.getProductList();
         res.status(200).json(result);
     } catch (e) {
         next(e);

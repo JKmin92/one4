@@ -28,8 +28,8 @@ export const updateProductCategorySortOrder = async (categories) => {
 export const insertProduct = async (product) => {
     const sql = `
         INSERT INTO product 
-        (id, name, description, is_display, is_sale, has_options, is_unlimited_stock, stock) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (id, name, description, is_display, is_sale, has_options, is_unlimited_stock, stock, price) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     return await db.query(sql, [
         product.id,
@@ -39,7 +39,8 @@ export const insertProduct = async (product) => {
         product.is_sale === 'on' ? 1 : 0,
         product.has_options === 'on' ? 1 : 0,
         product.is_unlimited_stock ? 1 : 0,
-        product.stock
+        product.stock,
+        product.price
     ]);
 };
 
@@ -65,6 +66,28 @@ export const selectProduct = async (id) => {
     return rows[0];
 };
 
+export const selectProductList = async () => {
+    const sql = `
+        SELECT p.*, 
+               (
+                   SELECT JSON_ARRAYAGG(
+                              JSON_OBJECT(
+                                  'i_num', i_num, 
+                                  'url', url, 
+                                  'is_main', is_main, 
+                                  'sort_order', sort_order
+                              )
+                          )
+                   FROM product_image
+                   WHERE product_id = p.id
+               ) as images
+        FROM product p
+        ORDER BY p.id DESC
+    `;
+    const [rows] = await db.query(sql);
+    return rows;
+};
+
 export const selectProductOptions = async (productId) => {
     const sql = `SELECT * FROM product_option WHERE product_id = ? ORDER BY option_num ASC`;
     const [rows] = await db.query(sql, [productId]);
@@ -86,4 +109,52 @@ export const selectProductCategories = async (productId) => {
     `;
     const [rows] = await db.query(sql, [productId]);
     return rows;
+};
+
+export const updateProduct = async (product) => {
+    const sql = `UPDATE product SET name = ?, description = ?, is_display = ?, is_sale = ?, has_options = ?, is_unlimited_stock = ?, stock = ?, price = ? WHERE id = ?`;
+
+    return await db.query(sql, [
+        product.name,
+        product.description,
+        product.is_display === 'on' ? 1 : 0,
+        product.is_sale === 'on' ? 1 : 0,
+        product.has_options === 'on' ? 1 : 0,
+        String(product.is_unlimited_stock) === 'true' ? 1 : 0,
+        product.stock,
+        product.price,
+        product.id
+    ]);
+};
+
+export const deleteProductOptions = async (productId) => {
+    const sql = `DELETE FROM product_option WHERE product_id = ?`;
+    return await db.query(sql, [productId]);
+};
+
+export const deleteProductCategoryConnect = async (productId) => {
+    const sql = `DELETE FROM product_category_connect WHERE product_id = ?`;
+    return await db.query(sql, [productId]);
+};
+
+export const deleteProductMainImage = async (productId) => {
+    const sql = `DELETE FROM product_image WHERE product_id = ? AND is_main = 1`;
+    return await db.query(sql, [productId]);
+};
+
+export const deleteProductImages = async (productId, excludeIds = []) => {
+    let sql = `DELETE FROM product_image WHERE product_id = ? AND is_main = 0`;
+    const params = [productId];
+
+    if (excludeIds.length > 0) {
+        sql += ` AND i_num NOT IN (?)`;
+        params.push(excludeIds);
+    }
+
+    return await db.query(sql, params);
+};
+
+export const updateProductImageSortOrder = async (id, sortOrder) => {
+    const sql = `UPDATE product_image SET sort_order = ? WHERE i_num = ?`;
+    return await db.query(sql, [sortOrder, id]);
 };

@@ -26,3 +26,12 @@ export const getSubCategoryById = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getProductsByCategoryId = async (req, res, next) => {
+    try {
+        const products = await ProductService.getProductsByCategoryId(req.params.id);
+        res.status(200).json(products);
+    } catch (error) {
+        next(error);
+    }
+};
