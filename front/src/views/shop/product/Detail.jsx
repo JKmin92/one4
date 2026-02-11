@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Collapsible, createListCollection, DataList, Flex, Heading, HStack, IconButton, Link, RatingGroup, Select, Stack, StackSeparator, Text, Pagination, Image, Badge, Separator, Dialog, NumberInput, CloseButton, Icon } from "@chakra-ui/react";
+import { Box, Button, ButtonGroup, Collapsible, createListCollection, DataList, Flex, Heading, HStack, IconButton, Link, RatingGroup, Select, Stack, StackSeparator, Text, Pagination, Image, Badge, Separator, Dialog, NumberInput, CloseButton, Icon, Spinner } from "@chakra-ui/react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
@@ -6,11 +6,14 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { LuChevronDown, LuChevronLeft, LuChevronRight, LuLock, LuMinus, LuPlus } from "react-icons/lu";
 import { calcDiscountPercent, formatDate, formatNumber, scrollViewPosition } from "../../../utils/simpleUtils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InfoTip } from '../../../components/ui/toggle-tip';
+import { toaster } from "../../../components/ui/toaster";
+import axiosInstance from "../../../utils/api";
 import { HiChevronLeft, HiChevronRight, HiX } from "react-icons/hi";
+import { useParams } from "react-router-dom";
 
-function ReviewView({reviewList = []}) {
+function ReviewView({ reviewList = [] }) {
     const [reviewPage, setReviewPage] = useState(1);
     const reviewPageSize = 5;
     const reviewCount = reviewList.length;
@@ -19,7 +22,7 @@ function ReviewView({reviewList = []}) {
     const [reviewActive, setReviewActive] = useState(null);
 
     const reviewClick = (id) => {
-        if(reviewActive === id) setReviewActive(null);
+        if (reviewActive === id) setReviewActive(null);
         else setReviewActive(id);
     }
 
@@ -28,30 +31,30 @@ function ReviewView({reviewList = []}) {
     return (
         <Stack gap="6">
             <Stack separator={<StackSeparator />}>
-            {visibleReviewItems.map((review) => {
-                const firstImage = review.content.find((item) => item.type === 'image');
-                return (
-                    <Stack 
-                        key={review.id} cursor="pointer" 
-                        onClick={() => reviewClick(review.id)} 
-                        bg={reviewActive === review.id ? 'bg.muted' : 'bg'}
-                        p="5px 10px"
-                    >
-                        <Flex justifyContent="space-between">
-                            <HStack>
-                                <RatingGroup.Root readOnly allowHalf count={5} defaultValue={review.rank} size="xs" colorPalette="yellow">
-                                    <RatingGroup.HiddenInput /><RatingGroup.Control />
-                                </RatingGroup.Root>
-                                <Text fontSize="sm" color="fg.muted">{review.name}</Text>
-                            </HStack>
-                            <Text fontSize="xs" color="fg.subtle">{formatDate(review.date)}</Text>
-                        </Flex>
-                        <Flex 
-                            justifyContent={reviewActive === review.id ? 'start' : 'space-between'} 
-                            flexDirection={reviewActive === review.id ? 'column' : 'row'} 
-                            alignItems={reviewActive === review.id ? 'start' : 'center'}>
+                {visibleReviewItems.map((review) => {
+                    const firstImage = review.content.find((item) => item.type === 'image');
+                    return (
+                        <Stack
+                            key={review.id} cursor="pointer"
+                            onClick={() => reviewClick(review.id)}
+                            bg={reviewActive === review.id ? 'bg.muted' : 'bg'}
+                            p="5px 10px"
+                        >
+                            <Flex justifyContent="space-between">
+                                <HStack>
+                                    <RatingGroup.Root readOnly allowHalf count={5} defaultValue={review.rank} size="xs" colorPalette="yellow">
+                                        <RatingGroup.HiddenInput /><RatingGroup.Control />
+                                    </RatingGroup.Root>
+                                    <Text fontSize="sm" color="fg.muted">{review.name}</Text>
+                                </HStack>
+                                <Text fontSize="xs" color="fg.subtle">{formatDate(review.date)}</Text>
+                            </Flex>
+                            <Flex
+                                justifyContent={reviewActive === review.id ? 'start' : 'space-between'}
+                                flexDirection={reviewActive === review.id ? 'column' : 'row'}
+                                alignItems={reviewActive === review.id ? 'start' : 'center'}>
                                 {review.content.filter((item) => item.type === 'text').map((item, index) => (
-                                    <Text key={index} 
+                                    <Text key={index}
                                         whiteSpace={reviewActive === review.id ? 'pre-line' : 'nowrap'}
                                         overflow={reviewActive === review.id ? 'auto' : 'hidden'}
                                         textOverflow={reviewActive === review.id ? 'inherit' : 'ellipsis'}
@@ -59,18 +62,18 @@ function ReviewView({reviewList = []}) {
                                     >{item.content}</Text>
                                 ))}
                                 <HStack>
-                                    {review.content.filter((item) => item.type==='image').map((item, index) => (
-                                        <Image key={index} 
-                                            src={item.content} 
-                                            display={item.id === firstImage.id || reviewActive === review.id ? 'block' : 'none'} 
-                                            width={reviewActive === review.id ? 'xs' : '12'} 
+                                    {review.content.filter((item) => item.type === 'image').map((item, index) => (
+                                        <Image key={index}
+                                            src={item.content}
+                                            display={item.id === firstImage.id || reviewActive === review.id ? 'block' : 'none'}
+                                            width={reviewActive === review.id ? 'xs' : '12'}
                                             rounded="md" />
                                     ))}
                                 </HStack>
-                        </Flex>
-                    </Stack>
-                )
-            })}
+                            </Flex>
+                        </Stack>
+                    )
+                })}
             </Stack>
             <Pagination.Root count={reviewCount} pageSize={reviewPageSize} page={reviewPage} onPageChange={(e) => setReviewPage(e.page)} margin="auto">
                 <ButtonGroup variant="ghost" size="sm">
@@ -78,7 +81,7 @@ function ReviewView({reviewList = []}) {
                         <IconButton><HiChevronLeft /></IconButton>
                     </Pagination.PrevTrigger>
                     <Pagination.Items render={(page) => (
-                        <IconButton variant={{base:'ghost', _selected:'outline'}}>{page.value}</IconButton>
+                        <IconButton variant={{ base: 'ghost', _selected: 'outline' }}>{page.value}</IconButton>
                     )} />
                     <Pagination.NextTrigger asChild>
                         <IconButton><HiChevronRight /></IconButton>
@@ -89,7 +92,7 @@ function ReviewView({reviewList = []}) {
     )
 }
 
-function ProuctAsk({productAskList = []}) {
+function ProuctAsk({ productAskList = [] }) {
     const [page, setPage] = useState(1);
     const pageSize = 5;
     const askCount = productAskList.length;
@@ -99,16 +102,16 @@ function ProuctAsk({productAskList = []}) {
     const [secretDialogOpen, setSecretDialogOpen] = useState(false);
 
     const askClick = (id, secret, status) => {
-        if(secret) {
+        if (secret) {
             setSecretDialogOpen(true);
             return;
-        } 
-        
-        if(status != 'pending') {
-            if(askActive === id) setAskActive(null);
+        }
+
+        if (status != 'pending') {
+            if (askActive === id) setAskActive(null);
             else setAskActive(id);
         }
-        
+
     }
 
     const visibleAskItems = productAskList.slice(startRange, endRange);
@@ -117,7 +120,7 @@ function ProuctAsk({productAskList = []}) {
         <Stack gap="6">
             <Stack separator={<StackSeparator />}>
                 {visibleAskItems.map((ask) => (
-                    <Stack 
+                    <Stack
                         key={ask.id}
                         cursor="pointer"
                         onClick={() => askClick(ask.id, ask.secret, ask.status)}
@@ -130,8 +133,8 @@ function ProuctAsk({productAskList = []}) {
                         </Flex>
                         <Stack gap="4">
                             <Flex justifyContent="space-between">
-                                {ask.secret ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>) 
-                                : (<Text fontSize="sm">{ask.askText}</Text>)}
+                                {ask.secret ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
+                                    : (<Text fontSize="sm">{ask.askText}</Text>)}
                                 <Badge colorPalette={ask.status === 'accepted' ? 'green' : ''} fontSize="2xs">
                                     {ask.status === 'accepted' ? '답변완료' : '답변대기'}
                                 </Badge>
@@ -152,7 +155,7 @@ function ProuctAsk({productAskList = []}) {
                         <IconButton><HiChevronLeft /></IconButton>
                     </Pagination.PrevTrigger>
                     <Pagination.Items render={(page) => (
-                        <IconButton variant={{base:'ghost', _selected:'outline'}}>{page.value}</IconButton>
+                        <IconButton variant={{ base: 'ghost', _selected: 'outline' }}>{page.value}</IconButton>
                     )} />
                     <Pagination.NextTrigger asChild>
                         <IconButton><HiChevronRight /></IconButton>
@@ -179,8 +182,8 @@ function ProuctAsk({productAskList = []}) {
     )
 }
 
-function PriceView({selectedOptions = [], product, discount, onRemove, onChangeQuantity}) {
-    if(selectedOptions.length <= 0) return null;
+function PriceView({ selectedOptions = [], product, discount, onRemove, onChangeQuantity }) {
+    if (selectedOptions.length <= 0) return null;
 
     const unitPrice = product.price - discount.price;
     const totalPrice = selectedOptions.reduce(
@@ -201,16 +204,16 @@ function PriceView({selectedOptions = [], product, discount, onRemove, onChangeQ
                             </HStack>
                         </Stack>
                         <HStack gap="6">
-                            <NumberInput.Root min="1" unstyled spinOnPress={false} value={selectedOption.quantity} onValueChange={(e) => onChangeQuantity(index, Number(e.value))}>
+                            <NumberInput.Root min={1} max={selectedOption.stock} unstyled spinOnPress={false} value={selectedOption.quantity} onValueChange={(e) => onChangeQuantity(index, Number(e.value))}>
                                 <HStack gap="2">
                                     <NumberInput.DecrementTrigger asChild>
-                                        <IconButton variant="outline" size="5" rounded="full" p="1">
+                                        <IconButton variant="outline" size="5" rounded="full" p="1" disabled={selectedOption.quantity <= 1}>
                                             <Icon size="sm"><LuMinus /></Icon>
                                         </IconButton>
                                     </NumberInput.DecrementTrigger>
                                     <NumberInput.ValueText textAlign="center" />
                                     <NumberInput.IncrementTrigger asChild>
-                                        <IconButton variant="outline" size="5" rounded="full" p="1">
+                                        <IconButton variant="outline" size="5" rounded="full" p="1" disabled={selectedOption.quantity >= selectedOption.stock}>
                                             <Icon size="sm"><LuPlus /></Icon>
                                         </IconButton>
                                     </NumberInput.IncrementTrigger>
@@ -235,39 +238,65 @@ function PriceView({selectedOptions = [], product, discount, onRemove, onChangeQ
 
 function Detail() {
 
-    const swiperCustomButton = {position:'absolute', top:'50%', transform:'translateY(-50%)', zIndex:'2', size:'xs', rounded:'full'};
-    const swiperPrev = {...swiperCustomButton, left:'30px'};
-    const swiperNext = {...swiperCustomButton, right:'30px'};
+    const { id } = useParams();
+
+    const swiperCustomButton = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', zIndex: '2', size: 'xs', rounded: 'full' };
+    const swiperPrev = { ...swiperCustomButton, left: '30px' };
+    const swiperNext = { ...swiperCustomButton, right: '30px' };
 
     const [detailOpen, setDetailOpen] = useState(false);
 
-    const product = {name:'상품명', price:10000};
-    const discount = {price:5000};
+    const [product, setProduct] = useState(null);
+    const [options, setOptions] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [optionValueList, setOptionValueList] = useState([]);
-    const [options, setOptions] = useState(
-        [
-            {label:'컬러', id:1, items:[{label:'옐로우', value:'yellow'}, {label:'그린', value:'green'}, {label:'퍼플', value:'purple'}, {label:'블루', value:'blue'}]},
-            {label:'사이즈', id:2, items:[{label:'M(medium)', value:'medium'}, {label:'L(large)', value:'large'}, {label:'XL(extra large)', value:'extraLarge'}, {label:'2XL(two extra large)', value:'twoExtraLarge'}]},
-        ]
-    );
+
+    useEffect(() => {
+        const getProduct = async () => {
+            try {
+                const response = await axiosInstance.get(`/shop/product/${id}`);
+                const data = response.data;
+                setProduct(data);
+
+                // options state update if options exist
+                if (data.options && Array.isArray(data.options)) {
+                    setOptions(data.options);
+                }
+
+            } catch (error) {
+                toaster.create({ title: '상품 정보를 불러오는데 실패했습니다.', type: 'error' });
+            }
+        };
+        getProduct();
+    }, [id]);
+
+    if (!product) {
+        return (
+            <Box p="80px" textAlign="center" minH="100vh" display="flex" alignItems="center" justifyContent="center">
+                <Spinner size="xl" />
+            </Box>
+        )
+    }
+
+    const discount = { price: product.discount_price || 0 }; // Assuming discount_price might be in product or 0
 
     const handleSelectChange = (optionIndex, option, value) => {
         const selectedItem = option.value.items.find(
             (item) => item.value === value
         );
 
-        if(!selectedItem) return;
+        if (!selectedItem) return;
 
         setSelectedOptions((prev) => {
             const next = [...prev];
             next[optionIndex] = {
-                optionId : option.id,
-                label : selectedItem.label,
-                value : selectedItem.value,
+                optionId: option.id,
+                label: selectedItem.label,
+                value: selectedItem.value,
+                stock: selectedItem.stock
             };
 
-            if(next.length == options.length && next.every(Boolean)) {
+            if (next.length == options.length && next.every(Boolean)) {
                 setOptionValueList((prevList) => {
                     const exists = prevList.some((item) =>
                         item.options.every(
@@ -275,10 +304,14 @@ function Detail() {
                         )
                     );
 
-                    if(exists) return prevList;
-                    return [...prevList, {options:[...next], quantity:1}];
+                    if (exists) return prevList;
+
+                    // Calculate max quantity based on the minimum stock of selected options
+                    const minStock = Math.min(...next.map(opt => opt.stock));
+
+                    return [...prevList, { options: [...next], quantity: 1, stock: minStock }];
                 })
-            } 
+            }
 
             return next;
         })
@@ -289,8 +322,16 @@ function Detail() {
     };
 
     const updateOptionQuantity = (index, quantity) => {
-        setOptionValueList(prev => 
-            prev.map((item, i) => i === index ? {...item, quantity} : item)
+        setOptionValueList(prev =>
+            prev.map((item, i) => {
+                if (i === index) {
+                    const maxStock = item.stock;
+                    // Ensure quantity doesn't exceed maxStock
+                    const newQuantity = Math.min(quantity, maxStock);
+                    return { ...item, quantity: newQuantity };
+                }
+                return item;
+            })
         )
     }
 
@@ -298,10 +339,10 @@ function Detail() {
      * 옵션 DB 연동
      */
     const optionList = options.map((option) => ({
-        label : option.label,
-        id : option.id,
-        value : createListCollection({
-            items : option.items
+        label: option.label,
+        id: option.id,
+        value: createListCollection({
+            items: option.items
         })
     }));
 
@@ -309,38 +350,38 @@ function Detail() {
      * 리뷰 DB 연동
      */
     const reviewList = [
-        {id:1, name : 'amean123', date:'2026-01-21', rank:5, content: [{id:13, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:14, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}, {id:15, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:2, name : 'asdf', date:'2026-01-21', rank:4, content: [{id:16, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:17, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:3, name : '353adsf', date:'2026-01-21', rank:5, content: [{id:18, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}]},
-        {id:4, name : 'a243', date:'2026-01-21', rank:5, content: [{id:19, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:20, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}, {id:21, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:5, name : 'asdfasd', date:'2026-01-21', rank:4.5, content: [{id:22, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:23, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:6, name : 'a3523', date:'2026-01-21', rank:5, content: [{id:24, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}]},
-        {id:7, name : 'a235a', date:'2026-01-21', rank:3, content: [{id:25, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:26, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}, {id:33, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:8, name : 'adsfasdf', date:'2026-01-21', rank:2, content: [{id:27, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:28, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:9, name : 'asdgasd', date:'2026-01-21', rank:1, content: [{id:29, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}]},
-        {id:10, name : 'zcxbzvx', date:'2026-01-21', rank:5, content: [{id:30, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:31, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}, {id:34, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:11, name : 'cxne', date:'2026-01-21', rank:3.5, content: [{id:35, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용\n내용이 어쩌구 저쩌구 하는 리뷰 내용\n\n내용이 어쩌구 저쩌구 하는 리뷰 내용\n내용이 어쩌구 저쩌구 하는 리뷰 내용'}, {id:36, type:'image', content:'//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png'}]},
-        {id:12, name : '14adf', date:'2026-01-21', rank:4, content: [{id:37, type:'text', content:'내용이 어쩌구 저쩌구 하는 리뷰 내용'}]},
+        { id: 1, name: 'amean123', date: '2026-01-21', rank: 5, content: [{ id: 13, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 14, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 15, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 2, name: 'asdf', date: '2026-01-21', rank: 4, content: [{ id: 16, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 17, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 3, name: '353adsf', date: '2026-01-21', rank: 5, content: [{ id: 18, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
+        { id: 4, name: 'a243', date: '2026-01-21', rank: 5, content: [{ id: 19, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 20, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 21, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 5, name: 'asdfasd', date: '2026-01-21', rank: 4.5, content: [{ id: 22, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 23, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 6, name: 'a3523', date: '2026-01-21', rank: 5, content: [{ id: 24, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
+        { id: 7, name: 'a235a', date: '2026-01-21', rank: 3, content: [{ id: 25, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 26, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 33, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 8, name: 'adsfasdf', date: '2026-01-21', rank: 2, content: [{ id: 27, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 28, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 9, name: 'asdgasd', date: '2026-01-21', rank: 1, content: [{ id: 29, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
+        { id: 10, name: 'zcxbzvx', date: '2026-01-21', rank: 5, content: [{ id: 30, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 31, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 34, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 11, name: 'cxne', date: '2026-01-21', rank: 3.5, content: [{ id: 35, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용\n내용이 어쩌구 저쩌구 하는 리뷰 내용\n\n내용이 어쩌구 저쩌구 하는 리뷰 내용\n내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 36, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
+        { id: 12, name: '14adf', date: '2026-01-21', rank: 4, content: [{ id: 37, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
     ]
 
     const askList = [
-        {id:1, name:'amean123', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:false},
-        {id:2, name:'afeq', date:'2026-01-21', askText:'배송 언제되요?!!', status:'pending', answerText:null, secret:false},
-        {id:3, name:'avads1', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:true},
-        {id:4, name:'amean123', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:false},
-        {id:5, name:'afeq', date:'2026-01-21', askText:'배송 언제되요?!!', status:'pending', answerText:null, secret:false},
-        {id:6, name:'avads1', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:true},
-        {id:7, name:'amean123', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:false},
-        {id:8, name:'afeq', date:'2026-01-21', askText:'배송 언제되요?!!', status:'pending', answerText:null, secret:false},
-        {id:9, name:'avads1', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:true},
-        {id:10, name:'amean123', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:false},
-        {id:11, name:'afeq', date:'2026-01-21', askText:'배송 언제되요?!!', status:'pending', answerText:null, secret:false},
-        {id:12, name:'avads1', date:'2026-01-21', askText:'유통기한은 언제까지 인가요?', status:'accepted', answerText:'26년 12월 1일까지예요!', secret:true}
+        { id: 1, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
+        { id: 2, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
+        { id: 3, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true },
+        { id: 4, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
+        { id: 5, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
+        { id: 6, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true },
+        { id: 7, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
+        { id: 8, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
+        { id: 9, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true },
+        { id: 10, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
+        { id: 11, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
+        { id: 12, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true }
     ]
-    
+
 
     return (
-        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} gap="12" width={{base:'full', md:"6xl"}} margin="auto">
+        <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="12" width={{ base: 'full', md: "6xl" }} margin="auto">
             <Stack gap="6">
                 <Flex className="brandIntro" justifyContent="space-between">
                     <HStack gap="6" alignItems="center">
@@ -352,19 +393,25 @@ function Detail() {
                     </HStack>
                     <Button variant="outline"><Link href="">BRAND HOME</Link></Button>
                 </Flex>
-                <Stack gap="10" direction={{base:'column', md:"row"}}>
-                    <Box position="relative" width={{base:'full', md:"1/2"}} className="productImage">
+                <Stack gap="10" direction={{ base: 'column', md: "row" }} alignItems="start">
+                    <Box position="relative" width={{ base: 'full', md: "1/2" }} className="productImage">
                         <IconButton className="swiper_prev" {...swiperPrev}><LuChevronLeft /></IconButton>
                         <IconButton className="swiper_next" {...swiperNext}><LuChevronRight /></IconButton>
-                        <Swiper slidesPerView={1} pagination={{clickable:true}} modules={[Navigation, SwiperPagination]} navigation={{prevEl:'.productImage .swiper_prev', nextEl:'.productImage .swiper_next'}}>
-                            <SwiperSlide><Box width="full" bg="bg.emphasized" aspectRatio="square" rounded="md"></Box></SwiperSlide>
-                            <SwiperSlide><Box width="full" bg="bg.emphasized" aspectRatio="square" rounded="md"></Box></SwiperSlide>
-                            <SwiperSlide><Box width="full" bg="bg.emphasized" aspectRatio="square" rounded="md"></Box></SwiperSlide>
+                        <Swiper slidesPerView={1} pagination={{ clickable: true }} modules={[Navigation, SwiperPagination]} navigation={{ prevEl: '.productImage .swiper_prev', nextEl: '.productImage .swiper_next' }}>
+                            {product.images && product.images.length > 0 ? (
+                                product.images.map((img, index) => (
+                                    <SwiperSlide key={index}>
+                                        <Image src={img.url} width="full" aspectRatio="square" rounded="md" objectFit="cover" />
+                                    </SwiperSlide>
+                                ))
+                            ) : (
+                                <SwiperSlide><Box width="full" bg="bg.emphasized" aspectRatio="square" rounded="md"></Box></SwiperSlide>
+                            )}
                         </Swiper>
                     </Box>
-                    <Box width={{base:'full', md:"1/2"}}>
+                    <Box width={{ base: 'full', md: "1/2" }}>
                         <Stack gap="6" borderTop="2px solid #000" pt="30px">
-                            <Heading size="2xl">제품명</Heading>
+                            <Heading size="2xl">{product.name}</Heading>
                             <HStack gap="5">
                                 <RatingGroup.Root readOnly allowHalf count={5} defaultValue={3} size="sm" colorPalette="yellow">
                                     <RatingGroup.HiddenInput />
@@ -373,9 +420,9 @@ function Detail() {
                                 <Button variant="plain" borderBottom="1px solid #000" p="0" rounded="0" height="auto" onClick={() => scrollViewPosition('review')}>12개 리뷰 보기</Button>
                             </HStack>
                             <Stack gap="0">
-                                <Text fontSize="md" textDecoration="line-through" color="fg.subtle">{formatNumber(product.price)}</Text>
+                                {discount.price > 0 && <Text fontSize="md" textDecoration="line-through" color="fg.subtle">{formatNumber(product.price)}</Text>}
                                 <HStack alignItems="end">
-                                    <Text fontSize="lg" fontWeight="medium">{calcDiscountPercent(product.price, discount.price)}%</Text>
+                                    {discount.price > 0 && <Text fontSize="lg" fontWeight="medium">{calcDiscountPercent(product.price, discount.price)}%</Text>}
                                     <Text fontWeight="medium" fontSize="2xl">{formatNumber(product.price - discount.price)}</Text>
                                 </HStack>
                             </Stack>
@@ -399,12 +446,12 @@ function Detail() {
                                     </DataList.ItemValue>
                                 </DataList.Item>
                             </DataList.Root>
-                            
+
                             <Stack>
                                 {optionList.map((option, index) => (
-                                    <Select.Root 
-                                        collection={option.value} 
-                                        key={option.id} 
+                                    <Select.Root
+                                        collection={option.value}
+                                        key={option.id}
                                         value={selectedOptions[index] ? [selectedOptions[index].value] : []}
                                         onValueChange={(e) => handleSelectChange(index, option, e.value[0])}
                                     >
@@ -440,19 +487,15 @@ function Detail() {
             <Stack gap="6">
                 <Heading>상품 설명</Heading>
                 <Collapsible.Root collapsedHeight="500px" open={detailOpen} onOpenChange={(e) => setDetailOpen(e.open)}>
-                    <Collapsible.Content _closed={{shadow:'inset 0 -12px 12px -12px var(--shadow-color)', shadowColor:'blackAlpha.500'}}>
+                    <Collapsible.Content _closed={{ shadow: 'inset 0 -12px 12px -12px var(--shadow-color)', shadowColor: 'blackAlpha.500' }}>
                         <Stack>
-                            <Box width="full" aspectRatio="square" bg="bg.emphasized"></Box>
-                            <Box width="full" aspectRatio="square" bg="bg.emphasized"></Box>
-                            <Box width="full" aspectRatio="square" bg="bg.emphasized"></Box>
-                            <Box width="full" aspectRatio="square" bg="bg.emphasized"></Box>
-                            <Box width="full" aspectRatio="square" bg="bg.emphasized"></Box>
+                            <Box dangerouslySetInnerHTML={{ __html: product.description }} />
                         </Stack>
                     </Collapsible.Content>
                     <Collapsible.Trigger asChild mt="4">
                         <Button variant="outline" width="full">
                             {detailOpen ? '닫기' : '더보기'}
-                            <Collapsible.Indicator transition="transform 0.2s" _open={{transform:'rotate(180deg)'}}>
+                            <Collapsible.Indicator transition="transform 0.2s" _open={{ transform: 'rotate(180deg)' }}>
                                 <LuChevronDown />
                             </Collapsible.Indicator>
                         </Button>
@@ -460,13 +503,16 @@ function Detail() {
                 </Collapsible.Root>
             </Stack>
             <Stack gap="6" id="review">
-                <HStack>
-                    <Heading>리뷰({reviewList.length})</Heading>
-                    <RatingGroup.Root readOnly allowHalf count={5} defaultValue={3} size="sm" colorPalette="yellow">
-                        <RatingGroup.HiddenInput />
-                        <RatingGroup.Control />
-                    </RatingGroup.Root>
-                </HStack>
+                <Flex justifyContent="space-between">
+                    <HStack>
+                        <Heading>리뷰({reviewList.length})</Heading>
+                        <RatingGroup.Root readOnly allowHalf count={5} defaultValue={3} size="sm" colorPalette="yellow">
+                            <RatingGroup.HiddenInput />
+                            <RatingGroup.Control />
+                        </RatingGroup.Root>
+                    </HStack>
+                    <Link href="#" fontSize="sm">리뷰 작성 <LuChevronRight /></Link>
+                </Flex>
                 <ReviewView reviewList={reviewList} />
             </Stack>
             <Stack gap="6">

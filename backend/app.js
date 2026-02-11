@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 
 import userRoutes from './routes/userRoutes.js';
 import adminProductRoutes from './routes/admin/productRoutes.js';
+import adminPromotionRoutes from './routes/admin/promotionRoutes.js';
 import productRoutes from './routes/shop/productRoutes.js';
 
 import path from 'path';
@@ -22,5 +23,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/api/user', userRoutes);
 app.use('/api/admin/shop/product', adminProductRoutes);
 app.use('/api/shop/product', productRoutes);
+app.use('/api/admin/shop/promotion', adminPromotionRoutes);
 
 export default app;

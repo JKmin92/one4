@@ -21,6 +21,8 @@ import AdminLayout from './views/admin/common/Layout';
 import AdminProductList from './views/admin/shop/product/List';
 import AdminProductRegister from './views/admin/shop/product/Register';
 import AdminProductCategory from './views/admin/shop/product/Category';
+import AdminPromotionList from './views/admin/shop/promotion/List';
+import AdminPromotionRegister from './views/admin/shop/promotion/Register';
 
 const router = createBrowserRouter([
     {
@@ -47,7 +49,10 @@ const router = createBrowserRouter([
             { path: 'shop/product/list', element: <AdminProductList /> },
             { path: 'shop/product/register', element: <AdminProductRegister /> },
             { path: 'shop/product/update/:id', element: <AdminProductRegister /> },
-            { path: 'shop/product/category', element: <AdminProductCategory /> }
+            { path: 'shop/product/category', element: <AdminProductCategory /> },
+            { path: 'shop/promotion/list', element: <AdminPromotionList /> },
+            { path: 'shop/promotion/register', element: <AdminPromotionRegister /> },
+            { path: 'shop/promotion/update/:id', element: <AdminPromotionRegister /> }
         ]
     }, {
         path: '/review',

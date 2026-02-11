@@ -66,8 +66,8 @@ export const selectProduct = async (id) => {
     return rows[0];
 };
 
-export const selectProductList = async () => {
-    const sql = `
+export const selectProductList = async (keyword) => {
+    let sql = `
         SELECT p.*, 
                (
                    SELECT JSON_ARRAYAGG(
@@ -82,9 +82,16 @@ export const selectProductList = async () => {
                    WHERE product_id = p.id
                ) as images
         FROM product p
-        ORDER BY p.id DESC
     `;
-    const [rows] = await db.query(sql);
+
+    if (keyword) {
+        sql += ` WHERE p.name LIKE ?`;
+    }
+
+    sql += ` ORDER BY p.id DESC`;
+
+    const params = keyword ? [`%${keyword}%`] : [];
+    const [rows] = await db.query(sql, params);
     return rows;
 };
 

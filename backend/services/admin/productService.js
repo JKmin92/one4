@@ -113,8 +113,8 @@ export const getProductDetails = async (id) => {
     return { ...product, options, images, categories };
 };
 
-export const getProductList = async () => {
-    const products = await model.selectProductList();
+export const getProductList = async (keyword) => {
+    const products = await model.selectProductList(keyword);
     return products.map(product => {
         if (product.images && typeof product.images === 'string') {
             try {

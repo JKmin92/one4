@@ -84,7 +84,8 @@ export const getProduct = async (req, res, next) => {
 
 export const getProductList = async (req, res, next) => {
     try {
-        const result = await productService.getProductList();
+        const { keyword } = req.query;
+        const result = await productService.getProductList(keyword);
         res.status(200).json(result);
     } catch (e) {
         next(e);
