@@ -65,8 +65,8 @@ function Header() {
 
                     {!user ? (
                         <HStack gap={{ base: '2', md: "6" }}>
-                            <Link href="/login" fontSize="sm">로그인</Link>
-                            <Link href="/join" fontSize="sm">회원가입</Link>
+                            <Link href="/login" fontSize="sm" whiteSpace="nowrap">로그인</Link>
+                            <Link href="/join" fontSize="sm" whiteSpace="nowrap">회원가입</Link>
                         </HStack>
                     ) : (
                         <>

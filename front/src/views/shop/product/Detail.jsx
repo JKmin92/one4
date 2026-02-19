@@ -258,7 +258,6 @@ function Detail() {
                 const data = response.data;
                 setProduct(data);
 
-                // options state update if options exist
                 if (data.options && Array.isArray(data.options)) {
                     setOptions(data.options);
                 }
@@ -278,7 +277,7 @@ function Detail() {
         )
     }
 
-    const discount = { price: product.discount_price || 0 }; // Assuming discount_price might be in product or 0
+    const discount = { price: product.discount_price ? product.price - product.discount_price : 0 };
 
     const handleSelectChange = (optionIndex, option, value) => {
         const selectedItem = option.value.items.find(
@@ -422,7 +421,7 @@ function Detail() {
                             <Stack gap="0">
                                 {discount.price > 0 && <Text fontSize="md" textDecoration="line-through" color="fg.subtle">{formatNumber(product.price)}</Text>}
                                 <HStack alignItems="end">
-                                    {discount.price > 0 && <Text fontSize="lg" fontWeight="medium">{calcDiscountPercent(product.price, discount.price)}%</Text>}
+                                    {discount.price > 0 && <Text fontSize="lg" fontWeight="medium">{calcDiscountPercent(product.price, product.price - discount.price)}%</Text>}
                                     <Text fontWeight="medium" fontSize="2xl">{formatNumber(product.price - discount.price)}</Text>
                                 </HStack>
                             </Stack>
@@ -511,7 +510,7 @@ function Detail() {
                             <RatingGroup.Control />
                         </RatingGroup.Root>
                     </HStack>
-                    <Link href="#" fontSize="sm">리뷰 작성 <LuChevronRight /></Link>
+                    <Link href={`/board/register/${id}?ch=review`} fontSize="sm">리뷰 작성 <LuChevronRight /></Link>
                 </Flex>
                 <ReviewView reviewList={reviewList} />
             </Stack>

@@ -13,35 +13,34 @@ function ProductList() {
     const [productList, setProductList] = useState([]);
 
     useEffect(() => {
-        const getCateogry = async () => {
+        /**
+         * 현 카테고리는 최상위 카테고리 시 형제 카테고리를 불러오지 않는다.
+         */
+        const fetchData = async () => {
             try {
-                const response = await axiosInstance.get(`/shop/product/category/${id}`);
-                setCategory(response.data);
-            } catch {
-                toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
-            }
-        }
-        getCateogry();
+                const categoryResponse = await axiosInstance.get(`/shop/product/category/${id}`);
+                const categoryData = categoryResponse.data;
+                setCategory(categoryData);
 
-        const getSubCategorys = async () => {
-            try {
-                const response = await axiosInstance.get(`/shop/product/subCategory/${id}`);
-                setSubCategorys(response.data);
-            } catch {
-                toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
-            }
-        }
-        getSubCategorys();
+                let subCategoryResponse = await axiosInstance.get(`/shop/product/subCategory/${id}`);
+                let subCategories = subCategoryResponse.data;
 
-        const getProductList = async () => {
-            try {
-                const response = await axiosInstance.get(`/shop/product/list/${id}`);
-                setProductList(response.data);
-            } catch {
-                toaster.create({ title: '상품 목록을 불러오는데 실패했습니다.', type: 'error' })
+                if (subCategories.length === 0 && categoryData.parent_id) {
+                    subCategoryResponse = await axiosInstance.get(`/shop/product/subCategory/${categoryData.parent_id}`);
+                    subCategories = subCategoryResponse.data;
+                }
+                setSubCategorys(subCategories);
+
+                const productListResponse = await axiosInstance.get(`/shop/product/list/${id}`);
+                setProductList(productListResponse.data);
+
+            } catch (error) {
+                toaster.create({ title: '데이터를 불러오는데 실패했습니다.', type: 'error' });
+                console.error(error);
             }
-        }
-        getProductList();
+        };
+
+        fetchData();
     }, [id]);
 
     return (

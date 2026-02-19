@@ -14,6 +14,12 @@ export const getSubCategoryById = async (id) => {
 
 export const getProductsByCategoryId = async (categoryId) => {
     const products = await ProductModel.getProductsByCategoryId(categoryId);
+
+    if (products.length === 0) return [];
+
+    const productIds = products.map(p => p.id);
+    const promotions = await ProductModel.getActivePromotions(productIds);
+
     return products.map(product => {
         if (product.images && typeof product.images === 'string') {
             try {
@@ -23,16 +29,39 @@ export const getProductsByCategoryId = async (categoryId) => {
                 product.images = [];
             }
         }
+
+        const productPromotions = promotions.filter(p => p.related_product_id === product.id);
+
+        productPromotions.sort((a, b) => {
+            if (a.target_type !== b.target_type) {
+                return a.target_type === 'product' ? -1 : 1;
+            }
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        const activePromotion = productPromotions[0];
+
+        if (activePromotion) {
+            let discountPrice = product.price;
+            if (activePromotion.discount_type === 'percentage') {
+                discountPrice = product.price * (1 - activePromotion.discount_value / 100);
+            } else if (activePromotion.discount_type === 'fixed') {
+                discountPrice = product.price - activePromotion.discount_value;
+            }
+            product.discount_price = Math.floor(discountPrice);
+            product.active_promotion = activePromotion;
+        } else {
+            product.discount_price = null;
+        }
+
         return product;
     });
 };
 
 export const getProductById = async (id) => {
     const product = await ProductModel.getProductById(id);
-
     if (!product) return null;
 
-    // Parse JSON fields
     const jsonFields = ['images', 'options', 'categories'];
     jsonFields.forEach(field => {
         if (product[field] && typeof product[field] === 'string') {
@@ -42,12 +71,36 @@ export const getProductById = async (id) => {
                 console.error(`Failed to parse ${field} JSON for product`, product.id, e);
                 product[field] = [];
             }
-        } else if (!product[field]) { // Handle null/undefined
+        } else if (!product[field]) {
             product[field] = [];
         }
     });
 
-    // Group options
+    const promotions = await ProductModel.getActivePromotions([product.id]);
+    const productPromotions = promotions.filter(p => p.related_product_id === product.id);
+
+    productPromotions.sort((a, b) => {
+        if (a.target_type !== b.target_type) {
+            return a.target_type === 'product' ? -1 : 1;
+        }
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+    const activePromotion = productPromotions[0];
+
+    if (activePromotion) {
+        let discountPrice = product.price;
+        if (activePromotion.discount_type === 'percentage') {
+            discountPrice = product.price * (1 - activePromotion.discount_value / 100);
+        } else if (activePromotion.discount_type === 'fixed') {
+            discountPrice = product.price - activePromotion.discount_value;
+        }
+        product.discount_price = Math.floor(discountPrice);
+        product.active_promotion = activePromotion;
+    } else {
+        product.discount_price = null;
+    }
+
     const optionsMap = {};
     product.options.forEach(opt => {
         if (!optionsMap[opt.name]) {
@@ -57,9 +110,6 @@ export const getProductById = async (id) => {
                 items: []
             };
         }
-        // Avoid duplicates if needed, though DB usually has unique rows for option_num
-        // But here we might have multiple rows with same name/value if stock differs? 
-        // Assuming unique name-value pairs for the select items
         const exists = optionsMap[opt.name].items.some(item => item.value === opt.value);
         if (!exists) {
             optionsMap[opt.name].items.push({

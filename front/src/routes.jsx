@@ -11,6 +11,7 @@ import ShopProductList from './views/shop/product/ProductList';
 import ShopProductDetail from './views/shop/product/Detail';
 import ShopCart from './views/shop/product/Cart';
 import ShopOrder from './views/shop/product/Order';
+import ShopBoardRegister from './views/shop/board/Register';
 
 import ReviewLayout from './views/review/common/Layout';
 import ReviewMain from './views/review/Main';
@@ -33,7 +34,8 @@ const router = createBrowserRouter([
             { path: '/categorys/:id', element: <ShopProductList /> },
             { path: '/products/:id', element: <ShopProductDetail /> },
             { path: '/cart', element: <ShopCart /> },
-            { path: '/order', element: <ShopOrder /> }
+            { path: '/order', element: <ShopOrder /> },
+            { path: '/board/register/:id', element: <ShopBoardRegister /> }
         ]
     }, {
         path: '/',

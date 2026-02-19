@@ -56,7 +56,7 @@ function Header() {
                         <Link href="/"><Text fontSize="lg" fontWeight="medium">SHOPPING</Text></Link>
                     </HStack>
                 </HStack>
-                <HStack gap="6">
+                <HStack gap={{ base: 4, md: 6 }}>
                     <form onSubmit={onSearchSubmit}>
                         <InputGroup startElement={<Icon size="md"><LuSearch /></Icon>} endElement={keywordClearElement}>
                             <Input rounded="full" width={{ base: "5", md: 'auto' }} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
@@ -70,9 +70,9 @@ function Header() {
                     </Group>
 
                     {!user ? (
-                        <HStack gap="6">
-                            <Link href="/login" fontSize="sm">로그인</Link>
-                            <Link href="/join" fontSize="sm">회원가입</Link>
+                        <HStack gap={{ base: 2, md: 6 }}>
+                            <Link href="/login" fontSize="sm" whiteSpace="nowrap">로그인</Link>
+                            <Link href="/join" fontSize="sm" whiteSpace="nowrap">회원가입</Link>
                         </HStack>
                     ) : (
                         <>
