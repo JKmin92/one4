@@ -2,13 +2,16 @@ import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { RichTextEditor } from "../../../components/ui/rich-text-editor";
 
-function BoardEditor({ content = null }) {
+function BoardEditor({ content, setContent }) {
 
     const editor = useEditor({
         extensions: [StarterKit],
-        content: content,
+        content,
         shouldRerenderOnTransaction: true,
-        immediatelyRender: false
+        immediatelyRender: false,
+        onUpdate: ({ editor }) => {
+            setContent(editor.getHTML());
+        }
     });
 
     if (!editor) return null;

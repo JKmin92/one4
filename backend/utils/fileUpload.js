@@ -21,8 +21,7 @@ export const uploadFile = async (file, type, id) => {
     const now = moment();
     const datePath = now.format('YYYY/MM/DD'); // 2026/02/09
 
-    // 최종 디렉토리 경로: public/uploads/YYYY/MM/DD/{type}/{id}
-    // 사용자가 요구한 구조: uploads/YYYY/MM/DD/product/{상품ID}/
+    // 디렉토리 경로: public/uploads/YYYY/MM/DD/{type}/{id}
     const relativeDir = path.join(datePath, type, String(id));
     const absoluteDir = path.join(process.cwd(), UPLOAD_ROOT, relativeDir);
 

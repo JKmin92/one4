@@ -5,17 +5,17 @@ import { Spinner } from "@chakra-ui/react";
 
 const AuthContext = createContext();
 
-export function AuthProvider({children}) {
+export function AuthProvider({ children }) {
     const [user, setUser] = useState();
     const [accessToken, setAccessToken] = useState();
-    const [isLoading, setIsLoading] = useState();
+    const [isLoading, setIsLoading] = useState(true);
 
-    const login = useCallback(async (credentials, type='user') => {
+    const login = useCallback(async (credentials, type = 'user') => {
         try {
             const url = type === 'admin' ? '/admin/user/signIn' : '/user/signIn';
             const res = await axiosInstance.post(url, credentials);
-            if(res.status === 200) {
-                const {accessToken : newAccessToken, ...userData} = res.data;
+            if (res.status === 200) {
+                const { accessToken: newAccessToken, ...userData } = res.data;
                 setUser(userData);
                 setAccessToken(newAccessToken);
                 return userData;
@@ -29,7 +29,7 @@ export function AuthProvider({children}) {
     const logout = useCallback(async () => {
         try {
             await axiosInstance.post('/user/signOut');
-        } catch(err) {
+        } catch (err) {
             console.error(err);
         } finally {
             setUser(null);
@@ -40,12 +40,12 @@ export function AuthProvider({children}) {
     const refreshAuthToken = useCallback(async () => {
         try {
             const res = await axiosInstance.post('/user/refresh');
-            if(res.status === 200) {
-                const {accessToken : newAccessToken} = res.data;
+            if (res.status === 200) {
+                const { accessToken: newAccessToken } = res.data;
                 setAccessToken(newAccessToken);
 
                 const userRes = await axiosInstance.get('/user/', {
-                    headers : {Authorization: `Bearer ${newAccessToken}`}
+                    headers: { Authorization: `Bearer ${newAccessToken}` }
                 });
                 setUser(userRes.data);
                 return newAccessToken;
@@ -59,16 +59,16 @@ export function AuthProvider({children}) {
     }, [logout]);
 
     useEffect(() => {
-        setupInterceptors({getAccessToken : () => accessToken, setAccessToken, logout, refreshAuthToken});
+        setupInterceptors({ getAccessToken: () => accessToken, setAccessToken, logout, refreshAuthToken });
 
         const checkAuthStatus = async () => {
             try {
                 const newAccessToken = await refreshAuthToken();
-                if(!newAccessToken) {
+                if (!newAccessToken) {
                     setUser(null);
                     setAccessToken(null);
                 }
-            } catch(err) {
+            } catch (err) {
                 console.error(err);
                 setUser(null);
                 setAccessToken(null);
@@ -84,7 +84,7 @@ export function AuthProvider({children}) {
         user, setUser, accessToken, setAccessToken, login, logout, refreshAuthToken
     }), [user, accessToken, login, logout, refreshAuthToken]);
 
-    if(isLoading) {
+    if (isLoading) {
         return (<Spinner color="blue.500" borderWidth="4px" position="fixed" top="50%" left="50%" transform="translate(-50%, -50%)" size="xl" />);
     }
 
@@ -95,4 +95,4 @@ export function AuthProvider({children}) {
     )
 }
 
-export {AuthContext};
+export { AuthContext };

@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes.js';
 import adminProductRoutes from './routes/admin/productRoutes.js';
 import adminPromotionRoutes from './routes/admin/promotionRoutes.js';
 import productRoutes from './routes/shop/productRoutes.js';
+import shopBoardRoutes from './routes/shop/boardRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -20,9 +21,10 @@ app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-app.use('/api/user', userRoutes);
 app.use('/api/admin/shop/product', adminProductRoutes);
-app.use('/api/shop/product', productRoutes);
 app.use('/api/admin/shop/promotion', adminPromotionRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/shop/product', productRoutes);
+app.use('/api/shop/board', shopBoardRoutes);
 
 export default app;

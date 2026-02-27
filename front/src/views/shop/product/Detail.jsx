@@ -4,14 +4,15 @@ import { Navigation, Pagination as SwiperPagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { LuChevronDown, LuChevronLeft, LuChevronRight, LuLock, LuMinus, LuPlus } from "react-icons/lu";
+import { LuChevronDown, LuChevronLeft, LuChevronRight, LuLock, LuMinus, LuPencil, LuPlus, LuTrash } from "react-icons/lu";
 import { calcDiscountPercent, formatDate, formatNumber, scrollViewPosition } from "../../../utils/simpleUtils";
 import { useEffect, useState } from "react";
 import { InfoTip } from '../../../components/ui/toggle-tip';
 import { toaster } from "../../../components/ui/toaster";
 import axiosInstance from "../../../utils/api";
 import { HiChevronLeft, HiChevronRight, HiX } from "react-icons/hi";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../../utils/useAuth";
 
 function ReviewView({ reviewList = [] }) {
     const [reviewPage, setReviewPage] = useState(1);
@@ -20,6 +21,8 @@ function ReviewView({ reviewList = [] }) {
     const startRange = (reviewPage - 1) * reviewPageSize;
     const endRange = startRange + reviewPageSize;
     const [reviewActive, setReviewActive] = useState(null);
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const reviewClick = (id) => {
         if (reviewActive === id) setReviewActive(null);
@@ -47,19 +50,31 @@ function ReviewView({ reviewList = [] }) {
                                     </RatingGroup.Root>
                                     <Text fontSize="sm" color="fg.muted">{review.name}</Text>
                                 </HStack>
-                                <Text fontSize="xs" color="fg.subtle">{formatDate(review.date)}</Text>
+                                <HStack gap="2">
+                                    {user != null && user.user_code === review.user_code && (
+                                        <HStack gap="0">
+                                            <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/${review.id}?ch=review`)}>
+                                                <LuPencil />
+                                            </IconButton>
+                                            <IconButton size="xs" variant="ghost" rounded="full"><LuTrash /></IconButton>
+                                        </HStack>
+                                    )}
+                                    <Text fontSize="xs" color="fg.subtle">{formatDate(review.date)}</Text>
+                                </HStack>
                             </Flex>
                             <Flex
                                 justifyContent={reviewActive === review.id ? 'start' : 'space-between'}
                                 flexDirection={reviewActive === review.id ? 'column' : 'row'}
                                 alignItems={reviewActive === review.id ? 'start' : 'center'}>
                                 {review.content.filter((item) => item.type === 'text').map((item, index) => (
-                                    <Text key={index}
-                                        whiteSpace={reviewActive === review.id ? 'pre-line' : 'nowrap'}
-                                        overflow={reviewActive === review.id ? 'auto' : 'hidden'}
-                                        textOverflow={reviewActive === review.id ? 'inherit' : 'ellipsis'}
+                                    <Box key={index}
+                                        whiteSpace={reviewActive === review.id ? 'normal' : 'nowrap'}
+                                        overflow={reviewActive === review.id ? 'visible' : 'hidden'}
+                                        textOverflow={reviewActive === review.id ? 'clip' : 'ellipsis'}
                                         fontSize="sm"
-                                    >{item.content}</Text>
+                                        dangerouslySetInnerHTML={{ __html: item.content }}
+                                        css={reviewActive !== review.id ? { "& *": { display: "inline", margin: 0, padding: 0 } } : {}}
+                                    />
                                 ))}
                                 <HStack>
                                     {review.content.filter((item) => item.type === 'image').map((item, index) => (
@@ -250,6 +265,8 @@ function Detail() {
     const [options, setOptions] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [optionValueList, setOptionValueList] = useState([]);
+    const [reviewList, setReviewList] = useState([]);
+    const [reviewScore, setReviewScore] = useState(0);
 
     useEffect(() => {
         const getProduct = async () => {
@@ -261,6 +278,42 @@ function Detail() {
                 if (data.options && Array.isArray(data.options)) {
                     setOptions(data.options);
                 }
+
+                let score = 0;
+
+                // Fetch reviews
+                const reviewsResponse = await axiosInstance.get(`/shop/board/product/review/${id}`);
+                const formattedReviews = reviewsResponse.data.map(review => {
+                    const contentItems = [];
+                    contentItems.push({ id: `text_${review.id}`, type: 'text', content: review.content });
+
+                    if (review.images) {
+                        try {
+                            const imagesArray = JSON.parse(review.images);
+                            if (Array.isArray(imagesArray)) {
+                                imagesArray.forEach((img, idx) => {
+                                    contentItems.push({ id: `img_${review.id}_${idx}`, type: 'image', content: img });
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse review images", e);
+                        }
+                    }
+
+                    score += review.rating;
+
+                    return {
+                        id: review.id,
+                        name: review.user_name || review.user_id || '익명',
+                        date: review.created_at || new Date().toISOString().split('T')[0],
+                        user_code: review.user_code,
+                        rank: review.rating,
+                        content: contentItems
+                    };
+                });
+                setReviewList(formattedReviews);
+                const avgScore = formattedReviews.length > 0 ? score / formattedReviews.length : 0;
+                setReviewScore(Math.round(avgScore * 2) / 2);
 
             } catch (error) {
                 toaster.create({ title: '상품 정보를 불러오는데 실패했습니다.', type: 'error' });
@@ -348,20 +401,6 @@ function Detail() {
     /**
      * 리뷰 DB 연동
      */
-    const reviewList = [
-        { id: 1, name: 'amean123', date: '2026-01-21', rank: 5, content: [{ id: 13, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 14, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 15, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 2, name: 'asdf', date: '2026-01-21', rank: 4, content: [{ id: 16, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 17, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 3, name: '353adsf', date: '2026-01-21', rank: 5, content: [{ id: 18, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
-        { id: 4, name: 'a243', date: '2026-01-21', rank: 5, content: [{ id: 19, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 20, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 21, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 5, name: 'asdfasd', date: '2026-01-21', rank: 4.5, content: [{ id: 22, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 23, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 6, name: 'a3523', date: '2026-01-21', rank: 5, content: [{ id: 24, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
-        { id: 7, name: 'a235a', date: '2026-01-21', rank: 3, content: [{ id: 25, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 26, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 33, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 8, name: 'adsfasdf', date: '2026-01-21', rank: 2, content: [{ id: 27, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 28, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 9, name: 'asdgasd', date: '2026-01-21', rank: 1, content: [{ id: 29, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
-        { id: 10, name: 'zcxbzvx', date: '2026-01-21', rank: 5, content: [{ id: 30, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 31, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }, { id: 34, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 11, name: 'cxne', date: '2026-01-21', rank: 3.5, content: [{ id: 35, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용\n내용이 어쩌구 저쩌구 하는 리뷰 내용\n\n내용이 어쩌구 저쩌구 하는 리뷰 내용\n내용이 어쩌구 저쩌구 하는 리뷰 내용' }, { id: 36, type: 'image', content: '//ecimg.cafe24img.com/pg1710b89275569084/wabami/web/product/small/20251210/4c96082cc73049b105a0bea2236b765f.png' }] },
-        { id: 12, name: '14adf', date: '2026-01-21', rank: 4, content: [{ id: 37, type: 'text', content: '내용이 어쩌구 저쩌구 하는 리뷰 내용' }] },
-    ]
 
     const askList = [
         { id: 1, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
@@ -412,7 +451,7 @@ function Detail() {
                         <Stack gap="6" borderTop="2px solid #000" pt="30px">
                             <Heading size="2xl">{product.name}</Heading>
                             <HStack gap="5">
-                                <RatingGroup.Root readOnly allowHalf count={5} defaultValue={3} size="sm" colorPalette="yellow">
+                                <RatingGroup.Root readOnly allowHalf count={5} defaultValue={0} size="sm" value={reviewScore} colorPalette="yellow">
                                     <RatingGroup.HiddenInput />
                                     <RatingGroup.Control />
                                 </RatingGroup.Root>

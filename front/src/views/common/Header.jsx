@@ -9,7 +9,7 @@ import { useLocation } from "react-router-dom";
 function Header() {
     const [keyword, setKeyword] = useState('');
     const headerLineStyle = { p: '15px', px: { base: '5px', md: 'layoutX' }, width: '100%', borderBottom: '1px solid #e5e5e5' };
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [categories, setCategories] = useState([]);
     const location = useLocation();
 
@@ -77,7 +77,16 @@ function Header() {
                     ) : (
                         <>
                             <Icon size="md"><LuBell /></Icon>
-                            <Avatar.Root><LuUserRound /></Avatar.Root>
+                            <Menu.Root>
+                                <Menu.Trigger>
+                                    <Avatar.Root><LuUserRound /></Avatar.Root>
+                                </Menu.Trigger>
+                                <Menu.Positioner>
+                                    <Menu.Content>
+                                        <Menu.Item><Button variant="ghost" onClick={logout}>로그아웃</Button></Menu.Item>
+                                    </Menu.Content>
+                                </Menu.Positioner>
+                            </Menu.Root>
                         </>
                     )}
 

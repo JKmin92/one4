@@ -1,21 +1,44 @@
 import { Heading, Stack, Image, Text, HStack, Box, Button, RatingGroup } from "@chakra-ui/react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../../../utils/api";
 import { toaster } from "../../../components/ui/toaster";
 import BoardEditor from "./BoardEditor";
+import { useAuth } from "../../../utils/useAuth";
 
 function Register() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const ch = searchParams.get('ch');
+    const location = useLocation();
 
     const [product, setProduct] = useState(null);
+    const [rating, setRating] = useState(0);
+    const [content, setContent] = useState(null);
+
+    const [images, setImages] = useState([]);
+    const fileInputRef = useRef(null);
+    const navigate = useNavigate();
+
+    const { user } = useAuth();
 
     useEffect(() => {
         const getProduct = async () => {
             try {
-                const response = await axiosInstance.get(`/shop/product/${id}`);
+                let getProductUrl = `/shop/product/${id}`;
+                if (location.pathname.includes('update') && ch === 'review') {
+                    const response = await axiosInstance.get(`/shop/board/product/review/edit/${id}`);
+                    getProductUrl = `/shop/product/${response.data.product_id}`;
+                    setRating(response.data.rating);
+                    setContent(response.data.content);
+
+                    if (response.data.user_code !== user.user_code) {
+                        toaster.create({ title: '수정 권한이 없습니다.', type: 'error' });
+                        navigate(`/products/${id}`);
+                    }
+                }
+
+                const response = await axiosInstance.get(getProductUrl);
                 setProduct(response.data);
             } catch (error) {
                 toaster.create({ title: '상품 정보를 불러오는데 실패했습니다.', type: 'error' });
@@ -24,8 +47,32 @@ function Register() {
         if (id) getProduct();
     }, [id]);
 
-    const [images, setImages] = useState([]);
-    const fileInputRef = useRef(null);
+    const saveBoard = async () => {
+        const formData = new FormData();
+
+        if (ch == 'review') {
+            formData.append('rating', rating);
+        }
+        formData.append('content', content);
+        formData.append('ch', ch);
+
+        images.forEach(img => {
+            formData.append('images', img.file);
+        });
+
+        try {
+            const response = await axiosInstance.post(`/shop/board/product/review/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toaster.create({ title: '등록되었습니다.', type: 'success' });
+            navigate(`/products/${id}`);
+        } catch (error) {
+            console.log(error);
+            toaster.create({ title: '등록에 실패했습니다.', type: 'error' });
+        }
+    }
+
+
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
@@ -44,6 +91,17 @@ function Register() {
             return newImages;
         });
     };
+
+    useEffect(() => {
+        if (user === null) {
+            toaster.create({ title: '로그인이 필요한 서비스입니다.', type: 'error' });
+            navigate('/login');
+        }
+    }, [user, navigate]);
+
+    if (!user) {
+        return null;
+    }
 
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="12" width={{ base: 'full', md: "6xl" }} margin="auto">
@@ -67,13 +125,13 @@ function Register() {
 
                 <HStack>
                     <Text fontWeight="medium">평점</Text>
-                    <RatingGroup.Root allowHalf count={5} defaultValue={0} size="lg" colorPalette="yellow">
+                    <RatingGroup.Root allowHalf count={5} defaultValue={0} value={rating} onValueChange={(e) => setRating(e.value)} size="lg" colorPalette="yellow">
                         <RatingGroup.HiddenInput />
                         <RatingGroup.Control />
                     </RatingGroup.Root>
                 </HStack>
 
-                <BoardEditor />
+                <BoardEditor content={content} setContent={setContent} />
 
                 <Stack direction="row" gap="2" wrap="wrap">
                     {images.map((image, index) => (
@@ -104,7 +162,7 @@ function Register() {
                 <HStack justifyContent="space-between">
                     <input type="file" multiple accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
                     <Button variant="outline" onClick={() => fileInputRef.current.click()}>이미지 업로드</Button>
-                    <Button>등록</Button>
+                    <Button onClick={saveBoard}>등록</Button>
                 </HStack>
             </Stack>
         </Stack>
