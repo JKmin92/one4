@@ -23,6 +23,12 @@ function Register() {
     const { user } = useAuth();
 
     useEffect(() => {
+        if (id === null || ch === null || ch !== 'review' && ch !== 'qna') {
+            toaster.create({ title: '잘못된 접근입니다.', type: 'error' });
+            navigate(-1);//이전 페이지로
+            return;
+        }
+
         const getProduct = async () => {
             try {
                 let getProductUrl = `/shop/product/${id}`;
@@ -31,6 +37,20 @@ function Register() {
                     getProductUrl = `/shop/product/${response.data.product_id}`;
                     setRating(response.data.rating);
                     setContent(response.data.content);
+
+                    if (response.data.images) {
+                        try {
+                            const parsedImages = JSON.parse(response.data.images);
+                            const existingImages = parsedImages.map(url => ({
+                                file: null,
+                                preview: url,
+                                isExisting: true
+                            }));
+                            setImages(existingImages);
+                        } catch (e) {
+                            console.error("Failed to parse images", e);
+                        }
+                    }
 
                     if (response.data.user_code !== user.user_code) {
                         toaster.create({ title: '수정 권한이 없습니다.', type: 'error' });
@@ -57,18 +77,38 @@ function Register() {
         formData.append('ch', ch);
 
         images.forEach(img => {
-            formData.append('images', img.file);
+            if (img.file) {
+                formData.append('images', img.file);
+            } else if (img.isExisting) {
+                formData.append('existingImages', img.preview);
+            }
         });
 
         try {
-            const response = await axiosInstance.post(`/shop/board/product/review/${id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            toaster.create({ title: '등록되었습니다.', type: 'success' });
-            navigate(`/products/${id}`);
+            if (location.pathname.includes('update')) {
+                if (ch === 'review') {
+                    const response = await axiosInstance.put(`/shop/board/product/review/${id}`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                }
+                toaster.create({ title: '수정되었습니다.', type: 'success' });
+            } else {
+                if (ch === 'review') {
+                    const response = await axiosInstance.post(`/shop/board/product/review/${id}`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                }
+                toaster.create({ title: '등록되었습니다.', type: 'success' });
+            }
+
+            navigate(`/products/${product.id}`);
         } catch (error) {
-            console.log(error);
-            toaster.create({ title: '등록에 실패했습니다.', type: 'error' });
+            console.error(error);
+            if (location.pathname.includes('update')) {
+                toaster.create({ title: '수정에 실패했습니다.', type: 'error' });
+            } else {
+                toaster.create({ title: '등록에 실패했습니다.', type: 'error' });
+            }
         }
     }
 
@@ -123,13 +163,16 @@ function Register() {
                     </HStack>
                 )}
 
-                <HStack>
-                    <Text fontWeight="medium">평점</Text>
-                    <RatingGroup.Root allowHalf count={5} defaultValue={0} value={rating} onValueChange={(e) => setRating(e.value)} size="lg" colorPalette="yellow">
-                        <RatingGroup.HiddenInput />
-                        <RatingGroup.Control />
-                    </RatingGroup.Root>
-                </HStack>
+                {ch === 'review' && (
+                    <HStack>
+                        <Text fontWeight="medium">평점</Text>
+                        <RatingGroup.Root allowHalf count={5} defaultValue={0} value={rating} onValueChange={(e) => setRating(e.value)} size="lg" colorPalette="yellow">
+                            <RatingGroup.HiddenInput />
+                            <RatingGroup.Control />
+                        </RatingGroup.Root>
+                    </HStack>
+                )}
+
 
                 <BoardEditor content={content} setContent={setContent} />
 
@@ -137,23 +180,11 @@ function Register() {
                     {images.map((image, index) => (
                         <Box key={index} position="relative" width="20" height="20" rounded="md" overflow="hidden" borderWidth="1px">
                             <Image src={image.preview} w="full" h="full" objectFit="cover" />
-                            <Box
-                                as="button"
-                                position="absolute"
-                                top="1"
-                                right="1"
-                                bg="blackAlpha.600"
-                                color="white"
-                                rounded="full"
-                                w="4"
-                                h="4"
-                                display="flex"
-                                alignItems="center"
-                                cursor="pointer"
-                                justifyContent="center"
-                                onClick={() => handleRemoveImage(index)}
-                            >
-                                <Text fontSize="xs">✕</Text>
+                            <Box as="button" position="absolute" top="1" right="1"
+                                bg="blackAlpha.600" color="white" rounded="full" w="4" h="4" display="flex"
+                                alignItems="center" cursor="pointer" justifyContent="center"
+                                onClick={() => handleRemoveImage(index)}>
+                                <Text fontSize="2xs">✕</Text>
                             </Box>
                         </Box>
                     ))}

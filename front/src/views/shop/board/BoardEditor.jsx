@@ -1,4 +1,5 @@
 import { useEditor } from "@tiptap/react";
+import { useEffect } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import { RichTextEditor } from "../../../components/ui/rich-text-editor";
 
@@ -6,13 +7,19 @@ function BoardEditor({ content, setContent }) {
 
     const editor = useEditor({
         extensions: [StarterKit],
-        content,
+        content: content || '',
         shouldRerenderOnTransaction: true,
         immediatelyRender: false,
         onUpdate: ({ editor }) => {
             setContent(editor.getHTML());
         }
     });
+
+    useEffect(() => {
+        if (editor && content !== undefined && content !== null && content !== editor.getHTML()) {
+            editor.commands.setContent(content);
+        }
+    }, [content, editor]);
 
     if (!editor) return null;
     return (

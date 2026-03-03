@@ -28,3 +28,32 @@ export const updateProductReview = async ({ id, rating, content, images }) => {
 export const deleteProductReview = async (id) => {
     return await boardModel.deleteProductReview(id);
 }
+
+export const insertProductInquiry = async (product_inquiry) => {
+    return await boardModel.createProductInquiry(product_inquiry.product_id, product_inquiry.user_code, product_inquiry.type, product_inquiry.content, product_inquiry.images, product_inquiry.is_secret);
+}
+
+export const getProductInquiryByProductId = async (product_id) => {
+    const inquiries = await boardModel.getProductInquiriesByProductId(product_id);
+    return inquiries.map(inquiry => {
+        if (inquiry.user_name && inquiry.user_name.length > 1) {
+            return {
+                ...inquiry,
+                user_name: inquiry.user_name.charAt(0) + '*'.repeat(inquiry.user_name.length - 1)
+            };
+        }
+        return inquiry;
+    });
+}
+
+export const getProductInquiryById = async (id) => {
+    return await boardModel.getProductInquiryById(id);
+}
+
+export const updateProductInquiry = async ({ id, type, content, images, is_secret }) => {
+    return await boardModel.updateProductInquiry({ id, type, content, images, is_secret });
+}
+
+export const deleteProductInquiry = async (id) => {
+    return await boardModel.deleteProductInquiry(id);
+}

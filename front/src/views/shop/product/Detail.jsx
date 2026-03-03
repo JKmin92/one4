@@ -31,6 +31,17 @@ function ReviewView({ reviewList = [] }) {
 
     const visibleReviewItems = reviewList.slice(startRange, endRange);
 
+    const deleteReview = async (id) => {
+        await axiosInstance.delete(`/shop/board/product/review/${id}`)
+            .then(() => {
+                toaster.create({ title: '삭제되었습니다.', type: 'success' });
+                navigate(0, { replace: true }); //새로고침
+            })
+            .catch((error) => {
+                toaster.create({ title: '삭제에 실패했습니다.', type: 'error' });
+            });
+    }
+
     return (
         <Stack gap="6">
             <Stack separator={<StackSeparator />}>
@@ -56,7 +67,29 @@ function ReviewView({ reviewList = [] }) {
                                             <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/${review.id}?ch=review`)}>
                                                 <LuPencil />
                                             </IconButton>
-                                            <IconButton size="xs" variant="ghost" rounded="full"><LuTrash /></IconButton>
+                                            <Dialog.Root>
+                                                <Dialog.Trigger asChild>
+                                                    <IconButton size="xs" variant="ghost" rounded="full"><LuTrash /></IconButton>
+                                                </Dialog.Trigger>
+                                                <Dialog.Backdrop />
+                                                <Dialog.Positioner>
+                                                    <Dialog.Content>
+                                                        <Dialog.Header>
+                                                            <Dialog.Title>댓글 삭제</Dialog.Title>
+                                                        </Dialog.Header>
+                                                        <Dialog.Body>
+                                                            정말 삭제하시겠습니까?
+                                                        </Dialog.Body>
+                                                        <Dialog.Footer>
+                                                            <Dialog.ActionTrigger asChild>
+                                                                <Button variant="outline">취소</Button>
+                                                            </Dialog.ActionTrigger>
+                                                            <Button colorPalette="red" onClick={() => deleteReview(review.id)}>삭제</Button>
+                                                        </Dialog.Footer>
+                                                    </Dialog.Content>
+                                                </Dialog.Positioner>
+                                            </Dialog.Root>
+
                                         </HStack>
                                     )}
                                     <Text fontSize="xs" color="fg.subtle">{formatDate(review.date)}</Text>
@@ -265,8 +298,10 @@ function Detail() {
     const [options, setOptions] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [optionValueList, setOptionValueList] = useState([]);
+
     const [reviewList, setReviewList] = useState([]);
     const [reviewScore, setReviewScore] = useState(0);
+    const [inquiryList, setInquiryList] = useState([]);
 
     useEffect(() => {
         const getProduct = async () => {
@@ -311,14 +346,45 @@ function Detail() {
                         content: contentItems
                     };
                 });
+
+                const inquiryResponse = await axiosInstance.get(`/shop/board/product/inquiry/${id}`);
+                const formattedInquirys = inquiryResponse.data.map(inquiry => {
+                    const contentItems = [];
+                    contentItems.push({ id: `text_${inquiry.id}`, type: 'text', content: inquiry.content });
+
+                    if (inquiry.images) {
+                        try {
+                            const imagesArray = JSON.parse(inquiry.images);
+                            if (Array.isArray(imagesArray)) {
+                                imagesArray.forEach((img, idx) => {
+                                    contentItems.push({ id: `img_${inquiry.id}_${idx}`, type: 'image', content: img })
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse inquiry images", e);
+                        }
+                    }
+
+                    return {
+                        id: inquiry.id,
+                        name: inquiry.user_name || inquiry.user_id || '익명',
+                        date: inquiry.created_at || new Date().toISOString().split('T')[0],
+                        user_code: inquiry.user_code,
+                        content: contentItems
+                    }
+                })
+
                 setReviewList(formattedReviews);
                 const avgScore = formattedReviews.length > 0 ? score / formattedReviews.length : 0;
                 setReviewScore(Math.round(avgScore * 2) / 2);
+                setInquiryList(formattedInquirys);
 
             } catch (error) {
                 toaster.create({ title: '상품 정보를 불러오는데 실패했습니다.', type: 'error' });
             }
         };
+
+
         getProduct();
     }, [id]);
 
@@ -397,25 +463,6 @@ function Detail() {
             items: option.items
         })
     }));
-
-    /**
-     * 리뷰 DB 연동
-     */
-
-    const askList = [
-        { id: 1, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
-        { id: 2, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
-        { id: 3, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true },
-        { id: 4, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
-        { id: 5, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
-        { id: 6, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true },
-        { id: 7, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
-        { id: 8, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
-        { id: 9, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true },
-        { id: 10, name: 'amean123', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: false },
-        { id: 11, name: 'afeq', date: '2026-01-21', askText: '배송 언제되요?!!', status: 'pending', answerText: null, secret: false },
-        { id: 12, name: 'avads1', date: '2026-01-21', askText: '유통기한은 언제까지 인가요?', status: 'accepted', answerText: '26년 12월 1일까지예요!', secret: true }
-    ]
 
 
     return (
@@ -556,9 +603,9 @@ function Detail() {
             <Stack gap="6">
                 <Flex justifyContent="space-between">
                     <Heading>상품 Q&A</Heading>
-                    <Link href="#" fontSize="sm">Q&A 작성 <LuChevronRight /></Link>
+                    <Link href={`/board/register/${id}?ch=qna`} fontSize="sm">Q&A 작성 <LuChevronRight /></Link>
                 </Flex>
-                <ProuctAsk productAskList={askList} />
+                <ProuctAsk productAskList={inquiryList} />
             </Stack>
         </Stack>
     )
