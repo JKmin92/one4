@@ -29,6 +29,11 @@ function BoardEditor({ content, setContent }) {
             borderColor="border"
             rounded="md"
             minH="500px"
+            css={{ "--content-min-height": "500px" }}
+            onClick={(e) => {
+                if (e.target.closest('.ProseMirror')) return;
+                editor?.commands.focus('end');
+            }}
         >
             <RichTextEditor.Content />
         </RichTextEditor.Root>

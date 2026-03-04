@@ -30,7 +30,14 @@ export const deleteProductReview = async (id) => {
 }
 
 export const insertProductInquiry = async (product_inquiry) => {
-    return await boardModel.createProductInquiry(product_inquiry.product_id, product_inquiry.user_code, product_inquiry.type, product_inquiry.content, product_inquiry.images, product_inquiry.is_secret);
+    return await boardModel.createProductInquiry({
+        product_id: product_inquiry.product_id,
+        user_id: product_inquiry.user_code,
+        type: product_inquiry.type,
+        content: product_inquiry.content,
+        images: product_inquiry.images,
+        is_secret: product_inquiry.is_secret
+    });
 }
 
 export const getProductInquiryByProductId = async (product_id) => {

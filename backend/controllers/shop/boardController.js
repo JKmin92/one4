@@ -138,7 +138,7 @@ export const insertProductInquiry = async (req, res, next) => {
             type,
             content,
             images: imagesString,
-            is_secret
+            is_secret: is_secret === 'true' || is_secret === true ? 1 : 0
         });
         return res.status(200).json({ result: 'success' });
     } catch (error) {
@@ -169,7 +169,7 @@ export const getProductInquiryById = async (req, res, next) => {
 export const updateProductInquiry = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const { type, content, is_secret } = req.body;
+        const { type, content, is_secret, existingImages } = req.body;
         const files = req.files;
         let imagesArray = [];
 
@@ -191,7 +191,13 @@ export const updateProductInquiry = async (req, res, next) => {
         }
 
         const imagesString = imagesArray.length > 0 ? JSON.stringify(imagesArray) : null;
-        await boardService.updateProductInquiry({ id, type, content, images: imagesString, is_secret });
+        await boardService.updateProductInquiry({
+            id,
+            type,
+            content,
+            images: imagesString,
+            is_secret: is_secret === 'true' || is_secret === true ? 1 : 0
+        });
         return res.status(200).json({ result: 'success' });
     } catch (error) {
         next(error);

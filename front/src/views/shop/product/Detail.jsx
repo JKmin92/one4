@@ -78,7 +78,7 @@ function ReviewView({ reviewList = [] }) {
                                                             <Dialog.Title>댓글 삭제</Dialog.Title>
                                                         </Dialog.Header>
                                                         <Dialog.Body>
-                                                            정말 삭제하시겠습니까?
+                                                            작성하신 댓글을 정말 삭제하시겠습니까?
                                                         </Dialog.Body>
                                                         <Dialog.Footer>
                                                             <Dialog.ActionTrigger asChild>
@@ -89,7 +89,6 @@ function ReviewView({ reviewList = [] }) {
                                                     </Dialog.Content>
                                                 </Dialog.Positioner>
                                             </Dialog.Root>
-
                                         </HStack>
                                     )}
                                     <Text fontSize="xs" color="fg.subtle">{formatDate(review.date)}</Text>
@@ -148,9 +147,11 @@ function ProuctAsk({ productAskList = [] }) {
     const endRange = startRange + pageSize;
     const [askActive, setAskActive] = useState(null);
     const [secretDialogOpen, setSecretDialogOpen] = useState(false);
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
-    const askClick = (id, secret, status) => {
-        if (secret) {
+    const askClick = (id, is_secret, status) => {
+        if (is_secret) {
             setSecretDialogOpen(true);
             return;
         }
@@ -164,6 +165,17 @@ function ProuctAsk({ productAskList = [] }) {
 
     const visibleAskItems = productAskList.slice(startRange, endRange);
 
+    const deleteInquiry = async (id) => {
+        await axiosInstance.delete(`/shop/board/product/inquiry/${id}`)
+            .then(() => {
+                toaster.create({ title: '삭제되었습니다.', type: 'success' });
+                navigate(0, { replace: true }); //새로고침
+            })
+            .catch((error) => {
+                toaster.create({ title: '삭제에 실패했습니다.', type: 'error' });
+            });
+    }
+
     return (
         <Stack gap="6">
             <Stack separator={<StackSeparator />}>
@@ -171,18 +183,59 @@ function ProuctAsk({ productAskList = [] }) {
                     <Stack
                         key={ask.id}
                         cursor="pointer"
-                        onClick={() => askClick(ask.id, ask.secret, ask.status)}
+                        onClick={() => askClick(ask.id, ask.is_secret, ask.status)}
                         bg={askActive === ask.id ? 'bg.muted' : 'bg'}
                         p="5px 10px"
                     >
                         <Flex justifyContent="space-between">
                             <Text fontSize="sm" color="fg.muted">{ask.name}</Text>
-                            <Text fontSize="xs" color="fg.subtle">{formatDate(ask.date)}</Text>
+                            <HStack>
+                                {user != null && user.user_code === ask.user_code && (
+                                    <HStack gap="0">
+                                        <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/${ask.id}?ch=qna`)}>
+                                            <LuPencil />
+                                        </IconButton>
+                                        <Dialog.Root>
+                                            <Dialog.Trigger asChild>
+                                                <IconButton size="xs" variant="ghost" rounded="full"><LuTrash /></IconButton>
+                                            </Dialog.Trigger>
+                                            <Dialog.Backdrop />
+                                            <Dialog.Positioner>
+                                                <Dialog.Content>
+                                                    <Dialog.Header>
+                                                        <Dialog.Title>문의 삭제</Dialog.Title>
+                                                    </Dialog.Header>
+                                                    <Dialog.Body>
+                                                        작성하신 문의를 정말 삭제하시겠습니까?
+                                                    </Dialog.Body>
+                                                    <Dialog.Footer>
+                                                        <Dialog.ActionTrigger asChild>
+                                                            <Button variant="outline">취소</Button>
+                                                        </Dialog.ActionTrigger>
+                                                        <Button colorPalette="red" onClick={() => deleteInquiry(review.id)}>삭제</Button>
+                                                    </Dialog.Footer>
+                                                </Dialog.Content>
+                                            </Dialog.Positioner>
+                                        </Dialog.Root>
+                                    </HStack>
+                                )}
+                                <Text fontSize="xs" color="fg.subtle">{formatDate(ask.date)}</Text>
+                            </HStack>
                         </Flex>
                         <Stack gap="4">
                             <Flex justifyContent="space-between">
-                                {ask.secret ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
-                                    : (<Text fontSize="sm">{ask.askText}</Text>)}
+                                {!user && ask.is_secret && user.user_code !== ask.user_id ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
+                                    : ask.content.filter((item) => item.type === 'text').map((item, index) => (
+                                        <Box key={index}
+                                            whiteSpace={askActive === ask.id ? 'normal' : 'nowrap'}
+                                            overflow={askActive === ask.id ? 'visible' : 'hidden'}
+                                            textOverflow={askActive === ask.id ? 'clip' : 'ellipsis'}
+                                            fontSize="sm"
+                                            dangerouslySetInnerHTML={{ __html: item.content }}
+                                            css={askActive !== ask.id ? { "& *": { display: "inline", margin: 0, padding: 0 } } : {}}
+                                        />
+                                    ))
+                                }
                                 <Badge colorPalette={ask.status === 'accepted' ? 'green' : ''} fontSize="2xs">
                                     {ask.status === 'accepted' ? '답변완료' : '답변대기'}
                                 </Badge>
@@ -369,7 +422,8 @@ function Detail() {
                         id: inquiry.id,
                         name: inquiry.user_name || inquiry.user_id || '익명',
                         date: inquiry.created_at || new Date().toISOString().split('T')[0],
-                        user_code: inquiry.user_code,
+                        user_code: inquiry.user_id,
+                        is_secret: inquiry.is_secret,
                         content: contentItems
                     }
                 })

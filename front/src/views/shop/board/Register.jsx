@@ -1,4 +1,4 @@
-import { Heading, Stack, Image, Text, HStack, Box, Button, RatingGroup } from "@chakra-ui/react";
+import { Heading, Stack, Image, Text, HStack, Box, Button, RatingGroup, Checkbox, createListCollection, Select } from "@chakra-ui/react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../../../utils/api";
@@ -15,6 +15,8 @@ function Register() {
     const [product, setProduct] = useState(null);
     const [rating, setRating] = useState(0);
     const [content, setContent] = useState(null);
+    const [is_secret, setIsSecret] = useState(false);
+    const [type, setType] = useState([]);
 
     const [images, setImages] = useState([]);
     const fileInputRef = useRef(null);
@@ -56,6 +58,31 @@ function Register() {
                         toaster.create({ title: '수정 권한이 없습니다.', type: 'error' });
                         navigate(`/products/${id}`);
                     }
+                } else if (location.pathname.includes('update') && ch === 'qna') {
+                    const response = await axiosInstance.get(`/shop/board/product/inquiry/edit/${id}`);
+                    getProductUrl = `/shop/product/${response.data.product_id}`;
+                    setContent(response.data.content);
+                    setIsSecret(response.data.is_secret === 1 ? true : false);
+                    setType([response.data.type]);
+
+                    if (response.data.images) {
+                        try {
+                            const parsedImages = JSON.parse(response.data.images);
+                            const existingImages = parsedImages.map(url => ({
+                                file: null,
+                                preview: url,
+                                isExisting: true
+                            }));
+                            setImages(existingImages);
+                        } catch (e) {
+                            console.error("Failed to parse images", e);
+                        }
+                    }
+
+                    if (response.data.user_id !== user.user_code) {
+                        toaster.create({ title: '수정 권한이 없습니다.', type: 'error' });
+                        navigate(`/products/${id}`);
+                    }
                 }
 
                 const response = await axiosInstance.get(getProductUrl);
@@ -72,6 +99,13 @@ function Register() {
 
         if (ch == 'review') {
             formData.append('rating', rating);
+        } else {
+            formData.append('is_secret', is_secret);
+            if (type.length > 0) formData.append('type', type[0]);
+            else {
+                toaster.create({ title: '문의 유형을 선택해주세요.', type: 'error' });
+                return;
+            }
         }
         formData.append('content', content);
         formData.append('ch', ch);
@@ -87,14 +121,22 @@ function Register() {
         try {
             if (location.pathname.includes('update')) {
                 if (ch === 'review') {
-                    const response = await axiosInstance.put(`/shop/board/product/review/${id}`, formData, {
+                    await axiosInstance.put(`/shop/board/product/review/${id}`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                } else {
+                    await axiosInstance.put(`/shop/board/product/inquiry/${id}`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
                 }
                 toaster.create({ title: '수정되었습니다.', type: 'success' });
             } else {
                 if (ch === 'review') {
-                    const response = await axiosInstance.post(`/shop/board/product/review/${id}`, formData, {
+                    await axiosInstance.post(`/shop/board/product/review/${id}`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                } else {
+                    await axiosInstance.post(`/shop/board/product/inquiry/${id}`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
                 }
@@ -143,6 +185,14 @@ function Register() {
         return null;
     }
 
+    const inquiryFrameworks = createListCollection({
+        items: [
+            { label: '제품 문의', value: 'PRODUCT' },
+            { label: '배송 문의', value: 'DELIVERY' },
+            { label: '기타 문의', value: 'ACC' }
+        ]
+    })
+
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="12" width={{ base: 'full', md: "6xl" }} margin="auto">
             <Stack gap="6">
@@ -163,13 +213,42 @@ function Register() {
                     </HStack>
                 )}
 
-                {ch === 'review' && (
+                {ch === 'review' ? (
                     <HStack>
                         <Text fontWeight="medium">평점</Text>
                         <RatingGroup.Root allowHalf count={5} defaultValue={0} value={rating} onValueChange={(e) => setRating(e.value)} size="lg" colorPalette="yellow">
                             <RatingGroup.HiddenInput />
                             <RatingGroup.Control />
                         </RatingGroup.Root>
+                    </HStack>
+                ) : (
+                    <HStack>
+                        <Select.Root collection={inquiryFrameworks} size="sm" maxW="320px" value={type} onValueChange={(e) => setType(e.value)}>
+                            <Select.HiddenSelect />
+                            <Select.Control>
+                                <Select.Trigger>
+                                    <Select.ValueText placeholder="문의 유형을 선택해주세요" />
+                                </Select.Trigger>
+                                <Select.IndicatorGroup>
+                                    <Select.Indicator />
+                                </Select.IndicatorGroup>
+                            </Select.Control>
+                            <Select.Positioner>
+                                <Select.Content>
+                                    {inquiryFrameworks.items.map((item) => (
+                                        <Select.Item key={item.value} item={item}>
+                                            {item.label}
+                                            <Select.ItemIndicator />
+                                        </Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select.Positioner>
+                        </Select.Root>
+                        <Checkbox.Root checked={is_secret} onCheckedChange={(e) => setIsSecret(!!e.checked)}>
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label>비공개</Checkbox.Label>
+                        </Checkbox.Root>
                     </HStack>
                 )}
 
