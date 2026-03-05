@@ -1,4 +1,4 @@
-import * as productService from '../../services/admin/productService.js';
+import * as productService from '../../../services/admin/shop/productService.js';
 
 export const createCategory = async (req, res, next) => {
     try {

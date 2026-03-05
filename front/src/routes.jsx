@@ -24,6 +24,7 @@ import AdminProductRegister from './views/admin/shop/product/Register';
 import AdminProductCategory from './views/admin/shop/product/Category';
 import AdminPromotionList from './views/admin/shop/promotion/List';
 import AdminPromotionRegister from './views/admin/shop/promotion/Register';
+import AdminBoardList from './views/admin/shop/board/List';
 
 const router = createBrowserRouter([
     {
@@ -55,7 +56,8 @@ const router = createBrowserRouter([
             { path: 'shop/product/category', element: <AdminProductCategory /> },
             { path: 'shop/promotion/list', element: <AdminPromotionList /> },
             { path: 'shop/promotion/register', element: <AdminPromotionRegister /> },
-            { path: 'shop/promotion/update/:id', element: <AdminPromotionRegister /> }
+            { path: 'shop/promotion/update/:id', element: <AdminPromotionRegister /> },
+            { path: 'shop/board/list/:type', element: <AdminBoardList /> }
         ]
     }, {
         path: '/review',

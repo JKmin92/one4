@@ -1,6 +1,6 @@
-import * as model from '../../models/admin/productModel.js';
+import * as model from '../../../models/admin/shop/productModel.js';
 import moment from 'moment';
-import * as fileUpload from '../../utils/fileUpload.js';
+import * as fileUpload from '../../../utils/fileUpload.js';
 
 export const insertProductCategory = async (category) => {
     const timePart = moment().format('YYMMDDHHmmss');

@@ -1,4 +1,4 @@
-import db from '../../config/db.js';
+import db from '../../../config/db.js';
 
 export const insertPromotion = async (promotion) => {
     const sql = `
@@ -51,4 +51,28 @@ export const selectPromotionById = async (id) => {
     const [targetRows] = await db.query(targetSql, [id]);
 
     return { ...promotion, targets: targetRows };
+};
+
+export const updatePromotion = async (promotion) => {
+    const sql = `
+        UPDATE product_promotion 
+        SET name = ?, code = ?, discount_type = ?, discount_value = ?, start_date = ?, end_date = ?, description = ?, is_active = ?
+        WHERE id = ?
+    `;
+    return await db.query(sql, [
+        promotion.name,
+        promotion.code,
+        promotion.discountType,
+        promotion.discountValue,
+        promotion.startDate,
+        promotion.endDate,
+        promotion.description,
+        promotion.isActive ? 1 : 0,
+        promotion.id
+    ]);
+};
+
+export const deletePromotionTarget = async (target) => {
+    const sql = `DELETE FROM product_promotion_target WHERE promotion_id = ?`;
+    return await db.query(sql, [target]);
 };

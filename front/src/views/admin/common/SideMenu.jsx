@@ -48,11 +48,11 @@ function SideMenu() {
         }, {
             path: 'board', label: '게시판',
             children: [
-                { path: 'review', label: '리뷰' },
-                { path: 'question', label: '상품 문의' },
-                { path: 'inquiry', label: '1:1 문의' },
-                { path: 'notice', label: '공지사항' },
-                { path: 'faq', label: 'FAQ' },
+                { path: 'list/review', label: '리뷰' },
+                { path: 'list/product_qna', label: '상품 문의' },
+                { path: 'list/inquiry', label: '1:1 문의' },
+                { path: 'list/notice', label: '공지사항' },
+                { path: 'list/faq', label: 'FAQ' },
             ]
         }
     ];

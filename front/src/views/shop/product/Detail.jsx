@@ -122,7 +122,10 @@ function ReviewView({ reviewList = [] }) {
                     )
                 })}
             </Stack>
-            <Pagination.Root count={reviewCount} pageSize={reviewPageSize} page={reviewPage} onPageChange={(e) => setReviewPage(e.page)} margin="auto">
+            {visibleReviewItems.length <= 0 && (
+                <Box textAlign="center" color="fg.muted" fontSize="sm">상품 관련 문의가 있다면 작성해주세요.</Box>
+            )}
+            <Pagination.Root display={visibleReviewItems.length <= 0 ? 'none' : 'block'} count={reviewCount} pageSize={reviewPageSize} page={reviewPage} onPageChange={(e) => setReviewPage(e.page)} margin="auto">
                 <ButtonGroup variant="ghost" size="sm">
                     <Pagination.PrevTrigger asChild>
                         <IconButton><HiChevronLeft /></IconButton>
@@ -150,8 +153,8 @@ function ProuctAsk({ productAskList = [] }) {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const askClick = (id, is_secret, status) => {
-        if (is_secret) {
+    const askClick = (id, is_secret, status, user_code) => {
+        if (is_secret && user.user_code !== user_code) {
             setSecretDialogOpen(true);
             return;
         }
@@ -183,7 +186,7 @@ function ProuctAsk({ productAskList = [] }) {
                     <Stack
                         key={ask.id}
                         cursor="pointer"
-                        onClick={() => askClick(ask.id, ask.is_secret, ask.status)}
+                        onClick={() => askClick(ask.id, ask.is_secret, ask.status, ask.user_code)}
                         bg={askActive === ask.id ? 'bg.muted' : 'bg'}
                         p="5px 10px"
                     >
@@ -212,7 +215,7 @@ function ProuctAsk({ productAskList = [] }) {
                                                         <Dialog.ActionTrigger asChild>
                                                             <Button variant="outline">취소</Button>
                                                         </Dialog.ActionTrigger>
-                                                        <Button colorPalette="red" onClick={() => deleteInquiry(review.id)}>삭제</Button>
+                                                        <Button colorPalette="red" onClick={() => deleteInquiry(ask.id)}>삭제</Button>
                                                     </Dialog.Footer>
                                                 </Dialog.Content>
                                             </Dialog.Positioner>
@@ -223,19 +226,29 @@ function ProuctAsk({ productAskList = [] }) {
                             </HStack>
                         </Flex>
                         <Stack gap="4">
-                            <Flex justifyContent="space-between">
-                                {!user && ask.is_secret && user.user_code !== ask.user_id ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
-                                    : ask.content.filter((item) => item.type === 'text').map((item, index) => (
-                                        <Box key={index}
-                                            whiteSpace={askActive === ask.id ? 'normal' : 'nowrap'}
-                                            overflow={askActive === ask.id ? 'visible' : 'hidden'}
-                                            textOverflow={askActive === ask.id ? 'clip' : 'ellipsis'}
-                                            fontSize="sm"
-                                            dangerouslySetInnerHTML={{ __html: item.content }}
-                                            css={askActive !== ask.id ? { "& *": { display: "inline", margin: 0, padding: 0 } } : {}}
-                                        />
-                                    ))
-                                }
+                            <Flex justifyContent="space-between" alignItems="start">
+                                <Stack>
+                                    {!user && ask.is_secret && user.user_code !== ask.user_id ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
+                                        : ask.content.filter((item) => item.type === 'text').map((item, index) => (
+                                            <Box key={index}
+                                                whiteSpace={askActive === ask.id ? 'normal' : 'nowrap'}
+                                                overflow={askActive === ask.id ? 'visible' : 'hidden'}
+                                                textOverflow={askActive === ask.id ? 'clip' : 'ellipsis'}
+                                                fontSize="sm"
+                                                dangerouslySetInnerHTML={{ __html: item.content }}
+                                                css={askActive !== ask.id ? { "& *": { display: "inline", margin: 0, padding: 0 } } : {}}
+                                            />
+                                        ))
+                                    }
+                                    <HStack display={askActive === ask.id ? 'block' : 'none'}>
+                                        {ask.content.filter((item) => item.type === 'image').map((item, index) => (
+                                            <Image key={index}
+                                                src={item.content}
+                                                width={askActive === ask.id ? 'xs' : '12'}
+                                                rounded="md" />
+                                        ))}
+                                    </HStack>
+                                </Stack>
                                 <Badge colorPalette={ask.status === 'accepted' ? 'green' : ''} fontSize="2xs">
                                     {ask.status === 'accepted' ? '답변완료' : '답변대기'}
                                 </Badge>
@@ -250,7 +263,10 @@ function ProuctAsk({ productAskList = [] }) {
                     </Stack>
                 ))}
             </Stack>
-            <Pagination.Root count={askCount} pageSize={pageSize} page={page} onPageChange={(e) => setPage(e.page)} margin="auto">
+            {visibleAskItems.length <= 0 && (
+                <Box textAlign="center" color="fg.muted" fontSize="sm">상품 관련 문의가 있다면 작성해주세요.</Box>
+            )}
+            <Pagination.Root display={visibleAskItems.length <= 0 ? 'none' : 'block'} count={askCount} pageSize={pageSize} page={page} onPageChange={(e) => setPage(e.page)} margin="auto">
                 <ButtonGroup variant="ghost" size="sm">
                     <Pagination.PrevTrigger asChild>
                         <IconButton><HiChevronLeft /></IconButton>

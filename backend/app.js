@@ -3,8 +3,9 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import userRoutes from './routes/userRoutes.js';
-import adminProductRoutes from './routes/admin/productRoutes.js';
-import adminPromotionRoutes from './routes/admin/promotionRoutes.js';
+import adminProductRoutes from './routes/admin/shop/productRoutes.js';
+import adminPromotionRoutes from './routes/admin/shop/promotionRoutes.js';
+import adminShopBoardRoutes from './routes/admin/shop/boardRoutes.js';
 import productRoutes from './routes/shop/productRoutes.js';
 import shopBoardRoutes from './routes/shop/boardRoutes.js';
 
@@ -26,5 +27,6 @@ app.use('/api/admin/shop/promotion', adminPromotionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/shop/product', productRoutes);
 app.use('/api/shop/board', shopBoardRoutes);
+app.use('/api/admin/shop/board', adminShopBoardRoutes);
 
 export default app;

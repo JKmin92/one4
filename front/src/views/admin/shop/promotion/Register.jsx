@@ -47,13 +47,19 @@ function Register() {
                     const response = await axiosInstance.get(`/admin/shop/promotion/${id}`);
                     const data = response.data;
 
+                    const formatDate = (dateStr) => {
+                        if (!dateStr) return "";
+                        const d = new Date(dateStr);
+                        return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    };
+
                     setPromotion({
                         name: data.name,
                         code: data.code,
                         discountType: data.discount_type,
                         discountValue: data.discount_value,
-                        startDate: data.start_date.split('T')[0],
-                        endDate: data.end_date.split('T')[0],
+                        startDate: formatDate(data.start_date),
+                        endDate: formatDate(data.end_date),
                         description: data.description,
                         isActive: data.is_active === 1,
                         targetType: data.targets.length > 0 ? data.targets[0].target_type : 'all',
@@ -159,8 +165,14 @@ function Register() {
         };
 
         try {
-            await axiosInstance.post("/admin/shop/promotion", payload);
-            toaster.create({ title: "프로모션이 성공적으로 등록되었습니다.", type: "success" });
+            if (id) {
+                await axiosInstance.put(`/admin/shop/promotion/${id}`, payload);
+                toaster.create({ title: "프로모션이 성공적으로 수정되었습니다.", type: "success" });
+            } else {
+                await axiosInstance.post("/admin/shop/promotion", payload);
+                toaster.create({ title: "프로모션이 성공적으로 등록되었습니다.", type: "success" });
+            }
+
             navigate("/admin/shop/promotion/list");
         } catch (error) {
             console.error(error);

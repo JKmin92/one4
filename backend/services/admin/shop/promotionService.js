@@ -1,10 +1,8 @@
-import * as model from '../../models/admin/promotionModel.js';
+import * as model from '../../../models/admin/shop/promotionModel.js';
 
 export const createPromotion = async (promotionData) => {
-    // 1. Create Promotion
     const promotionId = await model.insertPromotion(promotionData);
 
-    // 2. Insert Targets if any
     if (promotionData.targetType !== 'all') {
         const targets = promotionData.targets || [];
         for (const targetId of targets) {
@@ -42,4 +40,21 @@ export const getPromotionById = async (id) => {
     }
 
     return promotion;
+};
+
+export const updatePromotion = async (promotionData) => {
+    await model.updatePromotion(promotionData);
+
+    await model.deletePromotionTarget(promotionData.id);
+    if (promotionData.targetType !== 'all') {
+        const targets = promotionData.targets || [];
+        for (const targetId of targets) {
+            await model.insertPromotionTarget({
+                promotionId: promotionData.id,
+                targetType: promotionData.targetType,
+                targetId
+            });
+        }
+    }
+    return { success: true };
 };

@@ -1,4 +1,4 @@
-import db from '../../config/db.js';
+import db from '../../../config/db.js';
 
 export const insertProductCategory = async (category) => {
     const sql = `INSERT INTO product_category (name, is_visible, sort_order, id, parent_id, image_pc, image_tablet, image_mobile) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
