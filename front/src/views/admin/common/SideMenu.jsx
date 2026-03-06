@@ -10,7 +10,6 @@ function SideMenu() {
     const location = useLocation();
     const pathname = location.pathname;
 
-
     const shopCategory = [
         {
             path: 'product', label: '상품',
@@ -57,14 +56,33 @@ function SideMenu() {
         }
     ];
 
-    const [opens, setOpens] = useState(shopCategory.map(c => pathname.includes(`/${c.path}`)));
+    const reviewCategory = [
+        {
+            path: 'campaign', label: '리뷰 캠페인',
+            children: [
+                { path: 'list', label: '캠페인 리스트' },
+                { path: 'register', label: '캠페인 등록' },
+            ]
+        },
+    ];
+
+    const [opens, setOpens] = useState([]);
+
+    useEffect(() => {
+
+        if (pathname.includes('/admin/shop')) {
+            setOpens(shopCategory.map(c => pathname.includes(`/${c.path}`)))
+        } else if (pathname.includes('/admin/review')) {
+            setOpens(reviewCategory.map(c => pathname.includes(`/${c.path}`)))
+        }
+    }, [pathname]);
 
     return (
         <Box bg="bg" position="fixed" top="0" bottom="0" zIndex="20" width="18rem" borderInlineEndWidth="1px">
             <Stack h="full" overflowY="auto" p="4" pb="10" gap="12">
                 <Image src="/public/resources/img/logo/logo.svg" w="32" />
                 <Stack gap="2">
-                    {shopCategory.map((category, index) => (
+                    {pathname.includes('/admin/shop') ? shopCategory.map((category, index) => (
                         <Collapsible.Root key={index} open={opens[index]} onOpenChange={(e) => setOpens(prev => prev.map((value, i) => i === index ? e.open : value))}>
                             <Collapsible.Trigger w="full" asChild>
                                 <Button w='full' justifyContent="start" marginBottom="5px">{category.label}</Button>
@@ -82,7 +100,25 @@ function SideMenu() {
                                 </Stack>
                             </Collapsible.Content>
                         </Collapsible.Root>
-                    ))}
+                    )) : pathname.includes('/admin/review') ? reviewCategory.map((category, index) => (
+                        <Collapsible.Root key={index} open={opens[index]} onOpenChange={(e) => setOpens(prev => prev.map((value, i) => i === index ? e.open : value))}>
+                            <Collapsible.Trigger w="full" asChild>
+                                <Button w='full' justifyContent="start" marginBottom="5px">{category.label}</Button>
+                            </Collapsible.Trigger>
+                            <Collapsible.Content>
+                                <Stack>
+                                    {category.children.map((children, i) => (
+                                        <Link
+                                            key={i}
+                                            href={`/admin/review/${category.path}/${children.path}`}
+                                            {...linkStyle}
+                                            {...(pathname.includes(`${category.path}/${children.path}`) ? linkActiveStyle : null)}
+                                        >{children.label}</Link>
+                                    ))}
+                                </Stack>
+                            </Collapsible.Content>
+                        </Collapsible.Root>
+                    )) : null}
                 </Stack>
             </Stack>
         </Box>

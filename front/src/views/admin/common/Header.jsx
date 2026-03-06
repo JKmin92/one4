@@ -9,8 +9,8 @@ function Header() {
         <Box position="static" top="0" zIndex="30" bg="bg">
             <Flex justifyContent="space-between" p="10px" borderBottomWidth="1px" paddingInline="8">
                 <HStack gap="6">
-                    <Link href="#" fontSize="lg" color={pathname.includes('chellange') ? 'main' : null}>체험단</Link>
-                    <Link href="#" fontSize="lg" color={pathname.includes('shop') ? 'main' : null}>쇼핑몰</Link>
+                    <Link href="/admin/review/campaign/list" fontSize="lg" color={pathname.includes('review') ? 'main' : null}>체험단</Link>
+                    <Link href="/admin/shop/product/list" fontSize="lg" color={pathname.includes('shop') ? 'main' : null}>쇼핑몰</Link>
                 </HStack>
             </Flex>
         </Box>

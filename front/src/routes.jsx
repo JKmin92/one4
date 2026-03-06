@@ -25,6 +25,8 @@ import AdminProductCategory from './views/admin/shop/product/Category';
 import AdminPromotionList from './views/admin/shop/promotion/List';
 import AdminPromotionRegister from './views/admin/shop/promotion/Register';
 import AdminBoardList from './views/admin/shop/board/List';
+import AdminBoardDetail from './views/admin/shop/board/Detail';
+import AdminReviewCampaignList from './views/admin/review/campaign/List';
 
 const router = createBrowserRouter([
     {
@@ -36,8 +38,8 @@ const router = createBrowserRouter([
             { path: '/products/:id', element: <ShopProductDetail /> },
             { path: '/cart', element: <ShopCart /> },
             { path: '/order', element: <ShopOrder /> },
-            { path: '/board/register/:id', element: <ShopBoardRegister /> },
-            { path: '/board/update/:id', element: <ShopBoardRegister /> }
+            { path: '/board/register/:type/:id', element: <ShopBoardRegister /> },
+            { path: '/board/update/:type/:id', element: <ShopBoardRegister /> }
         ]
     }, {
         path: '/',
@@ -57,7 +59,9 @@ const router = createBrowserRouter([
             { path: 'shop/promotion/list', element: <AdminPromotionList /> },
             { path: 'shop/promotion/register', element: <AdminPromotionRegister /> },
             { path: 'shop/promotion/update/:id', element: <AdminPromotionRegister /> },
-            { path: 'shop/board/list/:type', element: <AdminBoardList /> }
+            { path: 'shop/board/list/:type', element: <AdminBoardList /> },
+            { path: 'shop/board/:type/:id', element: <AdminBoardDetail /> },
+            { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
         ]
     }, {
         path: '/review',

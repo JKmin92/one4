@@ -64,7 +64,7 @@ function ReviewView({ reviewList = [] }) {
                                 <HStack gap="2">
                                     {user != null && user.user_code === review.user_code && (
                                         <HStack gap="0">
-                                            <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/${review.id}?ch=review`)}>
+                                            <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/review/${review.review_code}`)}>
                                                 <LuPencil />
                                             </IconButton>
                                             <Dialog.Root>
@@ -84,7 +84,7 @@ function ReviewView({ reviewList = [] }) {
                                                             <Dialog.ActionTrigger asChild>
                                                                 <Button variant="outline">취소</Button>
                                                             </Dialog.ActionTrigger>
-                                                            <Button colorPalette="red" onClick={() => deleteReview(review.id)}>삭제</Button>
+                                                            <Button colorPalette="red" onClick={() => deleteReview(review.review_code)}>삭제</Button>
                                                         </Dialog.Footer>
                                                     </Dialog.Content>
                                                 </Dialog.Positioner>
@@ -123,7 +123,7 @@ function ReviewView({ reviewList = [] }) {
                 })}
             </Stack>
             {visibleReviewItems.length <= 0 && (
-                <Box textAlign="center" color="fg.muted" fontSize="sm">상품 관련 문의가 있다면 작성해주세요.</Box>
+                <Box textAlign="center" color="fg.muted" fontSize="sm">상품 리뷰를 작성해주세요.</Box>
             )}
             <Pagination.Root display={visibleReviewItems.length <= 0 ? 'none' : 'block'} count={reviewCount} pageSize={reviewPageSize} page={reviewPage} onPageChange={(e) => setReviewPage(e.page)} margin="auto">
                 <ButtonGroup variant="ghost" size="sm">
@@ -228,7 +228,7 @@ function ProuctAsk({ productAskList = [] }) {
                         <Stack gap="4">
                             <Flex justifyContent="space-between" alignItems="start">
                                 <Stack>
-                                    {!user && ask.is_secret && user.user_code !== ask.user_id ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
+                                    {!user && ask.is_secret && user.user_code !== ask.user_code ? (<HStack><LuLock size="14" /> <Text fontSize="sm">비밀글입니다.</Text></HStack>)
                                         : ask.content.filter((item) => item.type === 'text').map((item, index) => (
                                             <Box key={index}
                                                 whiteSpace={askActive === ask.id ? 'normal' : 'nowrap'}
@@ -408,9 +408,10 @@ function Detail() {
 
                     return {
                         id: review.id,
-                        name: review.user_name || review.user_id || '익명',
+                        name: review.user_name || '익명',
                         date: review.created_at || new Date().toISOString().split('T')[0],
                         user_code: review.user_code,
+                        review_code: review.review_code,
                         rank: review.rating,
                         content: contentItems
                     };
@@ -436,9 +437,9 @@ function Detail() {
 
                     return {
                         id: inquiry.id,
-                        name: inquiry.user_name || inquiry.user_id || '익명',
+                        name: inquiry.user_name || '익명',
                         date: inquiry.created_at || new Date().toISOString().split('T')[0],
-                        user_code: inquiry.user_id,
+                        user_code: inquiry.user_code,
                         is_secret: inquiry.is_secret,
                         content: contentItems
                     }
@@ -661,19 +662,19 @@ function Detail() {
                 <Flex justifyContent="space-between">
                     <HStack>
                         <Heading>리뷰({reviewList.length})</Heading>
-                        <RatingGroup.Root readOnly allowHalf count={5} defaultValue={3} size="sm" colorPalette="yellow">
+                        <RatingGroup.Root readOnly allowHalf count={5} defaultValue={0} value={reviewScore} size="sm" colorPalette="yellow">
                             <RatingGroup.HiddenInput />
                             <RatingGroup.Control />
                         </RatingGroup.Root>
                     </HStack>
-                    <Link href={`/board/register/${id}?ch=review`} fontSize="sm">리뷰 작성 <LuChevronRight /></Link>
+                    <Link href={`/board/register/review/${id}`} fontSize="sm">리뷰 작성 <LuChevronRight /></Link>
                 </Flex>
                 <ReviewView reviewList={reviewList} />
             </Stack>
             <Stack gap="6">
                 <Flex justifyContent="space-between">
                     <Heading>상품 Q&A</Heading>
-                    <Link href={`/board/register/${id}?ch=qna`} fontSize="sm">Q&A 작성 <LuChevronRight /></Link>
+                    <Link href={`/board/register/qna/${id}`} fontSize="sm">Q&A 작성 <LuChevronRight /></Link>
                 </Flex>
                 <ProuctAsk productAskList={inquiryList} />
             </Stack>

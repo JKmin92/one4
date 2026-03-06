@@ -7,16 +7,15 @@ import BoardEditor from "./BoardEditor";
 import { useAuth } from "../../../utils/useAuth";
 
 function Register() {
-    const { id } = useParams();
+    const { type, id } = useParams();
     const [searchParams] = useSearchParams();
-    const ch = searchParams.get('ch');
     const location = useLocation();
 
     const [product, setProduct] = useState(null);
     const [rating, setRating] = useState(0);
     const [content, setContent] = useState(null);
     const [is_secret, setIsSecret] = useState(false);
-    const [type, setType] = useState([]);
+    const [inquirytype, setInquiryType] = useState([]);
 
     const [images, setImages] = useState([]);
     const fileInputRef = useRef(null);
@@ -25,7 +24,7 @@ function Register() {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (id === null || ch === null || ch !== 'review' && ch !== 'qna') {
+        if (id === null || type === null || type !== 'review' && type !== 'qna') {
             toaster.create({ title: '잘못된 접근입니다.', type: 'error' });
             navigate(-1);//이전 페이지로
             return;
@@ -34,7 +33,7 @@ function Register() {
         const getProduct = async () => {
             try {
                 let getProductUrl = `/shop/product/${id}`;
-                if (location.pathname.includes('update') && ch === 'review') {
+                if (location.pathname.includes('update') && type === 'review') {
                     const response = await axiosInstance.get(`/shop/board/product/review/edit/${id}`);
                     getProductUrl = `/shop/product/${response.data.product_id}`;
                     setRating(response.data.rating);
@@ -58,12 +57,12 @@ function Register() {
                         toaster.create({ title: '수정 권한이 없습니다.', type: 'error' });
                         navigate(`/products/${id}`);
                     }
-                } else if (location.pathname.includes('update') && ch === 'qna') {
+                } else if (location.pathname.includes('update') && type === 'qna') {
                     const response = await axiosInstance.get(`/shop/board/product/inquiry/edit/${id}`);
                     getProductUrl = `/shop/product/${response.data.product_id}`;
                     setContent(response.data.content);
                     setIsSecret(response.data.is_secret === 1 ? true : false);
-                    setType([response.data.type]);
+                    setInquiryType([response.data.type]);
 
                     if (response.data.images) {
                         try {
@@ -79,7 +78,7 @@ function Register() {
                         }
                     }
 
-                    if (response.data.user_id !== user.user_code) {
+                    if (response.data.user_code !== user.user_code) {
                         toaster.create({ title: '수정 권한이 없습니다.', type: 'error' });
                         navigate(`/products/${id}`);
                     }
@@ -97,18 +96,17 @@ function Register() {
     const saveBoard = async () => {
         const formData = new FormData();
 
-        if (ch == 'review') {
+        if (type == 'review') {
             formData.append('rating', rating);
         } else {
             formData.append('is_secret', is_secret);
-            if (type.length > 0) formData.append('type', type[0]);
+            if (type.length > 0) formData.append('type', inquirytype[0]);
             else {
                 toaster.create({ title: '문의 유형을 선택해주세요.', type: 'error' });
                 return;
             }
         }
         formData.append('content', content);
-        formData.append('ch', ch);
 
         images.forEach(img => {
             if (img.file) {
@@ -118,9 +116,11 @@ function Register() {
             }
         });
 
+
+
         try {
             if (location.pathname.includes('update')) {
-                if (ch === 'review') {
+                if (type === 'review') {
                     await axiosInstance.put(`/shop/board/product/review/${id}`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
@@ -131,7 +131,7 @@ function Register() {
                 }
                 toaster.create({ title: '수정되었습니다.', type: 'success' });
             } else {
-                if (ch === 'review') {
+                if (type === 'review') {
                     await axiosInstance.post(`/shop/board/product/review/${id}`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' }
                     });
@@ -196,7 +196,7 @@ function Register() {
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="12" width={{ base: 'full', md: "6xl" }} margin="auto">
             <Stack gap="6">
-                <Heading size="lg">{ch === 'review' ? '리뷰 작성' : '문의 작성'}</Heading>
+                <Heading size="lg">{type === 'review' ? '리뷰 작성' : '문의 작성'}</Heading>
                 {product && (
                     <HStack gap="4" p="4" borderWidth="1px" rounded="md">
                         <Box width="20" height="20" bg="gray.100" rounded="md" overflow="hidden">
@@ -213,7 +213,7 @@ function Register() {
                     </HStack>
                 )}
 
-                {ch === 'review' ? (
+                {type === 'review' ? (
                     <HStack>
                         <Text fontWeight="medium">평점</Text>
                         <RatingGroup.Root allowHalf count={5} defaultValue={0} value={rating} onValueChange={(e) => setRating(e.value)} size="lg" colorPalette="yellow">
@@ -223,7 +223,7 @@ function Register() {
                     </HStack>
                 ) : (
                     <HStack>
-                        <Select.Root collection={inquiryFrameworks} size="sm" maxW="320px" value={type} onValueChange={(e) => setType(e.value)}>
+                        <Select.Root collection={inquiryFrameworks} size="sm" maxW="320px" value={inquirytype} onValueChange={(e) => setInquiryType(e.value)}>
                             <Select.HiddenSelect />
                             <Select.Control>
                                 <Select.Trigger>
