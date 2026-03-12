@@ -1,0 +1,18 @@
+import * as reviewCampaignService from '../../../services/admin/review/reviewCampaignService.js';
+
+export const insertReviewCampaign = async (req, res, next) => {
+    try {
+        const result = await reviewCampaignService.insertReviewCampaign(req.body, req.files);
+        if (result) {
+            const campaign_code = result;
+            await reviewCampaignService.insertReviewCampaignChannel({ campaign_code: campaign_code, channel_code: req.body.channel_code });
+            await reviewCampaignService.insertReviewCampaignMission({ ...req.body, campaign_code: campaign_code });
+            await reviewCampaignService.insertReviewCampaignReward({ ...req.body, campaign_code: campaign_code });
+            res.status(200).json({ success: true });
+        } else {
+            res.status(400).json({ success: false, message: '리뷰 캠페인 등록 실패' });
+        }
+    } catch (error) {
+        next(error);
+    }
+}

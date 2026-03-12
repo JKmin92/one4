@@ -1,7 +1,9 @@
 import * as boardModel from "../../models/shop/boardModel.js";
+import { generateUniqueId } from "../../utils/customUtils.js";
 
 export const insertProductReview = async ({ product_id, user_code, order_id, rating, content, images }) => {
-    return await boardModel.insertProductReview({ product_id, user_code, order_id, rating, content, images });
+    const review_code = generateUniqueId();
+    return await boardModel.insertProductReview({ review_code, product_id, user_code, order_id, rating, content, images });
 }
 
 export const getReviewsByProductId = async (product_id) => {
@@ -30,9 +32,11 @@ export const deleteProductReview = async (id) => {
 }
 
 export const insertProductInquiry = async (product_inquiry) => {
+    const inquiry_code = generateUniqueId();
     return await boardModel.createProductInquiry({
+        inquiry_code,
         product_id: product_inquiry.product_id,
-        user_id: product_inquiry.user_code,
+        user_code: product_inquiry.user_code,
         type: product_inquiry.type,
         content: product_inquiry.content,
         images: product_inquiry.images,

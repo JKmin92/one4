@@ -161,7 +161,7 @@ export const getProductInquiryById = async (req, res, next) => {
         const id = req.params.id;
         const user = req.user;
         const inquiry = await boardService.getProductInquiryById(id);
-        if (user === null || inquiry === null || inquiry.user_id !== user.user_code) {
+        if (user === null || inquiry === null || inquiry.user_code !== user.user_code) {
             return res.status(403).json({ result: 'error', message: '권한이 없습니다.' });
         }
         return res.status(200).json(inquiry);
@@ -213,7 +213,7 @@ export const deleteProductInquiry = async (req, res, next) => {
         const user = req.user;
         const id = req.params.id;
         const inquiry = await boardService.getProductInquiryById(id);
-        if (user === null || inquiry === null || inquiry.user_id !== user.user_code) {
+        if (user === null || inquiry === null || inquiry.user_code !== user.user_code) {
             return res.status(403).json({ result: 'error', message: '권한이 없습니다.' });
         }
 

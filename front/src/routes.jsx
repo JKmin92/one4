@@ -27,6 +27,7 @@ import AdminPromotionRegister from './views/admin/shop/promotion/Register';
 import AdminBoardList from './views/admin/shop/board/List';
 import AdminBoardDetail from './views/admin/shop/board/Detail';
 import AdminReviewCampaignList from './views/admin/review/campaign/List';
+import AdminReviewCampaignRegister from './views/admin/review/campaign/Register';
 
 const router = createBrowserRouter([
     {
@@ -62,6 +63,7 @@ const router = createBrowserRouter([
             { path: 'shop/board/list/:type', element: <AdminBoardList /> },
             { path: 'shop/board/:type/:id', element: <AdminBoardDetail /> },
             { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
+            { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
         ]
     }, {
         path: '/review',
