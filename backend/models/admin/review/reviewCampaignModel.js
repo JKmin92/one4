@@ -43,3 +43,9 @@ export const getReviewCampaignList = async () => {
     const [rows] = await db.query(sql);
     return rows;
 }
+
+export const getReviewCampaignCategory = async () => {
+    const sql = `SELECT * FROM review_campaign_category`;
+    const [rows] = await db.query(sql);
+    return rows;
+}

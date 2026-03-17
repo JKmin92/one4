@@ -16,3 +16,12 @@ export const insertReviewCampaign = async (req, res, next) => {
         next(error);
     }
 }
+
+export const getReviewCampaignCategory = async (req, res, next) => {
+    try {
+        const result = await reviewCampaignService.getReviewCampaignCategory();
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        next(error);
+    }
+}

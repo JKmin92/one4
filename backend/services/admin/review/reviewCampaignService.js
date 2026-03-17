@@ -29,3 +29,7 @@ export const insertReviewCampaignReward = async (data) => {
 export const getReviewCampaignList = async () => {
     return await model.getReviewCampaignList();
 }
+
+export const getReviewCampaignCategory = async () => {
+    return await model.getReviewCampaignCategory();
+}
