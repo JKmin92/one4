@@ -32,7 +32,14 @@ function RegisterEditor({ content, setContent }) {
                         <InsertImageControl />
                     </RichTextEditor.ControlGroup>
                 </RichTextEditor.Toolbar>
-                <Box position="relative">
+                <Box 
+                    position="relative" 
+                    flex="1" 
+                    display="flex" 
+                    flexDirection="column"
+                    onClick={() => editor.chain().focus().run()}
+                    cursor="text"
+                >
                     <DragHandle editor={editor}>
                         <Box
                             pos="relative"
@@ -43,13 +50,16 @@ function RegisterEditor({ content, setContent }) {
                             opacity="0.6"
                             _hover={{ opacity: 1, color: "fg" }}
                             _active={{ cursor: "grabbing" }}
+                            onClick={(e) => e.stopPropagation()} // 드래그 핸들 클릭 시 에디터 포커스 방지
                         >
                             <Icon asChild boxSize="4">
                                 <LuGripVertical />
                             </Icon>
                         </Box>
                     </DragHandle>
-                    <RichTextEditor.Content />
+                    <Box flex="1" h="full">
+                        <RichTextEditor.Content />
+                    </Box>
                 </Box>
             </RichTextEditor.Root>
 
