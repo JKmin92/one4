@@ -2,7 +2,9 @@ import * as reviewCampaignService from '../../../services/admin/review/reviewCam
 
 export const insertReviewCampaign = async (req, res, next) => {
     try {
-        const result = await reviewCampaignService.insertReviewCampaign(req.body, req.files);
+        console.log(req.body);
+        res.status(200).json({ success: true });
+        /*const result = await reviewCampaignService.insertReviewCampaign(req.body, req.files);
         if (result) {
             const campaign_code = result;
             await reviewCampaignService.insertReviewCampaignChannel({ campaign_code: campaign_code, channel_code: req.body.channel_code });
@@ -11,7 +13,7 @@ export const insertReviewCampaign = async (req, res, next) => {
             res.status(200).json({ success: true });
         } else {
             res.status(400).json({ success: false, message: '리뷰 캠페인 등록 실패' });
-        }
+        }*/
     } catch (error) {
         next(error);
     }
@@ -20,7 +22,16 @@ export const insertReviewCampaign = async (req, res, next) => {
 export const getReviewCampaignCategory = async (req, res, next) => {
     try {
         const result = await reviewCampaignService.getReviewCampaignCategory();
-        res.status(200).json({ success: true, data: result });
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getReviewCampaignChannelView = async (req, res, next) => {
+    try {
+        const result = await reviewCampaignService.getReviewCampaignChannelView();
+        res.status(200).json(result);
     } catch (error) {
         next(error);
     }

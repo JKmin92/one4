@@ -33,3 +33,11 @@ export const getReviewCampaignList = async () => {
 export const getReviewCampaignCategory = async () => {
     return await model.getReviewCampaignCategory();
 }
+
+export const insertReviewCampaignRewardOption = async (data) => {
+    return await model.insertReviewCampaignRewardOption(data);
+}
+
+export const getReviewCampaignChannelView = async () => {
+    return await model.getReviewCampaignChannelView();
+}

@@ -267,7 +267,7 @@ function Register() {
                 });
                 toaster.create({ title: '캠페인이 등록되었습니다.', type: 'success' });
             }
-            navigate("/admin/review/campaign/list");
+            //navigate("/admin/review/campaign/list");
         } catch (error) {
             console.error(error);
             toaster.create({ title: `캠페인 ${id ? '수정' : '등록'}에 실패했습니다.`, type: 'error' });
@@ -401,8 +401,8 @@ function Register() {
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
                 <Heading size="md">채널 정보</Heading>
 
-                <Field.Root>
-                    <Field.Label mb="2">모집 채널 (중복 선택 가능)</Field.Label>
+                <Box>
+                    <Text fontSize="sm" fontWeight="medium" mb="2">모집 채널 (중복 선택 가능)</Text>
                     <HStack gap="6" flexWrap="wrap">
                         {channelOptions.map(channel => (
                             <Checkbox.Root
@@ -416,7 +416,7 @@ function Register() {
                             </Checkbox.Root>
                         ))}
                     </HStack>
-                </Field.Root>
+                </Box>
             </Stack>
 
             {/* 4. 미션 설정 */}
