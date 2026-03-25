@@ -181,7 +181,7 @@ function Main() {
                                     <HStack>
                                         <HStack>
                                             {campaign.channel.map((channel, index) => {
-                                                if (channel === 'naver') return (<Image key={index} src="../../../public/resources/img/logo/naver.svg" w="5" rounded="md" />)
+                                                if (channel === 'naver') return (<Image key={index} src="/public/resources/img/logo/naver.svg" w="5" rounded="md" />)
                                             })}
                                         </HStack>
                                         <Text>D-{getDDay(campaign.endDate)}</Text>

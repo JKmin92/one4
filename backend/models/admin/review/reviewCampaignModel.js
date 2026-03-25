@@ -22,9 +22,9 @@ export const insertReviewCampaignChannel = async (data) => {
 }
 
 export const insertReviewCampaignMission = async (data) => {
-    const sql = `
-    INSERT INTO review_campaign_mission (campaign_code, title_guide, content_guide, hashtags, mandatory_keyword, optional_keyword, 
-    min_photo_count, min_text_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    const sql = `INSERT INTO review_campaign_mission (campaign_code, title_guide, content_guide, hashtags, mandatory_keyword, optional_keyword, 
+    min_photo_count, min_text_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
     const [rows] = await db.query(sql,
         [data.campaign_code, data.title_guide, data.content_guide, data.hashtags, data.mandatory_keyword,
         data.optional_keyword, data.min_photo_count, data.min_text_length]
@@ -35,7 +35,9 @@ export const insertReviewCampaignMission = async (data) => {
 export const insertReviewCampaignReward = async (data) => {
     const sql = `INSERT INTO review_campaign_reward (campaign_code, reward_type, name, description, value, quantity) VALUES (?, ?, ?, ?, ?, ?)`
     const [rows] = await db.query(sql, [data.campaign_code, data.reward_type, data.name, data.description, data.value, data.quantity]);
-    return rows;
+
+    if (rows.affectedRows > 0) return rows.insertId;
+    return null;
 }
 
 export const insertReviewCampaignRewardOption = async (data) => {
@@ -45,9 +47,19 @@ export const insertReviewCampaignRewardOption = async (data) => {
 }
 
 export const getReviewCampaignList = async () => {
-    const sql = `SELECT * FROM review_campaign`;
+    const sql = `
+        SELECT 
+            rc.*,
+            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code) AS application_count,
+            (SELECT GROUP_CONCAT(rcc.channel_code) FROM review_campaign_channel rcc WHERE rcc.campaign_code = rc.campaign_code) AS channels
+        FROM review_campaign rc
+    `;
     const [rows] = await db.query(sql);
-    return rows;
+
+    return rows.map(row => ({
+        ...row,
+        channels: row.channels ? row.channels.split(',') : []
+    }));
 }
 
 export const getReviewCampaignCategory = async () => {

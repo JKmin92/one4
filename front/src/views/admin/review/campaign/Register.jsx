@@ -267,7 +267,7 @@ function Register() {
                 });
                 toaster.create({ title: '캠페인이 등록되었습니다.', type: 'success' });
             }
-            //navigate("/admin/review/campaign/list");
+            navigate("/admin/review/campaign/list");
         } catch (error) {
             console.error(error);
             toaster.create({ title: `캠페인 ${id ? '수정' : '등록'}에 실패했습니다.`, type: 'error' });

@@ -1,3 +1,4 @@
+import moment from 'moment';
 import * as model from '../../../models/admin/review/reviewCampaignModel.js';
 import { generateUniqueId } from '../../../utils/customUtils.js';
 import * as fileUpload from '../../../utils/fileUpload.js';
@@ -19,11 +20,11 @@ export const insertReviewCampaignChannel = async (data) => {
 }
 
 export const insertReviewCampaignMission = async (data) => {
-    return await model.insertReviewCampaignMission(data);
+    return await model.insertReviewCampaignMission({ ...data, campaign_code: data.campaign_code });
 }
 
 export const insertReviewCampaignReward = async (data) => {
-    return await model.insertReviewCampaignReward(data);
+    return await model.insertReviewCampaignReward({ ...data, campaign_code: data.campaign_code });
 }
 
 export const getReviewCampaignList = async () => {
@@ -35,7 +36,7 @@ export const getReviewCampaignCategory = async () => {
 }
 
 export const insertReviewCampaignRewardOption = async (data) => {
-    return await model.insertReviewCampaignRewardOption(data);
+    return await model.insertReviewCampaignRewardOption({ ...data, reward_id: data.reward_id });
 }
 
 export const getReviewCampaignChannelView = async () => {
