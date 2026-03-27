@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, CloseButton, Field, Heading, HStack, Image, Input, RadioGroup, Stack, Text, Textarea } from "@chakra-ui/react";
+import { Box, Button, Checkbox, CloseButton, Field, Heading, HStack, Image, Input, RadioGroup, Stack, TagsInput, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { LuImage, LuInfo, LuPlus, LuTrash } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
@@ -6,13 +6,72 @@ import axiosInstance from "../../../../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
 import RegisterEditor from "./RegisterEditor";
 import { ToggleTip } from "../../../../components/ui/toggle-tip";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableImageItem({ id, item, onRemove }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+    };
+
+    return (
+        <Box
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            w="150px" h="150px" borderRadius="md" position="relative" borderWidth="1px"
+            cursor="grab"
+            _active={{ cursor: 'grabbing' }}
+            bg="white"
+            flexShrink="0"
+        >
+            <Image src={item.url} objectFit="cover" w="full" h="full" borderRadius="md" />
+            <CloseButton
+                onPointerDown={(e) => e.stopPropagation()}
+                size="sm" bg="white" position="absolute" top="1" right="1"
+                onClick={onRemove}
+            />
+        </Box>
+    );
+}
 
 function Register() {
     const navigate = useNavigate();
     const { id } = useParams();
 
+    const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+    const [drafts, setDrafts] = useState([]);
+
     // Basic Info
     const [title, setTitle] = useState("");
+    const [shortDescription, setShortDescription] = useState("");
+    const [productName, setProductName] = useState("");
+
+    // Detail images
+    const [detailImageItems, setDetailImageItems] = useState([]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            setDetailImageItems((items) => {
+                const oldIndex = items.findIndex(item => item.id === active.id);
+                const newIndex = items.findIndex(item => item.id === over.id);
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
+    };
+
     const [categoryId, setCategoryId] = useState("");
     const [campaignType, setCampaignType] = useState("VISIT"); // 'VISIT' or 'DELIVERY'
     const [isDisplay, setIsDisplay] = useState(1); // 1: 노출, 0: 미노출
@@ -40,15 +99,15 @@ function Register() {
     // Mission (review_campaign_mission)
     const [titleGuide, setTitleGuide] = useState("");
     const [contentGuide, setContentGuide] = useState("");
-    const [hashtags, setHashtags] = useState("");
-    const [mandatoryKeyword, setMandatoryKeyword] = useState("");
-    const [optionalKeyword, setOptionalKeyword] = useState("");
+    const [hashtags, setHashtags] = useState([]);
+    const [mandatoryKeyword, setMandatoryKeyword] = useState([]);
+    const [optionalKeyword, setOptionalKeyword] = useState([]);
     const [minPhotoCount, setMinPhotoCount] = useState(10);
     const [minTextLength, setMinTextLength] = useState(1000);
 
     // Reward (review_campaign_reward)
     const [rewards, setRewards] = useState([
-        { id: Date.now(), reward_type: "PRODUCT", name: "", description: "", value: 0, quantity: 0, has_options: false, options: [{ name: "", values: "" }] }
+        { id: Date.now(), reward_type: "PRODUCT", name: "", description: "", value: 0, quantity: 0, has_options: false, options: [{ option_name: "", option_value: "" }] }
     ]);
 
     useEffect(() => {
@@ -82,6 +141,16 @@ function Register() {
                     const data = response.data;
 
                     setTitle(data.title || "");
+                    setProductName(data.product_name || "");
+                    if (data.short_description) setShortDescription(data.short_description);
+                    if (data.detail_images) {
+                        try {
+                            const parsed = typeof data.detail_images === 'string' ? JSON.parse(data.detail_images) : data.detail_images;
+                            if (Array.isArray(parsed)) {
+                                setDetailImageItems(parsed.map((url, idx) => ({ id: `img-fetch-${Date.now()}-${idx}`, file: null, url })));
+                            }
+                        } catch (e) { console.error('detail_images parse error:', e); }
+                    }
                     setCategoryId(data.campaign_category_id || "");
                     setCampaignType(data.campaign_type || "VISIT");
                     setIsDisplay(data.is_display !== undefined ? data.is_display : 1);
@@ -103,9 +172,9 @@ function Register() {
                     if (data.mission) {
                         setTitleGuide(data.mission.title_guide || "");
                         setContentGuide(data.mission.content_guide || "");
-                        setHashtags(data.mission.hashtags || "");
-                        setMandatoryKeyword(data.mission.mandatory_keyword || "");
-                        setOptionalKeyword(data.mission.optional_keyword || "");
+                        setHashtags(data.mission.hashtags ? data.mission.hashtags.split(',').map(k => k.trim()) : []);
+                        setMandatoryKeyword(data.mission.mandatory_keyword ? data.mission.mandatory_keyword.split(',').map(k => k.trim()) : []);
+                        setOptionalKeyword(data.mission.optional_keyword ? data.mission.optional_keyword.split(',').map(k => k.trim()) : []);
                         setMinPhotoCount(data.mission.min_photo_count || 0);
                         setMinTextLength(data.mission.min_text_length || 0);
                     }
@@ -118,8 +187,8 @@ function Register() {
                             description: r.description || "",
                             value: r.value || 0,
                             quantity: r.quantity || 0,
-                            has_options: r.has_options || false,
-                            options: Array.isArray(r.options) ? r.options : (r.options ? [{ name: "옵션", values: r.options }] : [{ name: "", values: "" }])
+                            has_options: r.reward_options.length > 0 ? true : false,
+                            options: Array.isArray(r.reward_options) ? r.reward_options : (r.reward_options ? [{ option_name: "옵션", option_value: r.option_value }] : [{ option_name: "", option_value: "" }])
                         })));
                     } else if (data.reward) {
                         setRewards([{
@@ -129,8 +198,8 @@ function Register() {
                             description: data.reward.description || "",
                             value: data.reward.value || 0,
                             quantity: data.reward.quantity || 0,
-                            has_options: data.reward.has_options || false,
-                            options: Array.isArray(data.reward.options) ? data.reward.options : (data.reward.options ? [{ name: "옵션", values: data.reward.options }] : [{ name: "", values: "" }])
+                            has_options: data.reward.reward_options.length > 0 ? true : false,
+                            options: Array.isArray(data.reward.reward_options) ? data.reward.reward_options : (data.reward.reward_options ? [{ option_name: "옵션", option_value: data.reward.option_value }] : [{ option_name: "", option_value: "" }])
                         }]);
                     }
                 } catch (error) {
@@ -142,6 +211,22 @@ function Register() {
         fetchData();
     }, [id]);
 
+    const fetchDrafts = async () => {
+        try {
+            const response = await axiosInstance.get('/admin/review/campaign/drafts');
+            setDrafts(response.data);
+            setIsDraftModalOpen(true);
+        } catch (error) {
+            console.error("Failed to fetch drafts", error);
+            toaster.create({ title: '임시저장 목록을 불러오지 못했습니다.', type: 'error' });
+        }
+    };
+
+    const handleSelectDraft = (draft) => {
+        setIsDraftModalOpen(false);
+        navigate(`/admin/review/campaign/update/${draft.campaign_code}`);
+    };
+
     const handleMainImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -150,14 +235,43 @@ function Register() {
         }
     };
 
+    const handleDetailImagesChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            const newItems = files.map((file, idx) => ({
+                id: `img-new-${Date.now()}-${idx}`,
+                file,
+                url: URL.createObjectURL(file)
+            }));
+            setDetailImageItems(prev => [...prev, ...newItems]);
+        }
+    };
+
+    const handleRemoveDetailImage = (indexToRemove) => {
+        setDetailImageItems(prev => prev.filter((_, idx) => idx !== indexToRemove));
+    };
+
     const handleChannelToggle = (value) => {
-        setChannels(prev =>
-            prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]
-        );
+        const targetChannel = channelOptions.find(c => c.channel_code === value);
+
+        setChannels(prev => {
+            if (prev.includes(value)) {
+                return prev.filter(c => c !== value);
+            } else {
+                let newChannels = [...prev];
+
+                if (targetChannel && targetChannel.unselectable_with) {
+                    const exclusiveList = targetChannel.unselectable_with.split(',').map(v => String(v).trim());
+                    newChannels = newChannels.filter(c => !exclusiveList.includes(String(c)));
+                }
+
+                return [...newChannels, value];
+            }
+        });
     };
 
     const handleAddReward = () => {
-        setRewards(prev => [...prev, { id: Date.now(), reward_type: "PRODUCT", name: "", description: "", value: 0, quantity: 0, has_options: false, options: [{ name: "", values: "" }] }]);
+        setRewards(prev => [...prev, { id: Date.now(), reward_type: "PRODUCT", name: "", description: "", value: 0, quantity: 0, has_options: false, options: [{ option_name: "", option_value: "" }] }]);
     };
 
     const handleRemoveReward = (id) => {
@@ -182,7 +296,7 @@ function Register() {
     const handleAddOption = (rewardId) => {
         setRewards(prev => prev.map(r => {
             if (r.id === rewardId) {
-                return { ...r, options: [...r.options, { name: "", values: "" }] };
+                return { ...r, options: [...r.options, { option_name: "", option_value: "" }] };
             }
             return r;
         }));
@@ -197,7 +311,7 @@ function Register() {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (targetState = 'PENDING') => {
         if (!title) {
             toaster.create({ title: '캠페인 명을 입력해주세요.', type: 'error' });
             return;
@@ -205,6 +319,25 @@ function Register() {
 
         const formData = new FormData();
         formData.append("title", title);
+        formData.append("short_description", shortDescription);
+        if (productName) formData.append("product_name", productName);
+
+        const existingUrls = [];
+        const newFiles = [];
+        detailImageItems.forEach((item) => {
+            if (item.file) newFiles.push(item.file);
+            else existingUrls.push(item.url);
+        });
+
+        if (existingUrls.length > 0) {
+            formData.append("existingDetailImages", JSON.stringify(existingUrls));
+        }
+
+        newFiles.forEach((file) => {
+            formData.append("detailImages", file);
+        });
+
+        formData.append("state", targetState);
         formData.append("campaign_category_id", categoryId);
         formData.append("campaign_type", campaignType);
         formData.append("is_display", isDisplay);
@@ -221,9 +354,9 @@ function Register() {
         const missionData = {
             title_guide: titleGuide,
             content_guide: contentGuide,
-            hashtags,
-            mandatory_keyword: mandatoryKeyword,
-            optional_keyword: optionalKeyword,
+            hashtags: Array.isArray(hashtags) ? hashtags.join(',') : hashtags,
+            mandatory_keyword: Array.isArray(mandatoryKeyword) ? mandatoryKeyword.join(',') : mandatoryKeyword,
+            optional_keyword: Array.isArray(optionalKeyword) ? optionalKeyword.join(',') : optionalKeyword,
             min_photo_count: minPhotoCount,
             min_text_length: minTextLength
         };
@@ -257,26 +390,49 @@ function Register() {
 
         try {
             if (id) {
-                await axiosInstance.put(`/admin/review/campaign/${id}`, formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
+                await axiosInstance.post(`/admin/review/campaign/${id}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
                 });
-                toaster.create({ title: '캠페인이 수정되었습니다.', type: 'success' });
+                toaster.create({ title: targetState === 'DRAFT' ? '임시저장 되었습니다.' : '캠페인이 수정되었습니다.', type: 'success' });
+
+                if (targetState !== 'DRAFT') {
+                    navigate("/admin/review/campaign/list");
+                }
             } else {
-                await axiosInstance.post("/admin/review/campaign", formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
+                const response = await axiosInstance.post("/admin/review/campaign", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
                 });
-                toaster.create({ title: '캠페인이 등록되었습니다.', type: 'success' });
+                toaster.create({ title: targetState === 'DRAFT' ? '임시저장 되었습니다.' : '캠페인이 등록되었습니다.', type: 'success' });
+
+                if (targetState !== 'DRAFT') {
+                    navigate("/admin/review/campaign/list");
+                } else if (response.data.campaign_code) {
+                    navigate(`/admin/review/campaign/update/${response.data.campaign_code}`, { replace: true });
+                }
             }
-            navigate("/admin/review/campaign/list");
         } catch (error) {
-            console.error(error);
+            console.error("Submit error details:", error);
             toaster.create({ title: `캠페인 ${id ? '수정' : '등록'}에 실패했습니다.`, type: 'error' });
         }
     };
 
     return (
         <Stack p="30px" px="layoutX" gap="10" pb="20">
-            <Heading>캠페인 {id ? '수정' : '등록'}</Heading>
+            <HStack
+                justifyContent="space-between"
+                position="sticky"
+                top="0"
+                bg="white"
+                zIndex="10"
+                py="4"
+                mt="-4"
+            >
+                <Heading>캠페인 {id ? '수정' : '등록'}</Heading>
+                <HStack>
+                    <Button bg="bg" variant="surface" onClick={fetchDrafts}>임시저장 목록</Button>
+                    <Button bg="bg.info" variant="surface" onClick={() => handleSubmit('DRAFT')}>임시저장</Button>
+                </HStack>
+            </HStack>
 
             {/* 1. 기본 정보 */}
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
@@ -361,8 +517,77 @@ function Register() {
                 </Field.Root>
 
                 <Field.Root>
+                    <Field.Label mb="2">간단 설명</Field.Label>
+                    <Input placeholder="캠페인에 대한 간단한 설명을 입력해주세요" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
+                </Field.Root>
+
+                <Field.Root>
+                    <Field.Label mb="2">대표 이미지</Field.Label>
+                    <HStack alignItems="start">
+                        <Box
+                            w="150px" h="150px"
+                            borderWidth="1px" borderStyle="dashed" borderRadius="md"
+                            display="flex" alignItems="center" justifyContent="center"
+                            bg="gray.50" overflow="hidden" position="relative"
+                        >
+                            {mainImagePreview ? (
+                                <Image src={mainImagePreview} objectFit="cover" w="full" h="full" />
+                            ) : (
+                                <Stack alignItems="center" color="gray.400">
+                                    <LuImage size="24" />
+                                    <Text fontSize="xs">이미지 선택</Text>
+                                </Stack>
+                            )}
+                            <Input
+                                type="file"
+                                position="absolute" top="0" left="0" w="full" h="full" opacity="0" cursor="pointer"
+                                accept="image/*"
+                                onChange={handleMainImageChange}
+                            />
+                        </Box>
+                    </HStack>
+                </Field.Root>
+
+                <Field.Root>
+                    <Field.Label mb="2">상세 이미지 <Text as="span" fontSize="xs" color="gray.500" fontWeight="normal">(여러 장 선택 가능, 드래그하여 순서 변경)</Text></Field.Label>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={detailImageItems.map(item => item.id)} strategy={horizontalListSortingStrategy}>
+                            <HStack alignItems="start" flexWrap="wrap" gap="4">
+                                {detailImageItems.map((item, index) => (
+                                    <SortableImageItem
+                                        key={item.id}
+                                        id={item.id}
+                                        item={item}
+                                        onRemove={() => handleRemoveDetailImage(index)}
+                                    />
+                                ))}
+                                <Box
+                                    w="150px" h="150px"
+                                    borderWidth="1px" borderStyle="dashed" borderRadius="md"
+                                    display="flex" alignItems="center" justifyContent="center"
+                                    bg="gray.50" overflow="hidden" position="relative"
+                                >
+                                    <Stack alignItems="center" color="gray.400">
+                                        <LuPlus size="24" />
+                                        <Text fontSize="xs">이미지 추가</Text>
+                                    </Stack>
+                                    <Input
+                                        type="file"
+                                        multiple
+                                        position="absolute" top="0" left="0" w="full" h="full" opacity="0" cursor="pointer"
+                                        accept="image/*"
+                                        onChange={handleDetailImagesChange}
+                                    />
+                                </Box>
+                            </HStack>
+                        </SortableContext>
+                    </DndContext>
+                </Field.Root>
+
+                <Field.Root>
                     <Field.Label mb="2">캠페인 상세 설명</Field.Label>
-                    <RegisterEditor content={content} setContent={setContent} />
+                    <Textarea value={content} onChange={(e) => setContent(e.target.value)} minH="300px" />
+                    {/* <RegisterEditor content={content} setContent={setContent} /> */}
                 </Field.Root>
             </Stack>
 
@@ -423,10 +648,54 @@ function Register() {
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
                 <Heading size="md">미션 설정</Heading>
 
+                {channels.includes('202603171602001') && (
+                    <HStack gap="6">
+                        <Field.Root>
+                            <Field.Label mb="2">필수 키워드</Field.Label>
+                            <TagsInput.Root value={mandatoryKeyword} onValueChange={(e) => setMandatoryKeyword(e.value)}>
+                                <TagsInput.Control flexWrap="wrap">
+                                    {mandatoryKeyword.map((keyword, index) => (
+                                        <TagsInput.Item key={index} index={index} value={keyword}>
+                                            <TagsInput.ItemPreview>
+                                                <TagsInput.ItemText>{keyword}</TagsInput.ItemText>
+                                            </TagsInput.ItemPreview>
+                                            <TagsInput.ItemInput />
+                                        </TagsInput.Item>
+                                    ))}
+                                    <TagsInput.Input placeholder="필수 키워드 (엔터로 추가)" />
+                                </TagsInput.Control>
+                            </TagsInput.Root>
+                        </Field.Root>
+                        <Field.Root>
+                            <Field.Label mb="2">선택 키워드</Field.Label>
+                            <TagsInput.Root value={optionalKeyword} onValueChange={(e) => setOptionalKeyword(e.value)}>
+                                <TagsInput.Control flexWrap="wrap">
+                                    {optionalKeyword.map((keyword, index) => (
+                                        <TagsInput.Item key={index} index={index} value={keyword}>
+                                            <TagsInput.ItemPreview>
+                                                <TagsInput.ItemText>{keyword}</TagsInput.ItemText>
+                                            </TagsInput.ItemPreview>
+                                            <TagsInput.ItemInput />
+                                        </TagsInput.Item>
+                                    ))}
+                                    <TagsInput.Input placeholder="선택 키워드 (엔터로 추가)" />
+                                </TagsInput.Control>
+                            </TagsInput.Root>
+                        </Field.Root>
+                    </HStack>
+                )}
+
                 <Field.Root>
-                    <Field.Label mb="2">제목 가이드</Field.Label>
-                    <Input placeholder="제목 작성 가이드를 입력해주세요" value={titleGuide} onChange={(e) => setTitleGuide(e.target.value)} />
+                    <Field.Label mb="2">제품명(또는 매장명)</Field.Label>
+                    <Input placeholder="제품명(또는 매장명)을 입력해주세요" value={productName} onChange={(e) => setProductName(e.target.value)} />
                 </Field.Root>
+
+                {channels.includes('202603171602001') && (
+                    <Field.Root>
+                        <Field.Label mb="2">제목 가이드</Field.Label>
+                        <Textarea minH="100px" placeholder="제목 작성 가이드를 입력해주세요" value={titleGuide} onChange={(e) => setTitleGuide(e.target.value)} />
+                    </Field.Root>
+                )}
 
                 <Field.Root>
                     <Field.Label mb="2">본문 가이드</Field.Label>
@@ -440,19 +709,22 @@ function Register() {
 
                 <Field.Root>
                     <Field.Label mb="2">해시태그</Field.Label>
-                    <Input placeholder="해시태그 (쉼표로 구분)" value={hashtags} onChange={(e) => setHashtags(e.target.value)} />
+                    <TagsInput.Root value={hashtags} onValueChange={(e) => setHashtags(e.value)}>
+                        <TagsInput.Control flexWrap="wrap">
+                            {hashtags.map((keyword, index) => (
+                                <TagsInput.Item key={index} index={index} value={keyword}>
+                                    <TagsInput.ItemPreview>
+                                        <TagsInput.ItemText>{keyword}</TagsInput.ItemText>
+                                    </TagsInput.ItemPreview>
+                                    <TagsInput.ItemInput />
+                                </TagsInput.Item>
+                            ))}
+                            <TagsInput.Input placeholder="해시태그 (엔터로 추가)" />
+                        </TagsInput.Control>
+                    </TagsInput.Root>
                 </Field.Root>
 
-                <HStack gap="6">
-                    <Field.Root>
-                        <Field.Label mb="2">필수 키워드</Field.Label>
-                        <Input placeholder="필수 키워드" value={mandatoryKeyword} onChange={(e) => setMandatoryKeyword(e.target.value)} />
-                    </Field.Root>
-                    <Field.Root>
-                        <Field.Label mb="2">선택 키워드</Field.Label>
-                        <Input placeholder="선택 키워드" value={optionalKeyword} onChange={(e) => setOptionalKeyword(e.target.value)} />
-                    </Field.Root>
-                </HStack>
+
 
                 <HStack gap="6">
                     <Field.Root>
@@ -580,8 +852,8 @@ function Register() {
                                                         <Input
                                                             bg="white"
                                                             placeholder="예: 색상, 사이즈"
-                                                            value={opt.name}
-                                                            onChange={(e) => handleOptionChange(reward.id, optIndex, 'name', e.target.value)}
+                                                            value={opt.option_name}
+                                                            onChange={(e) => handleOptionChange(reward.id, optIndex, 'option_name', e.target.value)}
                                                         />
                                                     </Field.Root>
                                                     <Field.Root w="70%">
@@ -590,8 +862,8 @@ function Register() {
                                                             <Input
                                                                 bg="white"
                                                                 placeholder="예: 빨강, 파랑, 검정"
-                                                                value={opt.values}
-                                                                onChange={(e) => handleOptionChange(reward.id, optIndex, 'values', e.target.value)}
+                                                                value={opt.option_value}
+                                                                onChange={(e) => handleOptionChange(reward.id, optIndex, 'option_value', e.target.value)}
                                                             />
                                                             <Button
                                                                 variant="ghost"
@@ -625,42 +897,33 @@ function Register() {
                 ))}
             </Stack>
 
-            {/* 6. 대표 이미지 등록 */}
-            <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
-                <Heading size="md">대표 이미지 등록</Heading>
-
-                <Field.Root>
-                    <Field.Label mb="2">대표 이미지</Field.Label>
-                    <HStack alignItems="start">
-                        <Box
-                            w="150px" h="150px"
-                            borderWidth="1px" borderStyle="dashed" borderRadius="md"
-                            display="flex" alignItems="center" justifyContent="center"
-                            bg="gray.50" overflow="hidden" position="relative"
-                        >
-                            {mainImagePreview ? (
-                                <Image src={mainImagePreview} objectFit="cover" w="full" h="full" />
-                            ) : (
-                                <Stack alignItems="center" color="gray.400">
-                                    <LuImage size="24" />
-                                    <Text fontSize="xs">이미지 선택</Text>
-                                </Stack>
-                            )}
-                            <Input
-                                type="file"
-                                position="absolute" top="0" left="0" w="full" h="full" opacity="0" cursor="pointer"
-                                accept="image/*"
-                                onChange={handleMainImageChange}
-                            />
-                        </Box>
-                    </HStack>
-                </Field.Root>
-            </Stack>
-
             <HStack justifyContent="flex-end" pt="10">
                 <Button variant="outline" size="lg" onClick={() => navigate(-1)}>취소</Button>
-                <Button onClick={handleSubmit} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>캠페인 {id ? '수정' : '등록'}하기</Button>
+                <Button onClick={() => handleSubmit('PENDING')} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>캠페인 {id ? '수정' : '등록'}하기</Button>
             </HStack>
+
+            {isDraftModalOpen && (
+                <Box position="fixed" top="0" left="0" w="100vw" h="100vh" bg="blackAlpha.500" zIndex="overlay" display="flex" alignItems="center" justifyContent="center">
+                    <Box bg="white" p="6" borderRadius="md" w="500px" maxH="80vh" overflowY="auto" shadow="lg">
+                        <HStack justifyContent="space-between" mb="4">
+                            <Heading size="md">임시저장 목록</Heading>
+                            <CloseButton onClick={() => setIsDraftModalOpen(false)} />
+                        </HStack>
+                        <Stack gap="2">
+                            {drafts.length === 0 ? (
+                                <Text color="gray.500" py="4" textAlign="center">임시저장된 캠페인이 없습니다.</Text>
+                            ) : (
+                                drafts.map(draft => (
+                                    <Box key={draft.campaign_code} p="3" borderWidth="1px" borderRadius="md" cursor="pointer" _hover={{ bg: "gray.50" }} onClick={() => handleSelectDraft(draft)}>
+                                        <Text fontWeight="bold">{draft.title || '제목 없음'}</Text>
+                                        <Text fontSize="xs" color="gray.500">{new Date(draft.updated_at || draft.created_at).toLocaleString()}</Text>
+                                    </Box>
+                                ))
+                            )}
+                        </Stack>
+                    </Box>
+                </Box>
+            )}
         </Stack>
     )
 }

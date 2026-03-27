@@ -1,4 +1,4 @@
-import { Image, Stack, Table } from "@chakra-ui/react";
+import { HStack, Image, Link, Stack, Table } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
@@ -8,6 +8,16 @@ function List() {
 
     const [reviewCampaignList, setReviewCampaignList] = useState([]);
     const [reviewCampaignChannelView, setReviewCampaignChannelView] = useState([]);
+    const state = [
+        { key: 'DRAFT', value: '임시저장' },
+        { key: 'PENDING', value: '대기' },
+        { key: 'SCHEDULED', value: '준비중' },
+        { key: 'RECRUTING', value: '모집중' },
+        { key: 'SELECTING', value: '선정중(선정전)' },
+        { key: 'REVIEWING', value: '리뷰작성중' },
+        { key: 'CLOSED', value: '모집마감' },
+        { key: 'COMPLETED', value: '종료' }
+    ]
 
     useEffect(() => {
         const fetchReviewCampaignList = async () => {
@@ -48,14 +58,23 @@ function List() {
                 <Table.Body>
                     {reviewCampaignList.map((reviewCampaign) => (
                         <Table.Row key={reviewCampaign.campaign_code}>
-                            <Table.Cell>{reviewCampaign.campaign_code}</Table.Cell>
+                            <Table.Cell>{state.find((state) => state.key === reviewCampaign.state)?.value}</Table.Cell>
                             <Table.Cell>
-                                {reviewCampaign.channels.map((channel) => {
-                                    const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel);
-                                    return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
-                                })}
+                                <HStack>
+                                    {reviewCampaign.channels.map((channel) => {
+                                        const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel);
+                                        return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
+                                    })}
+                                </HStack>
                             </Table.Cell>
-                            <Table.Cell>{reviewCampaign.title}</Table.Cell>
+                            <Table.Cell>
+                                <HStack gap="2">
+                                    <Link href={`/admin/review/campaign/update/${reviewCampaign.campaign_code}`}>
+                                        <Image src={reviewCampaign.main_image} w="14" rounded="md" />
+                                        {reviewCampaign.title}
+                                    </Link>
+                                </HStack>
+                            </Table.Cell>
                             <Table.Cell>{formatNumber(reviewCampaign.application_count) + ' / ' + formatNumber(reviewCampaign.max_applicants)}</Table.Cell>
                             <Table.Cell>{formatDateYMD(reviewCampaign.start_application_date) + ' ~ ' + formatDateYMD(reviewCampaign.end_application_date)}</Table.Cell>
                             <Table.Cell>{formatDateYMD(reviewCampaign.start_write_date) + ' ~ ' + formatDateYMD(reviewCampaign.end_write_date)}</Table.Cell>

@@ -6,7 +6,7 @@ import { Box, Button, Dialog, FileUpload, Icon } from "@chakra-ui/react";
 import DragHandle from "@tiptap/extension-drag-handle-react";
 import { LuGripVertical, LuImage, LuUpload } from "react-icons/lu";
 import { useEffect, useState } from "react";
-
+import axiosInstance from "../../../../utils/api";
 function RegisterEditor({ content, setContent }) {
     const editor = useEditor({
         extensions: [StarterKit, Image],
@@ -32,14 +32,7 @@ function RegisterEditor({ content, setContent }) {
                         <InsertImageControl />
                     </RichTextEditor.ControlGroup>
                 </RichTextEditor.Toolbar>
-                <Box 
-                    position="relative" 
-                    flex="1" 
-                    display="flex" 
-                    flexDirection="column"
-                    onClick={() => editor.chain().focus().run()}
-                    cursor="text"
-                >
+                <Box position="relative" flex="1" display="flex" flexDirection="column" onClick={() => editor.chain().focus().run()} cursor="text">
                     <DragHandle editor={editor}>
                         <Box
                             pos="relative"
@@ -96,14 +89,29 @@ function InsertImageControl() {
                                 alignItems="stretch"
                                 maxFiles={1}
                                 accept="image/*"
-                                onFileAccept={(accepted) => {
+                                onFileAccept={async (accepted) => {
                                     const uploaded = accepted.files ?? []
                                     setFiles(uploaded);
 
                                     if (uploaded[0]) {
-                                        const url = URL.createObjectURL(uploaded[0]);
-                                        editor.chain().focus().setImage({ src: url }).run();
-                                        setOpen(false)
+                                        try {
+                                            const formData = new FormData();
+                                            formData.append('image', uploaded[0]);
+                                            
+                                            // Make sure to import axiosInstance at the top of the file
+                                            const response = await axiosInstance.post('/admin/review/campaign/upload-image', formData, {
+                                                headers: { "Content-Type": "multipart/form-data" },
+                                            });
+                                            
+                                            if (response.data.success) {
+                                                const url = response.data.url;
+                                                editor.chain().focus().setImage({ src: url }).run();
+                                                setOpen(false);
+                                            }
+                                        } catch (error) {
+                                            console.error('Image upload failed', error);
+                                            // You could add a toaster notification here if desired
+                                        }
                                     }
                                 }}
                             >

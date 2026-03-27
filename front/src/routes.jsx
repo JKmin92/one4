@@ -64,6 +64,7 @@ const router = createBrowserRouter([
             { path: 'shop/board/:type/:id', element: <AdminBoardDetail /> },
             { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
+            { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
         ]
     }, {
         path: '/review',
@@ -71,7 +72,7 @@ const router = createBrowserRouter([
         children: [
             { path: '', element: <ReviewMain /> },
             { path: 'list/:id', element: <ReviewList /> },
-            { path: 'd/:id', element: <ReviewDetail /> }
+            { path: 'detail/:campaign_code', element: <ReviewDetail /> }
         ]
     }
 ])

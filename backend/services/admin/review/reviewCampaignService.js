@@ -11,7 +11,21 @@ export const insertReviewCampaign = async (data, files) => {
         mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'review', id);
     }
 
-    const insertData = { ...data, campaign_code: campaign_code, main_image: mainImageUrl };
+    let detailImageUrls = [];
+    if (files && files.detailImages && files.detailImages.length > 0) {
+        for (let i = 0; i < files.detailImages.length; i++) {
+            const detailId = id + '_d' + i;
+            const url = await fileUpload.uploadFile(files.detailImages[i], 'review', detailId);
+            detailImageUrls.push(url);
+        }
+    }
+
+    const insertData = {
+        ...data,
+        campaign_code: campaign_code,
+        main_image: mainImageUrl,
+        detail_images: detailImageUrls.length > 0 ? JSON.stringify(detailImageUrls) : null
+    };
     return await model.insertReviewCampaign(insertData);
 }
 
@@ -27,8 +41,63 @@ export const insertReviewCampaignReward = async (data) => {
     return await model.insertReviewCampaignReward({ ...data, campaign_code: data.campaign_code });
 }
 
+export const updateReviewCampaign = async (campaign_code, data, files) => {
+    let mainImageUrl = '';
+    if (files && files.mainImage && files.mainImage[0]) {
+        const id = moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'review', id);
+    }
+
+    let detailImageUrls = [];
+    if (data.existingDetailImages) {
+        try {
+            detailImageUrls = JSON.parse(data.existingDetailImages);
+            if (!Array.isArray(detailImageUrls)) detailImageUrls = [detailImageUrls];
+        } catch (e) {
+            detailImageUrls = typeof data.existingDetailImages === 'string' && data.existingDetailImages.startsWith('[') ? [] : [data.existingDetailImages];
+        }
+    }
+
+    if (files && files.detailImages && files.detailImages.length > 0) {
+        const id = moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        for (let i = 0; i < files.detailImages.length; i++) {
+            const detailId = id + '_d' + i;
+            const url = await fileUpload.uploadFile(files.detailImages[i], 'review', detailId);
+            detailImageUrls.push(url);
+        }
+    }
+
+    const updateData = {
+        ...data,
+        campaign_code,
+        ...(mainImageUrl && { main_image: mainImageUrl }),
+        detail_images: detailImageUrls.length > 0 ? JSON.stringify(detailImageUrls) : null
+    };
+    return await model.updateReviewCampaign(updateData);
+}
+
+export const updateReviewCampaignMission = async (data) => {
+    return await model.updateReviewCampaignMission({ ...data, campaign_code: data.campaign_code });
+}
+
+export const deleteReviewCampaignRewardOptions = async (campaign_code) => {
+    return await model.deleteReviewCampaignRewardOptions(campaign_code);
+}
+
+export const deleteReviewCampaignRewards = async (campaign_code) => {
+    return await model.deleteReviewCampaignRewards(campaign_code);
+}
+
+export const deleteReviewCampaignChannels = async (campaign_code) => {
+    return await model.deleteReviewCampaignChannels(campaign_code);
+}
+
 export const getReviewCampaignList = async () => {
     return await model.getReviewCampaignList();
+}
+
+export const getDraftReviewCampaigns = async () => {
+    return await model.getDraftReviewCampaigns();
 }
 
 export const getReviewCampaignCategory = async () => {
@@ -36,9 +105,13 @@ export const getReviewCampaignCategory = async () => {
 }
 
 export const insertReviewCampaignRewardOption = async (data) => {
-    return await model.insertReviewCampaignRewardOption({ ...data, reward_id: data.reward_id });
+    return await model.insertReviewCampaignRewardOption(data);
 }
 
 export const getReviewCampaignChannelView = async () => {
     return await model.getReviewCampaignChannelView();
+}
+
+export const getReviewCampaign = async (campaign_code) => {
+    return await model.getReviewCampaign(campaign_code);
 }

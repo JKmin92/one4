@@ -9,6 +9,7 @@ import adminShopBoardRoutes from './routes/admin/shop/boardRoutes.js';
 import productRoutes from './routes/shop/productRoutes.js';
 import shopBoardRoutes from './routes/shop/boardRoutes.js';
 import adminReviewCampaignRoutes from './routes/admin/review/reviewCampaignRoutes.js';
+import reviewRoutes from './routes/review/reviewRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -28,6 +29,7 @@ app.use('/api/admin/shop/promotion', adminPromotionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/shop/product', productRoutes);
 app.use('/api/shop/board', shopBoardRoutes);
+app.use('/api/review/campaign', reviewRoutes);
 app.use('/api/admin/shop/board', adminShopBoardRoutes);
 app.use('/api/admin/review/campaign', adminReviewCampaignRoutes);
 

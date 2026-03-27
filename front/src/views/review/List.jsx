@@ -45,7 +45,7 @@ function List() {
                 {campaignList.map((campaign) => (
                     <Box key={campaign.id} w="1/6">
                         <Stack gap="2" p="0 10px">
-                            <Link href={`/review/d/${campaign.id}`}>
+                            <Link href={`/review/detail/${campaign.id}`}>
                                 <Box bg="bg.emphasized" aspectRatio="square" rounded="md" w="full"></Box>
                             </Link>
                             <HStack>
