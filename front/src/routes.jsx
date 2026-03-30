@@ -17,6 +17,7 @@ import ReviewLayout from './views/review/common/Layout';
 import ReviewMain from './views/review/Main';
 import ReviewList from './views/review/List';
 import ReviewDetail from './views/review/Detail';
+import ReviewApplication from './views/review/Application';
 
 import AdminLayout from './views/admin/common/Layout';
 import AdminProductList from './views/admin/shop/product/List';
@@ -72,7 +73,8 @@ const router = createBrowserRouter([
         children: [
             { path: '', element: <ReviewMain /> },
             { path: 'list/:id', element: <ReviewList /> },
-            { path: 'detail/:campaign_code', element: <ReviewDetail /> }
+            { path: 'detail/:campaign_code', element: <ReviewDetail /> },
+            { path: 'application/:campaign_code', element: <ReviewApplication /> }
         ]
     }
 ])

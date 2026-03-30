@@ -1,9 +1,9 @@
-import { Badge, Box, Button, Collapsible, DataList, Heading, HStack, IconButton, Image, Link, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Clipboard, Collapsible, DataList, Heading, HStack, IconButton, Image, Link, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { PiHeartFill, PiShareNetwork } from "react-icons/pi";
 import { formatDateToMonthDay, formatNumber, getDDay } from "../../utils/simpleUtils";
 import { LuChevronDown } from "react-icons/lu";
 import { useRef, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../utils/api";
 
 function Detail() {
@@ -22,6 +22,7 @@ function Detail() {
     const cautionRef = useRef(null);
 
     const { campaign_code } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchCampaign = async () => {
@@ -147,47 +148,55 @@ function Detail() {
                     </Stack>
                     <Stack {...campaignInfoStack} ref={offeringRef}>
                         <Heading {...campaignInfoTitle}>제공 내용</Heading>
-                        <Text {...campaignInfoText}>
-                            1:1 개인 PT4회
-                            <br />
-                            원포인트 {formatNumber(10000)}P 제공
-                        </Text>
+                        <Box {...campaignInfoText}>
+                            {campaign.rewards.map(reward => {
+                                if (reward.reward_type === 'PRODUCT') {
+                                    return (
+                                        <Stack key={reward.id} gap="0">
+                                            <Text fontSize="md">{reward.name} {reward.quantity}개</Text>
+                                            <Text fontSize="xs" color="fg.muted">{reward.description}</Text>
+                                        </Stack>
+                                    )
+                                }
+                            })}
+                        </Box>
                     </Stack>
                     <Stack {...campaignInfoStack} ref={keywordRef}>
                         <Heading {...campaignInfoTitle}>키워드</Heading>
-                        <Text {...campaignInfoText}>
-                            제목 키워드 : 석촌헬스. 석촌동헬스, 석촌고분역PT, 석촌PT, 석촌동헬스장, 삼전동헬스장, 삼전동PT<br />
-                            매장명 : 휴메이크 휘트니스 석촌점<br /><br />
-
-                            블로그 포스팅 작성 시 제목키워드와 매장명을 포함하여 작성해주세요.<br />
-                            예) 석촌동 헬스장, 휴메이크 휘트니스 석촌점에서 운동했어요! 등등
-                        </Text>
+                        <Box {...campaignInfoText}>
+                            <Stack>
+                                <Stack gap="0">
+                                    <Text>제목 키워드 : {campaign.mission.mandatory_keyword ? campaign.mission.mandatory_keyword.split(',').map(tag => `${tag.trim()}`).join(', ') : ''}</Text>
+                                    <Text>{campaign.campaign_type === 'DELIVERY' ? '제품명' : '매장명'} : {campaign.product_name}</Text>
+                                </Stack>
+                                <Text>{campaign.content}</Text>
+                            </Stack>
+                        </Box>
                     </Stack>
                     <Stack {...campaignInfoStack}>
                         <Heading {...campaignInfoTitle}>해시태그</Heading>
                         <Stack gap="2" {...campaignInfoText}>
                             <Box>
-                                <Button variant="surface" w="auto" fontSize="sm" minH="auto" minW="auto" h="auto" rounded="full">해시태그 복사</Button>
+                                <Clipboard.Root value={campaign.mission.hashtags.split(',').map(tag => `#${tag.trim()}`).join(' ')}>
+                                    <Clipboard.Trigger asChild>
+                                        <Button variant="surface" w="auto" fontSize="sm" minH="auto" minW="auto" h="auto" rounded="full"><Clipboard.Indicator /> 해시태그 복사</Button>
+                                    </Clipboard.Trigger>
+                                </Clipboard.Root>
                             </Box>
-                            <Text >
-                                #석촌헬스 #석촌동헬스 #석촌고분역PT #석촌PT #선촌동PT #석동헬스장 #휴메이크 #휴메이크휘트니스 #휴메이크휘트니스_석촌점 #삼전역헬스 #삼전동_헬스장 #삼전동_pt<br />
-                                위 해시태그 모두 포함 부탁드립니다.
+                            <Text>
+                                {campaign.mission.hashtags ? campaign.mission.hashtags.split(',').map(tag => `#${tag.trim()}`).join(' ') : ''}
                             </Text>
                         </Stack>
                     </Stack>
                     <Stack {...campaignInfoStack} ref={missionRef}>
                         <Heading {...campaignInfoTitle}>캠페인 미션</Heading>
                         <Text {...campaignInfoText}>
-                            - 매장사진 포함 직접찍은 사진 10장 이상 필수 포함<br />
-                            - 매장 지도 위치 필수 포함<br />
-                            - 동영상 2건 이상 업로드<br />
-                            - 태그키워드가 포스팅 본문에 자연스럽게 언급될 수 있도록 해주세요
+                            {campaign.mission.content_guide}
                         </Text>
                     </Stack>
                     <Stack {...campaignInfoStack} ref={cautionRef}>
                         <Heading {...campaignInfoTitle}>주의사항</Heading>
                         <Text {...campaignInfoText}>
-                            * 본 캠페인에 진행 중 촬영된 이미지는 휴메이크 측에서 마케팅 용 등으로 사용할 수 있으며 요청 시 얼굴은 모자이크 등으로 가려 사용할 수 있습니다.<br />
                             작성이 지연될 경우 문의사항 또는 원포 카카오톡 채널로 미리 말씀 부탁드립니다.
                         </Text>
                     </Stack>
@@ -224,7 +233,7 @@ function Detail() {
                         <Box bg="bg.muted" w="full" rounded="md" p="10px" textAlign="center">
                             D-{pad(timeLeft.days)} {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
                         </Box>
-                        <Button w="full" rounded="md">캠페인 신청하기</Button>
+                        <Button w="full" rounded="md" onClick={() => navigate(`/review/application/${campaign.campaign_code}`)}>캠페인 신청하기</Button>
                     </Stack>
                 </Box>
                 <Box w={{ base: "full", md: "1/6" }} position="relative">
@@ -255,7 +264,7 @@ function Detail() {
                     </Stack>
                 </Box>
             </Stack>
-            <Button position="fixed" bottom="0" left="0" right="0" w="full" h="60px" rounded="none" colorScheme="main" zIndex="100" display={{ base: 'block', md: 'none' }}>캠페인 신청하기</Button>
+            <Button position="fixed" bottom="0" left="0" right="0" w="full" h="60px" rounded="none" colorScheme="main" zIndex="100" display={{ base: 'block', md: 'none' }} onClick={() => navigate(`/review/application/${campaign.campaign_code}`)}>캠페인 신청하기</Button>
         </Stack>
     )
 }
