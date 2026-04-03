@@ -5,6 +5,9 @@ import GeneralLayout from './views/common/Layout';
 import Login from './views/user/Login';
 import Join from './views/user/Join';
 
+import MypageLayout from './views/user/mypage/Layout';
+import MypageMain from './views/user/mypage/Main';
+
 import ShopLayout from './views/shop/common/Layout';
 import ShopMain from './views/shop/Main';
 import ShopProductList from './views/shop/product/ProductList';
@@ -51,6 +54,12 @@ const router = createBrowserRouter([
             { path: '/join', element: <Join /> }
         ]
     }, {
+        path: '/mypage',
+        element: <MypageLayout />,
+        children: [
+            { path: '', element: <MypageMain /> },
+        ]
+    }, {
         path: '/admin',
         element: <AdminLayout />,
         children: [
@@ -69,10 +78,10 @@ const router = createBrowserRouter([
         ]
     }, {
         path: '/review',
-        element: <ReviewLayout />,
+        element: <GeneralLayout />,
         children: [
             { path: '', element: <ReviewMain /> },
-            { path: 'list/:id', element: <ReviewList /> },
+            { path: 'categorys/:id', element: <ReviewList /> },
             { path: 'detail/:campaign_code', element: <ReviewDetail /> },
             { path: 'application/:campaign_code', element: <ReviewApplication /> }
         ]

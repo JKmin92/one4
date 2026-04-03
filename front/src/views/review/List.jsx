@@ -1,25 +1,70 @@
 import { Box, Flex, Heading, HStack, Image, Link, Stack, Text } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { getDDay } from "../../utils/simpleUtils";
+import { useEffect, useState } from "react";
+import axiosInstance from "../../utils/api";
 
 function List() {
 
     const { id } = useParams();
     const menuStyle = { rounded: 'none', p: "8px 20px", fontSize: 'sm', _hover: { fontWeight: 'medium' } };
     const menuActiveStyle = { borderBottomWidth: '2px', borderColor: 'main', fontWeight: 'medium' };
-    const menuList = [
-        { id: 'all', label: '전체' },
-        { id: 'beauty', label: '뷰티' },
-        { id: 'food', label: '식품' },
-        { id: 'home', label: '생활용품' },
-        { id: 'baby', label: '육아' },
-        { id: 'car', label: '차량·캠핑' },
-        { id: 'pet', label: '반려동물' },
-        { id: 'it', label: 'IT·가전제품' },
-        { id: 'etc', label: '기타' }
-    ];
 
-    const campaignList = [
+    const [categorys, setCategorys] = useState([]);
+    const [rootCategoryId, setRootCategoryId] = useState(null);
+    const [reviewCampaignChannelView, setReviewCampaignChannelView] = useState([]);
+
+    const metchTitle = (id) => {
+        switch (id) {
+            case 'DELIVERY': return '제품';
+            case 'VISIT': return '방문';
+            case 'REPORTER': return '기자단';
+            case 'PURCHASE': return '구매평';
+            default: return '';
+        }
+    }
+    const [title, setTitle] = useState('');
+    const [campaignList, setCampaignList] = useState([]);
+
+    useEffect(() => {
+        const fetchCategorys = async () => {
+            const response = await axiosInstance.get('/review/campaign/category');
+            const data = response.data;
+            setCategorys(data);
+
+            const currentCategory = data.find(c => String(c.id) === String(id));
+            if (currentCategory) {
+                if (!currentCategory.parent_id) {
+                    setRootCategoryId(currentCategory.id);
+                } else {
+                    setRootCategoryId(currentCategory.parent_id);
+                }
+                setTitle(metchTitle(currentCategory.type));
+            }
+        };
+
+        const fetchCampaignList = async () => {
+            const response = await axiosInstance.get(`/review/campaign/list/${id}`);
+            const data = response.data;
+            setCampaignList(data);
+        };
+
+        const fetchReviewCampaignChannelView = async () => {
+            try {
+                const resources = await axiosInstance.get('/review/campaign/channel');
+                setReviewCampaignChannelView(resources.data);
+            } catch (error) {
+                console.error("Failed to fetch review campaign channel view", error);
+                toaster.create({ title: '오류가 발생되었습니다.', type: 'error' });
+            }
+        };
+
+        fetchCategorys();
+        fetchCampaignList();
+        fetchReviewCampaignChannelView();
+    }, [id]);
+
+    const campaignList1 = [
         { id: 1, title: '제품명 1', channel: ['naver'], brand: '와바미', offer: '티모시 사료 1kg 1개', endDate: '2026-02-28', targetCount: 10 },
         { id: 2, title: '제품명 1', channel: ['naver'], brand: '와바미', offer: '티모시 사료 1kg 1개', endDate: '2026-02-28', targetCount: 10 },
         { id: 3, title: '제품명 1', channel: ['naver'], brand: '와바미', offer: '티모시 사료 1kg 1개', endDate: '2026-02-28', targetCount: 10 },
@@ -32,11 +77,12 @@ function List() {
 
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="6">
-            <Heading>제품 캠페인</Heading>
+            <Heading>{title} 캠페인</Heading>
             <Stack direction="row" borderBottomWidth="1px">
                 <HStack gap="2">
-                    {menuList.map((menu) => (
-                        <Link href={`/review/list/${menu.id}`} key={menu.id} {...menuStyle} {...(menu.id === id ? menuActiveStyle : {})}>{menu.label}</Link>
+                    <Link href={`/review/categorys/${rootCategoryId}`} {...menuStyle} {...(rootCategoryId === id ? menuActiveStyle : {})}>전체</Link>
+                    {categorys.filter(c => c.parent_id == rootCategoryId).map((category) => (
+                        <Link href={`/review/categorys/${category.id}`} key={category.id} {...menuStyle} {...(category.id === id ? menuActiveStyle : {})}>{category.name}</Link>
                     ))}
                 </HStack>
             </Stack>
@@ -45,20 +91,21 @@ function List() {
                 {campaignList.map((campaign) => (
                     <Box key={campaign.id} w="1/6">
                         <Stack gap="2" p="0 10px">
-                            <Link href={`/review/detail/${campaign.id}`}>
-                                <Box bg="bg.emphasized" aspectRatio="square" rounded="md" w="full"></Box>
+                            <Link href={`/review/detail/${campaign.campaign_code}`}>
+                                <Image src={campaign.main_image} aspectRatio="square" rounded="md" w="full" />
                             </Link>
                             <HStack>
                                 <HStack>
-                                    {campaign.channel.map((channel, index) => {
-                                        if (channel === 'naver') return (<Image key={index} src="../../../public/resources/img/logo/naver.svg" w="5" rounded="md" />)
+                                    {campaign.channels.map((channel, index) => {
+                                        const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
+                                        return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
                                     })}
                                 </HStack>
-                                <Text>D-{getDDay(campaign.endDate)}</Text>
+                                <Text>D-{getDDay(campaign.end_application_date)}</Text>
                             </HStack>
-                            <Text>&#91;{campaign.brand}&#93; {campaign.title}</Text>
+                            <Text>{campaign.title}</Text>
                             <Text fontSize="xs" color="fg.muted">{campaign.offer}</Text>
-                            <Text fontSize="xs">신청 10명&#47;{campaign.targetCount}명</Text>
+                            <Text fontSize="xs">신청 {campaign.application_count}명&#47;{campaign.max_applicants}명</Text>
                         </Stack>
                     </Box>
                 ))}

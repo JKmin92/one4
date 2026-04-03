@@ -14,44 +14,44 @@ function SideMenu() {
         {
             path: 'product', label: '상품',
             children: [
-                { path: 'list', label: '상품 리스트' },
-                { path: 'register', label: '상품 등록' },
-                { path: 'category', label: '카테고리' },
+                { path: ['list'], label: '상품 리스트' },
+                { path: ['register', 'update'], label: '상품 등록' },
+                { path: ['category'], label: '카테고리' },
             ]
         }, {
             path: 'order', label: '주문',
             children: [
-                { path: 'list', label: '주문 리스트' },
-                { path: 'payment_list', label: '입금전 관리' },
-                { path: 'ready_list', label: '상품 준비중 리스트' },
-                { path: 'delivery_ready_list', label: '배송 준비중 리스트' },
-                { path: 'delivery_list', label: '배송중 리스트' },
-                { path: 'complate_list', label: '배송 완료 리스트' },
+                { path: ['list'], label: '주문 리스트' },
+                { path: ['payment_list'], label: '입금전 관리' },
+                { path: ['ready_list'], label: '상품 준비중 리스트' },
+                { path: ['delivery_ready_list'], label: '배송 준비중 리스트' },
+                { path: ['delivery_list'], label: '배송중 리스트' },
+                { path: ['complate_list'], label: '배송 완료 리스트' },
 
             ]
         }, {
             path: 'complain', label: '취소/교환/반품/환불',
             children: [
-                { path: 'auto_cancel_list', label: '입금전 취소 리스트' },
-                { path: 'cancel_list', label: '취소 리스트' },
-                { path: 'change_list', label: '교환 리스트' },
-                { path: 'return_list', label: '반품 리스트' },
-                { path: 'refund_list', label: '환불 리스트' },
+                { path: ['auto_cancel_list'], label: '입금전 취소 리스트' },
+                { path: ['cancel_list'], label: '취소 리스트' },
+                { path: ['change_list'], label: '교환 리스트' },
+                { path: ['return_list'], label: '반품 리스트' },
+                { path: ['refund_list'], label: '환불 리스트' },
             ]
         }, {
             path: 'promotion', label: '프로모션',
             children: [
-                { path: 'list', label: '프로모션 리스트' },
-                { path: 'register', label: '프로모션 추가' },
+                { path: ['list'], label: '프로모션 리스트' },
+                { path: ['register'], label: '프로모션 추가' },
             ]
         }, {
             path: 'board', label: '게시판',
             children: [
-                { path: 'list/review', label: '리뷰' },
-                { path: 'list/product_qna', label: '상품 문의' },
-                { path: 'list/inquiry', label: '1:1 문의' },
-                { path: 'list/notice', label: '공지사항' },
-                { path: 'list/faq', label: 'FAQ' },
+                { path: ['list/review'], label: '리뷰' },
+                { path: ['list/product_qna'], label: '상품 문의' },
+                { path: ['list/inquiry'], label: '1:1 문의' },
+                { path: ['list/notice'], label: '공지사항' },
+                { path: ['list/faq'], label: 'FAQ' },
             ]
         }
     ];
@@ -60,8 +60,8 @@ function SideMenu() {
         {
             path: 'campaign', label: '리뷰 캠페인',
             children: [
-                { path: 'list', label: '캠페인 리스트' },
-                { path: 'register', label: '캠페인 등록' },
+                { path: ['list'], label: '캠페인 리스트' },
+                { path: ['register', 'update'], label: '캠페인 등록' },
             ]
         },
     ];
@@ -89,14 +89,20 @@ function SideMenu() {
                             </Collapsible.Trigger>
                             <Collapsible.Content>
                                 <Stack>
-                                    {category.children.map((children, i) => (
-                                        <Link
-                                            key={i}
-                                            href={`/admin/shop/${category.path}/${children.path}`}
-                                            {...linkStyle}
-                                            {...(pathname.includes(`${category.path}/${children.path}`) ? linkActiveStyle : null)}
-                                        >{children.label}</Link>
-                                    ))}
+                                    {category.children.map((children, i) => {
+                                        const paths = Array.isArray(children.path) ? children.path : [children.path];
+                                        const isActive = paths.some(p => pathname.includes(`${category.path}/${p}`));
+                                        return (
+                                            <Link
+                                                key={i}
+                                                href={`/admin/shop/${category.path}/${paths[0]}`}
+                                                {...linkStyle}
+                                                {...(isActive ? linkActiveStyle : null)}
+                                            >
+                                                {children.label}
+                                            </Link>
+                                        );
+                                    })}
                                 </Stack>
                             </Collapsible.Content>
                         </Collapsible.Root>
@@ -107,14 +113,20 @@ function SideMenu() {
                             </Collapsible.Trigger>
                             <Collapsible.Content>
                                 <Stack>
-                                    {category.children.map((children, i) => (
-                                        <Link
-                                            key={i}
-                                            href={`/admin/review/${category.path}/${children.path}`}
-                                            {...linkStyle}
-                                            {...(pathname.includes(`${category.path}/${children.path}`) ? linkActiveStyle : null)}
-                                        >{children.label}</Link>
-                                    ))}
+                                    {category.children.map((children, i) => {
+                                        const paths = Array.isArray(children.path) ? children.path : [children.path];
+                                        const isActive = paths.some(p => pathname.includes(`${category.path}/${p}`));
+                                        return (
+                                            <Link
+                                                key={i}
+                                                href={`/admin/review/${category.path}/${paths[0]}`}
+                                                {...linkStyle}
+                                                {...(isActive ? linkActiveStyle : null)}
+                                            >
+                                                {children.label}
+                                            </Link>
+                                        );
+                                    })}
                                 </Stack>
                             </Collapsible.Content>
                         </Collapsible.Root>

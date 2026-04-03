@@ -3,8 +3,8 @@ import { LuAlignJustify, LuBell, LuSearch, LuShoppingCart, LuUserRound } from "r
 import { useAuth } from "../../utils/useAuth";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/api";
-import Category from "../shop/common/Category";
-import { useLocation } from "react-router-dom";
+import Category from "./Category";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function Header() {
     const [keyword, setKeyword] = useState('');
@@ -12,11 +12,18 @@ function Header() {
     const { user, logout } = useAuth();
     const [categories, setCategories] = useState([]);
     const location = useLocation();
+    const [categoryLocation, setCategoryLocation] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
+        location.pathname.includes('/review') ? setCategoryLocation('review') : setCategoryLocation('');
+
         const fetchCategories = async () => {
-            const response = await axiosInstance.get('/shop/product/category');
-            setCategories(response.data);
+            const response = location.pathname.includes('/review')
+                ? await axiosInstance.get('/review/campaign/category')
+                : location.pathname.includes('/mypage') ? null
+                    : await axiosInstance.get('/shop/product/category');
+            setCategories(response?.data);
         };
         fetchCategories();
     }, []);
@@ -83,7 +90,10 @@ function Header() {
                                 </Menu.Trigger>
                                 <Menu.Positioner>
                                     <Menu.Content>
-                                        <Menu.Item><Button variant="ghost" onClick={logout}>로그아웃</Button></Menu.Item>
+                                        <Menu.Item display="block">
+                                            <Button variant="ghost" w="full" onClick={() => { navigate('/mypage') }}><Text textStyle="sm">마이페이지</Text></Button>
+                                        </Menu.Item>
+                                        <Menu.Item><Button variant="ghost" w="full" onClick={logout}>로그아웃</Button></Menu.Item>
                                     </Menu.Content>
                                 </Menu.Positioner>
                             </Menu.Root>
@@ -92,7 +102,7 @@ function Header() {
 
                 </HStack>
             </Flex>
-            {location.pathname.includes('/') && <Category categories={categories} />}
+            <Category categories={categories} location={categoryLocation} />
         </Stack>
     )
 }

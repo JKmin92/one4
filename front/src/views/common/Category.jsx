@@ -36,7 +36,7 @@ function CategoryItem({ category }) {
     );
 }
 
-function Category({ categories = [] }) {
+function Category({ categories = [], location = '' }) {
     const headerLineStyle = { p: '15px', px: { base: '5px', md: 'layoutX' }, width: '100%', borderBottom: '1px solid #e5e5e5' };
 
     const buildCategoryTree = (categories) => {
@@ -60,6 +60,7 @@ function Category({ categories = [] }) {
     };
 
     const categoryTree = buildCategoryTree(categories);
+    if (categories.length === 0) return null;
 
     return (
         <HStack gap="16" {...headerLineStyle} display={{ md: 'flex', base: 'none' }}>
@@ -88,7 +89,7 @@ function Category({ categories = [] }) {
 
             <HStack gap="12">
                 {categories.filter(c => c.is_visible === 1 && c.parent_id === null).map((category) => (
-                    <Link key={category.id} href={`/categorys/${category.id}`}>
+                    <Link key={category.id} href={`/${location}/categorys/${category.id}`}>
                         <Text fontSize="md" fontWeight="medium">{category.name}</Text>
                     </Link>
                 ))}

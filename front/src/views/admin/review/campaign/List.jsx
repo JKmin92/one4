@@ -12,7 +12,7 @@ function List() {
         { key: 'DRAFT', value: '임시저장' },
         { key: 'PENDING', value: '대기' },
         { key: 'SCHEDULED', value: '준비중' },
-        { key: 'RECRUTING', value: '모집중' },
+        { key: 'RECRUITING', value: '모집중' },
         { key: 'SELECTING', value: '선정중(선정전)' },
         { key: 'REVIEWING', value: '리뷰작성중' },
         { key: 'CLOSED', value: '모집마감' },

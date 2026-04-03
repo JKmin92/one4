@@ -418,15 +418,7 @@ function Register() {
 
     return (
         <Stack p="30px" px="layoutX" gap="10" pb="20">
-            <HStack
-                justifyContent="space-between"
-                position="sticky"
-                top="0"
-                bg="white"
-                zIndex="10"
-                py="4"
-                mt="-4"
-            >
+            <HStack justifyContent="space-between" position="sticky" top="0" bg="white" zIndex="10" py="4" mt="-4">
                 <Heading>캠페인 {id ? '수정' : '등록'}</Heading>
                 <HStack>
                     <Button bg="bg" variant="surface" onClick={fetchDrafts}>임시저장 목록</Button>
@@ -449,7 +441,7 @@ function Register() {
                             value={campaignType}
                             onValueChange={(e) => {
                                 setCampaignType(e.value);
-                                setCategoryId(""); //카테고리 초기화
+                                setCategoryId("");
                             }}
                         >
                             <HStack gap="6">
@@ -467,25 +459,24 @@ function Register() {
                         </RadioGroup.Root>
                     </Field.Root>
 
-                    <Field.Root w="auto">
-                        <Field.Label mb="2">카테고리 선택</Field.Label>
-                        <Box
-                            as="select"
-                            value={categoryId}
-                            onChange={(e) => setCategoryId(e.target.value)}
-                            w="xs" borderWidth="1px"
-                            fontSize="sm" minH="9"
-                            borderRadius="md" px="3" bg="white" outline="none" borderColor="gray.300"
-                        >
-                            <option value="">카테고리를 선택해주세요</option>
-                            {categories.filter(c => c.type === campaignType).map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </Box>
-                        {categories.filter(c => c.type === campaignType).length === 0 && (
-                            <Text fontSize="xs" color="gray.500" mt="2">해당 타입의 카테고리가 없습니다.</Text>
-                        )}
-                    </Field.Root>
+                    {categories.filter(c => c.type === campaignType).length > 0 && (
+                        <Field.Root w="auto">
+                            <Field.Label mb="2">카테고리 선택</Field.Label>
+                            <Box
+                                as="select"
+                                value={categoryId}
+                                onChange={(e) => setCategoryId(e.target.value)}
+                                w="xs" borderWidth="1px"
+                                fontSize="sm" minH="9"
+                                borderRadius="md" px="3" bg="white" outline="none" borderColor="gray.300"
+                            >
+                                <option value="">카테고리를 선택해주세요</option>
+                                {categories.filter(c => c.type === campaignType).map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </Box>
+                        </Field.Root>
+                    )}
 
                     <Field.Root w="auto" gap="4" minW="150px">
                         <Field.Label mb="0" whiteSpace="nowrap">노출 설정</Field.Label>
