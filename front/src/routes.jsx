@@ -7,6 +7,7 @@ import Join from './views/user/Join';
 
 import MypageLayout from './views/user/mypage/Layout';
 import MypageMain from './views/user/mypage/Main';
+import MypageInfo from './views/user/mypage/Info';
 
 import ShopLayout from './views/shop/common/Layout';
 import ShopMain from './views/shop/Main';
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
         element: <MypageLayout />,
         children: [
             { path: '', element: <MypageMain /> },
+            { path: 'info', element: <MypageInfo /> }
         ]
     }, {
         path: '/admin',

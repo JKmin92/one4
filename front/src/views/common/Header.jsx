@@ -1,5 +1,5 @@
 import { Avatar, Button, Circle, CloseButton, Flex, Float, Group, HStack, Icon, Image, Input, InputGroup, Link, Menu, Stack, Text } from "@chakra-ui/react";
-import { LuAlignJustify, LuBell, LuSearch, LuShoppingCart, LuUserRound } from "react-icons/lu";
+import { LuAlignJustify, LuBell, LuEye, LuSearch, LuShoppingCart, LuUserRound } from "react-icons/lu";
 import { useAuth } from "../../utils/useAuth";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/api";
@@ -56,11 +56,11 @@ function Header() {
                                 </Menu.Content>
                             </Menu.Positioner>
                         </Menu.Root>
-                        <Link href="/"><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
+                        <Link href={location.pathname.includes('/review') ? '/review' : '/'}><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                     </HStack>
                     <HStack gap="12" display={{ base: 'none', md: 'flex' }}>
-                        <Link href="/review"><Text fontSize="lg" fontWeight="medium">REVIEW</Text></Link>
-                        <Link href="/"><Text fontSize="lg" fontWeight="medium">SHOPPING</Text></Link>
+                        <Link href="/review"><Text fontSize="lg" fontWeight="medium" color={location.pathname.includes('/review') ? 'main' : 'black'}>REVIEW</Text></Link>
+                        <Link href="/"><Text fontSize="lg" fontWeight="medium" color={location.pathname.includes('/review') || location.pathname.includes('/mypage') ? 'black' : 'main'}>SHOPPING</Text></Link>
                     </HStack>
                 </HStack>
                 <HStack gap={{ base: 4, md: 6 }}>
@@ -70,10 +70,15 @@ function Header() {
                         </InputGroup>
                     </form>
                     <Group>
-                        <Link href="/cart">
+                        {location.pathname.includes('/review') ? (
+                            <Link href="/review/viewed">
+                                <Icon size="md"><LuEye /></Icon>
+                                <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
+                            </Link>
+                        ) : <Link href="/cart">
                             <Icon size="md"><LuShoppingCart /></Icon>
                             <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
-                        </Link>
+                        </Link>}
                     </Group>
 
                     {!user ? (
@@ -90,10 +95,12 @@ function Header() {
                                 </Menu.Trigger>
                                 <Menu.Positioner>
                                     <Menu.Content>
-                                        <Menu.Item display="block">
-                                            <Button variant="ghost" w="full" onClick={() => { navigate('/mypage') }}><Text textStyle="sm">마이페이지</Text></Button>
+                                        <Menu.Item display="block" asChild>
+                                            <Link href="/mypage" fontSize="sm" textAlign="center" p="10px" cursor="pointer" _hover={{ backgroundColor: 'gray.100' }}>마이페이지</Link>
                                         </Menu.Item>
-                                        <Menu.Item><Button variant="ghost" w="full" onClick={logout}>로그아웃</Button></Menu.Item>
+                                        <Menu.Item display="block" onClick={logout} asChild>
+                                            <Text fontSize="sm" textAlign="center" p="10px" cursor="pointer" _hover={{ backgroundColor: 'gray.100' }}>로그아웃</Text>
+                                        </Menu.Item>
                                     </Menu.Content>
                                 </Menu.Positioner>
                             </Menu.Root>
