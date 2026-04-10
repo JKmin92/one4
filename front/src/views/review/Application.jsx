@@ -1,14 +1,69 @@
-import { Box, Button, Checkbox, CheckboxGroup, CloseButton, DataList, Dialog, Field, Flex, Heading, HStack, Icon, Image, Input, RadioGroup, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, CheckboxGroup, CloseButton, DataList, Dialog, Field, Flex, Heading, HStack, Icon, Image, Input, RadioCard, RadioGroup, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/api";
 import { formatDateToMonthDay } from "../../utils/simpleUtils";
 import { useAuth } from "../../utils/useAuth";
 import { LuSearch } from "react-icons/lu";
 
+function AddressSelectModal({ addressList, open, setOpen, setAddress, setDetailAddress, setPostcode }) {
+
+    const [userAddressCode, setUserAddressCode] = useState(addressList.filter(address => address.isDefault)[0].address_code);
+
+    return (
+        <Dialog.Root open={open} onOpenChange={(e) => setOpen(e.open)}>
+            <Dialog.Trigger asChild>
+                <Button h="6">배송지 변경</Button>
+            </Dialog.Trigger>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+                <Dialog.Content>
+                    <Dialog.Header>
+                        <Dialog.Title>배송지 변경</Dialog.Title>
+                    </Dialog.Header>
+                    <Dialog.Body>
+                        <RadioCard.Root value={userAddressCode} onValueChange={(e) => setUserAddressCode(e.value)}>
+                            <Stack>
+                                {addressList.map((address, index) => (
+                                    <RadioCard.Item key={index} value={address.address_code}>
+                                        <RadioCard.ItemHiddenInput />
+                                        <RadioCard.ItemControl>
+                                            <RadioCard.ItemIndicator />
+                                            <RadioCard.ItemText>
+                                                [{address.postcode}] {address.address} {address.detailAddress}
+                                            </RadioCard.ItemText>
+                                        </RadioCard.ItemControl>
+                                    </RadioCard.Item>
+                                ))}
+                            </Stack>
+                        </RadioCard.Root>
+
+                    </Dialog.Body>
+
+                    <Dialog.Footer>
+                        <Button onClick={() => {
+                            const selected = addressList.find(a => a.address_code === userAddressCode);
+                            if (selected) {
+                                setAddress(selected.address);
+                                setPostcode(selected.postcode);
+                                setDetailAddress(selected.detailAddress);
+                                setOpen(false);
+                            }
+                        }}>배송지 선택</Button>
+                    </Dialog.Footer>
+                    <Dialog.CloseTrigger asChild>
+                        <CloseButton size="sm" />
+                    </Dialog.CloseTrigger>
+                </Dialog.Content>
+            </Dialog.Positioner>
+        </Dialog.Root>
+    )
+}
+
 function Application() {
 
     const { campaign_code } = useParams();
+    const navigate = useNavigate();
     const [campaign, setCampaign] = useState(null);
     const [rewards, setRewards] = useState([]);
     const [checkedList, setCheckedList] = useState([]);
@@ -17,7 +72,6 @@ function Application() {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
-    const [detailAddress, setDetailAddress] = useState('');
 
     const [selectedOptions, setSelectedOptions] = useState({});
     const { user } = useAuth();
@@ -25,8 +79,17 @@ function Application() {
     const [isDaumLoaded, setIsDaumLoaded] = useState(false);
     const [postcode, setPostcode] = useState(null);
     const [address, setAddress] = useState(null);
+    const [detailAddress, setDetailAddress] = useState('');
     const [isSearch, setIsSearch] = useState(false);
     const searchAddressRef = useRef(null);
+
+    const [addressModalOpen, setAddressModalOpen] = useState(false);
+
+    const [reviewChannelList, setReviewChannelList] = useState([]);
+    const [reviewChannelViewList, setReviewChannelViewList] = useState([]);
+    const [selectedReviewChannels, setSelectedReviewChannels] = useState({});
+    const [campaignChannelList, setCampaignChannelList] = useState([]);
+    const [addressList, setAddressList] = useState([]);
 
     useEffect(() => {
         const script = document.createElement('script');
@@ -40,6 +103,7 @@ function Application() {
         const fetchCampaign = async () => {
             const resource = await axiosInstance.get(`/review/campaign/${campaign_code}`);
             setCampaign(resource.data);
+            setCampaignChannelList(resource.data.channels);
             setRewards(resource.data.rewards);
             if (user) {
                 const profile = await axiosInstance.get('/user/profile');
@@ -48,7 +112,31 @@ function Application() {
                 setEmail(profile.data.email);
             }
         };
+
+        const fetchReviewChannelList = async () => {
+            const resource = await axiosInstance.get(`/user/review/channel`);
+            setReviewChannelList(resource.data);
+        };
+
+        const fetchReviewChannelViewList = async () => {
+            const resource = await axiosInstance.get(`/review/campaign/channel`);
+            setReviewChannelViewList(resource.data);
+        };
+
+        const fetchAddressList = async () => {
+            const resource = await axiosInstance.get(`/user/address`);
+            setAddressList(resource.data);
+            if (resource.data.length > 0) {
+                setAddress(resource.data.filter(address => address.isDefault)[0].address);
+                setPostcode(resource.data.filter(address => address.isDefault)[0].postcode);
+                setDetailAddress(resource.data.filter(address => address.isDefault)[0].detailAddress);
+            }
+        };
+
         fetchCampaign();
+        fetchReviewChannelList();
+        fetchAddressList();
+        fetchReviewChannelViewList();
     }, [campaign_code]);
 
     useEffect(() => {
@@ -78,10 +166,20 @@ function Application() {
             }
         });
 
-        const isSubmitEnabled = isAllChecked && isFormValid && reward_options_selected;
+        let channels_selected = true;
+        campaignChannelList.forEach(c => {
+            const view = reviewChannelViewList.find(rv => rv.channel_code === c.channel_code);
+            if (view && view.isLink) {
+                if (!selectedReviewChannels[c.channel_code]) {
+                    channels_selected = false;
+                }
+            }
+        });
+
+        const isSubmitEnabled = isAllChecked && isFormValid && reward_options_selected && channels_selected;
 
         setAllChecked(isSubmitEnabled);
-    }, [checkedList, campaign, name, phone, email, address, detailAddress, rewards, selectedOptions]);
+    }, [checkedList, campaign, name, phone, email, address, detailAddress, rewards, selectedOptions, campaignChannelList, reviewChannelViewList, selectedReviewChannels]);
 
     const openPostcode = () => {
         if (!isDaumLoaded) return;
@@ -235,15 +333,61 @@ function Application() {
     }, [checkedList, campaign]);
 
     const channelSection = useMemo(() => {
-        return (
-            <Stack direction="row">
-                <Heading w="2/6">채널</Heading>
-                <Stack w="4/6" gap="4">
-                    asd
+        if (!campaignChannelList || campaignChannelList.length === 0) return null;
+
+        return campaignChannelList.map((campaignChannel, campaignChannelIndex) => {
+            const reviewChannelView = reviewChannelViewList.find(rv => rv.channel_code === campaignChannel.channel_code);
+
+            if (!reviewChannelView || !reviewChannelView.isLink) {
+                return null;
+            }
+
+            const matchingUserChannels = reviewChannelList.filter(userChannel => userChannel.channel_code === campaignChannel.channel_code);
+
+            return (
+                <Stack direction="row" key={`channel-section-${campaignChannelIndex}`}>
+                    <Heading w="2/6">{reviewChannelView.name}</Heading>
+                    <Stack w="4/6">
+                        {matchingUserChannels.length > 0 ? (
+                            <RadioCard.Root
+                                value={selectedReviewChannels[campaignChannel.channel_code] || ""}
+                                onValueChange={(e) => setSelectedReviewChannels(prev => ({ ...prev, [campaignChannel.channel_code]: e.value }))}
+                            >
+                                <Stack>
+                                    {matchingUserChannels.map((channel, index) => (
+                                        <RadioCard.Item key={index} value={channel.review_channel_code}>
+                                            <RadioCard.ItemHiddenInput />
+                                            <RadioCard.ItemControl>
+                                                <RadioCard.ItemIndicator />
+                                                <RadioCard.ItemContent>
+                                                    <RadioCard.ItemText>
+                                                        <HStack>
+                                                            <Image src={`/public/resources/img/logo/${reviewChannelView?.icon}`} rounded="md" w="5" h="5" />
+                                                            <Text>{reviewChannelView?.name}</Text>
+                                                        </HStack>
+                                                    </RadioCard.ItemText>
+                                                    <RadioCard.ItemDescription>
+                                                        <Stack gap="0">
+                                                            <Text>{channel.channel_url}</Text>
+                                                        </Stack>
+                                                    </RadioCard.ItemDescription>
+                                                </RadioCard.ItemContent>
+                                            </RadioCard.ItemControl>
+                                        </RadioCard.Item>
+                                    ))}
+                                </Stack>
+                            </RadioCard.Root>
+                        ) : (
+                            <Flex direction="column" gap="4" p="4" borderWidth="1px" borderColor="border.subtle" rounded="md" alignItems="center">
+                                <Text fontSize="sm" color="fg.muted">등록된 {reviewChannelView.name} 채널이 없습니다.</Text>
+                                <Button size="sm" onClick={() => navigate('/mypage/info')}>채널 추가하기</Button>
+                            </Flex>
+                        )}
+                    </Stack>
                 </Stack>
-            </Stack>
-        )
-    })
+            );
+        });
+    }, [campaignChannelList, reviewChannelViewList, reviewChannelList, selectedReviewChannels, navigate]);
 
     if (!campaign || !rewards) return null;
 
@@ -268,7 +412,21 @@ function Application() {
                             </Field.Root>
                             {campaign.campaign_type === 'DELIVERY' && (
                                 <Field.Root>
-                                    <Field.Label>배송지</Field.Label>
+                                    <HStack>
+                                        <Field.Label>배송지</Field.Label>
+                                        {
+                                            addressList.length > 0 && (
+                                                <AddressSelectModal
+                                                    addressList={addressList}
+                                                    open={addressModalOpen}
+                                                    setOpen={setAddressModalOpen}
+                                                    setAddress={setAddress}
+                                                    setDetailAddress={setDetailAddress}
+                                                    setPostcode={setPostcode}
+                                                />
+                                            )
+                                        }
+                                    </HStack>
                                     <Button variant="ghost" w="100%" p="0" onClick={openPostcode}>
                                         <Flex justifyContent="space-between" w="100%" borderColor="bg.emphasized" borderWidth="1px" p="10px" rounded="sm">
                                             <Text whiteSpace="pre-line" textAlign="left" pr="10px">{postcode ? `[${postcode}] ${address}` : '주소검색'}</Text>

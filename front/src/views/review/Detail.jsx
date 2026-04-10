@@ -4,12 +4,15 @@ import { formatDateToMonthDay, formatNumber, getDDay } from "../../utils/simpleU
 import { LuChevronDown } from "react-icons/lu";
 import { useRef, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../utils/useAuth";
+import { toaster } from "../../components/ui/toaster";
 import axiosInstance from "../../utils/api";
 
 function Detail() {
 
     const [detailOpen, setDetailOpen] = useState(false);
     const [campaign, setCampaign] = useState(null);
+    const { user } = useAuth();
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
     const campaignInfoTitle = { w: { base: 'full', md: "1/6" }, size: 'md' };
@@ -23,6 +26,15 @@ function Detail() {
 
     const { campaign_code } = useParams();
     const navigate = useNavigate();
+
+    const handleApplicationClick = () => {
+        if (!user) {
+            toaster.create({ title: '로그인이 필요한 서비스입니다.', type: 'warning' });
+            navigate('/login', { state: { redirect: `/review/application/${campaign.campaign_code}` } });
+        } else {
+            navigate(`/review/application/${campaign.campaign_code}`);
+        }
+    }
 
     useEffect(() => {
         const fetchCampaign = async () => {
@@ -233,7 +245,7 @@ function Detail() {
                         <Box bg="bg.muted" w="full" rounded="md" p="10px" textAlign="center">
                             D-{pad(timeLeft.days)} {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
                         </Box>
-                        <Button w="full" rounded="md" onClick={() => navigate(`/review/application/${campaign.campaign_code}`)}>캠페인 신청하기</Button>
+                        <Button w="full" rounded="md" onClick={handleApplicationClick}>캠페인 신청하기</Button>
                     </Stack>
                 </Box>
                 <Box w={{ base: "full", md: "1/6" }} position="relative">
@@ -264,7 +276,7 @@ function Detail() {
                     </Stack>
                 </Box>
             </Stack>
-            <Button position="fixed" bottom="0" left="0" right="0" w="full" h="60px" rounded="none" colorScheme="main" zIndex="100" display={{ base: 'block', md: 'none' }} onClick={() => navigate(`/review/application/${campaign.campaign_code}`)}>캠페인 신청하기</Button>
+            <Button position="fixed" bottom="0" left="0" right="0" w="full" h="60px" rounded="none" colorScheme="main" zIndex="100" display={{ base: 'block', md: 'none' }} onClick={handleApplicationClick}>캠페인 신청하기</Button>
         </Stack>
     )
 }

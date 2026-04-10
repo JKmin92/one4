@@ -12,4 +12,15 @@ router.post('/refresh', userController.refreshToken);
 router.get('/', authMiddleware, userController.me);
 router.get('/profile', authMiddleware, userController.getUserProfile);
 
+router.get('/address', authMiddleware, userController.getUserAddress);
+router.post('/address', authMiddleware, userController.insertUserAdress);
+router.put('/address', authMiddleware, userController.updateUserAddress);
+router.delete('/address/:address_code', authMiddleware, userController.deleteUserAddress);
+
+router.get('/review/channel', authMiddleware, userController.getUserReviewChannelList);
+router.get('/review/channel/:review_channel_code', authMiddleware, userController.getUserReviewChannel);
+router.post('/review/channel', authMiddleware, userController.insertUserReviewChannel);
+router.put('/review/channel', authMiddleware, userController.updateUserReviewChannel);
+router.delete('/review/channel/:review_channel_code', authMiddleware, userController.deleteUserReviewChannel);
+
 export default router;

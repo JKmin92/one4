@@ -2,7 +2,7 @@ import { Button, Field, Fieldset, Heading, HStack, Input, Link, Stack, StackSepa
 import { PasswordInput } from "../../components/ui/password-input";
 import { useAuth } from "../../utils/useAuth";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toaster } from "../../components/ui/toaster";
 
 function Login() {
@@ -15,12 +15,16 @@ function Login() {
 
     const { register, handleSubmit, formState: {errors}} = useForm();
     const { login } = useAuth();
-    const naviagete = useNavigate();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const onSubmit = async (data) => {
         try {
             const userData = await login({email:data.email, password:data.password});
-            if(userData) naviagete('/');
+            if(userData) {
+                const redirectUrl = location.state?.redirect || '/';
+                navigate(redirectUrl, { replace: true });
+            }
         } catch {
             toaster.create({title:'로그인에 실패했습니다.', type:'error', closable:true});
         }

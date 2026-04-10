@@ -1,16 +1,31 @@
-import { Box, Button, Checkbox, CloseButton, Dialog, Field, Flex, HStack, Icon, Input, RadioCard, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, CloseButton, Dialog, Field, Flex, HStack, Icon, Input, ProgressCircle, RadioCard, Stack, Text } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { LuChevronRight, LuSearch } from "react-icons/lu";
+import axiosInstance from "../../../../utils/api";
 
 function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, delivery }) {
 
     const [isSearch, setIsSearch] = useState(false);
     const searchAddressRef = useRef(null);
-    const nameRef = useRef(null)
+    const [name, setName] = useState(delivery?.name || '');
     const [postcode, setPostcode] = useState(delivery && delivery.postcode);
     const [address, setAddress] = useState(delivery && delivery.address);
-    const detailAddressRef = useRef(null);
-    const phoneRef = useRef(null);
+    const [detailAddress, setDetailAddress] = useState(delivery?.detailAddress || '');
+    const [phone, setPhone] = useState(delivery?.phone || '');
+    const [isDefault, setIsDefault] = useState(false);
+    const [isDefaultDisable, setIsDefaultDisable] = useState(false);
+
+    useEffect(() => {
+        if (deliveryList.length === 0) {
+            setIsDefault(true);
+            setIsDefaultDisable(true);
+        } else if (deliveryList.length === 1 && delivery) {
+            setIsDefault(true);
+            setIsDefaultDisable(true);
+        } else {
+            setIsDefault(delivery?.isDefault || false);
+        }
+    }, [deliveryList]);
 
     const openPostcode = () => {
         setIsSearch(true);
@@ -42,32 +57,46 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, deli
         }, 0);
     }
 
-    const addAddress = () => {
-        /** TODO : 별도 address Id 생성 */
+    const addAddress = async () => {
         const id = deliveryList.reduce((max, cur) => cur.id > max ? cur.id : max, 0) + 1;
-        const phone = phoneRef.current.value.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
+        const formattedPhone = phone.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
         const newAddress = {
-            id: id,
-            name: nameRef.current.value,
+            id: delivery?.id || id,
+            name: name,
             postcode: postcode,
             address: address,
-            detailAddress: detailAddressRef.current.value,
-            phone: phone
+            detailAddress: detailAddress,
+            phone: formattedPhone,
+            isDefault: isDefault
         };
 
-        setDeliveryList(prev => [...prev, newAddress]);
+        if (delivery && deliveryList.find(d => d.id === delivery.id)) {
+            await axiosInstance.put('/user/address', newAddress);
+            setDeliveryList(prev => prev.map(d => d.id === delivery.id ? newAddress : d));
+        } else {
+            await axiosInstance.post('/user/address', newAddress);
+            setDeliveryList(prev => [...prev, newAddress]);
+        }
         setAddDeliveryStatus(false);
+    }
+
+    const deleteAddress = async () => {
+        if (window.confirm("정말 삭제 하시겠습니까?")) {
+            await axiosInstance.delete(`/user/address/${delivery?.id}`);
+            setDeliveryList(prev => prev.filter(d => d.id !== delivery?.id));
+            setAddDeliveryStatus(false);
+        }
     }
 
 
     return (
         <Stack gap="4">
-            <Box ref={searchAddressRef} display={isSearch ? 'block' : 'none'}></Box>
+            <Box ref={searchAddressRef} className="asd" display={isSearch ? 'block' : 'none'}></Box>
             <Stack gap="8" display={!isSearch ? 'flex' : 'none'}>
                 <Stack gap="4">
                     <Field.Root>
                         <Field.Label>성함</Field.Label>
-                        <Input placeholder="수령자 성함을 입력해주세요." ref={nameRef} value={delivery && delivery.name} />
+                        <Input placeholder="수령자 성함을 입력해주세요." value={name} onChange={(e) => setName(e.target.value)} />
                     </Field.Root>
 
                     <Field.Root>
@@ -78,16 +107,16 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, deli
                                 <Icon size="md"><LuSearch /></Icon>
                             </Flex>
                         </Button>
-                        <Input placeholder="상세 주소" ref={detailAddressRef} value={delivery && delivery.detailAddress} />
+                        <Input placeholder="상세 주소" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} />
                     </Field.Root>
 
                     <Field.Root>
                         <Field.Label>연락처</Field.Label>
-                        <Input placeholder="'-'를 제외하고 입력해주세요." ref={phoneRef} value={delivery && delivery.phone} />
+                        <Input placeholder="'-'를 제외하고 입력해주세요." value={phone} onChange={(e) => setPhone(e.target.value)} />
                     </Field.Root>
 
                     <Field.Root>
-                        <Checkbox.Root>
+                        <Checkbox.Root checked={isDefault} onCheckedChange={(e) => setIsDefault(!!e.checked)} disabled={isDefaultDisable}>
                             <Checkbox.HiddenInput />
                             <Checkbox.Control />
                             <Checkbox.Label>기본 배송지로 설정</Checkbox.Label>
@@ -96,7 +125,7 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, deli
                 </Stack>
                 {delivery ? (
                     <Stack direction="row">
-                        <Button onClick={addAddress} w="1/2" bg="red">삭제</Button>
+                        <Button onClick={deleteAddress} w="1/2" bg="red">삭제</Button>
                         <Button onClick={addAddress} w="1/2">배송지 수정</Button>
                     </Stack>
                 ) : (
@@ -134,6 +163,10 @@ function Delivery({ deliveryList, setDeliveryList }) {
 
     }, [deliveryList]);
 
+    useEffect(() => {
+        if (!open) setAddDeliveryStatus(false);
+    }, [open])
+
     const selectAddress = () => {
         const selected = deliveryList.find(d => d.id === selectedId);
         if (selected) {
@@ -147,12 +180,24 @@ function Delivery({ deliveryList, setDeliveryList }) {
         if (address) {
             setAddDeliveryStatus(true);
             setDelivery(address);
-            setOpen(false);
         }
     }
 
+    const addAddress = () => {
+        setDelivery(null);
+        setAddDeliveryStatus(true);
+    }
+
     return (
-        <Dialog.Root>
+        <Dialog.Root open={open} onOpenChange={(e) => {
+            if (!e.open && addDeliveryStatus) {
+                if (window.confirm("입력된 배송지는 저장되지 않습니다. 정말 닫겠습니까?")) {
+                    setOpen(false);
+                }
+            } else {
+                setOpen(e.open);
+            }
+        }}>
             <Dialog.Trigger asChild>
                 <Button variant="ghost" justifyContent="space-between">배송지 관리<LuChevronRight /></Button>
             </Dialog.Trigger>
@@ -188,18 +233,20 @@ function Delivery({ deliveryList, setDeliveryList }) {
                                         ))}
                                     </Stack>
                                 </RadioCard.Root>
-                            ) : null
+                            ) : (
+                                <Text textAlign="center">등록된 배송지가 없습니다.<br />배송지를 추가해주세요.</Text>
+                            )
                         )}
                     </Dialog.Body>
                     <Dialog.Footer>
                         {!addDeliveryStatus && (
                             deliveryList.length > 0 ? (
                                 <HStack w="100%">
-                                    <Button variant="outline" width="1/2" onClick={() => setAddDeliveryStatus(true)}>배송지 추가</Button>
+                                    <Button variant="outline" width="1/2" onClick={addAddress}>배송지 추가</Button>
                                     <Button width="1/2" onClick={editAddress}>배송지 수정</Button>
                                 </HStack>
                             ) : (
-                                <Button variant="outline" w="full" onClick={() => setAddDeliveryStatus(true)}>배송지 추가</Button>
+                                <Button variant="outline" w="full" onClick={addAddress}>배송지 추가</Button>
                             )
                         )}
                     </Dialog.Footer>

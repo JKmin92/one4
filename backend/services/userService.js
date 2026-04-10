@@ -1,6 +1,6 @@
 import * as model from '../models/userModel.js';
 import bcrypt from 'bcrypt';
-import { generateUserCode } from '../utils/customUtils.js';
+import { generateUniqueId, generateUserCode } from '../utils/customUtils.js';
 
 export const createUser = async (data) => {
     let user_code;
@@ -35,4 +35,48 @@ export const signIn = async (data) => {
 
 export const getUserProfile = async (user_code) => {
     return await model.getUserProfile(user_code);
+}
+
+export const getUserAddress = async (user_code) => {
+    return await model.getUserAddress(user_code);
+}
+
+export const insertUserAdress = async (user_address) => {
+    const address_code = generateUniqueId();
+    return await model.insertUserAdress({ ...user_address, address_code: address_code });
+}
+
+export const updateUserAddress = async (user_address) => {
+    return await model.updateUserAddress(user_address);
+}
+
+export const deleteUserAddress = async (address_code, user_code) => {
+    return await model.deleteUserAddress(address_code, user_code);
+}
+
+export const getUserReviewChannelList = async (user_code) => {
+    return await model.getUserReviewChannelList(user_code);
+}
+
+export const getUserReviewChannel = async (user_code, review_channel_code) => {
+    return await model.getUserReviewChannel(user_code, review_channel_code);
+}
+
+export const insertUserReviewChannel = async (user_review_channel) => {
+    const review_channel_code = generateUniqueId();
+    const channel_code = user_review_channel.channel_url.includes('instagram.com') ?
+        '202603171603001' : user_review_channel.channel_url.includes('youtube.com') ?
+            '202603171603002' : user_review_channel.channel_url.includes('naver.com') ? '202603171602001' : '';
+    return await model.insertUserReviewChannel({ ...user_review_channel, review_channel_code: review_channel_code, channel_code: channel_code });
+}
+
+export const deleteUserReviewChannel = async (review_channel_code, user_code) => {
+    return await model.deleteUserReviewChannel(review_channel_code, user_code);
+}
+
+export const updateUserReviewChannel = async (user_review_channel) => {
+    const channel_code = user_review_channel.channel_url.includes('instagram.com') ?
+        '202603171603001' : user_review_channel.channel_url.includes('youtube.com') ?
+            '202603171603002' : user_review_channel.channel_url.includes('naver.com') ? '202603171602001' : '';
+    return await model.updateUserReviewChannel({ ...user_review_channel, channel_code: channel_code });
 }

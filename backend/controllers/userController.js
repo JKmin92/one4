@@ -116,3 +116,93 @@ export const getUserProfile = async (req, res, next) => {
         next(err);
     }
 }
+
+export const getUserAddress = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserAddress(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const insertUserAdress = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.insertUserAdress({ ...req.body, user_code: user.user_code }));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const updateUserAddress = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.updateUserAddress({ ...req.body, user_code: user.user_code }));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const deleteUserAddress = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.deleteUserAddress(req.params.address_code, user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserReviewChannelList = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserReviewChannelList(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserReviewChannel = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserReviewChannel(user.user_code, req.params.review_channel_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const insertUserReviewChannel = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.insertUserReviewChannel({ ...req.body, user_code: user.user_code }));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const deleteUserReviewChannel = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.deleteUserReviewChannel(req.params.review_channel_code, user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const updateUserReviewChannel = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.updateUserReviewChannel({ ...req.body, user_code: user.user_code }));
+    } catch (err) {
+        next(err);
+    }
+}
