@@ -38,7 +38,8 @@ export const insertReviewCampaignMission = async (data) => {
 }
 
 export const insertReviewCampaignReward = async (data) => {
-    return await model.insertReviewCampaignReward({ ...data, campaign_code: data.campaign_code });
+    const reward_code = generateUniqueId();
+    return await model.insertReviewCampaignReward({ ...data, reward_code });
 }
 
 export const updateReviewCampaign = async (campaign_code, data, files) => {
@@ -105,7 +106,8 @@ export const getReviewCampaignCategory = async () => {
 }
 
 export const insertReviewCampaignRewardOption = async (data) => {
-    return await model.insertReviewCampaignRewardOption(data);
+    const reward_option_code = generateUniqueId();
+    return await model.insertReviewCampaignRewardOption({ ...data, reward_option_code });
 }
 
 export const getReviewCampaignChannelView = async () => {

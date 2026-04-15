@@ -33,16 +33,16 @@ export const insertReviewCampaignMission = async (data) => {
 }
 
 export const insertReviewCampaignReward = async (data) => {
-    const sql = `INSERT INTO review_campaign_reward (campaign_code, reward_type, name, description, value, quantity) VALUES (?, ?, ?, ?, ?, ?)`
-    const [rows] = await db.query(sql, [data.campaign_code, data.reward_type, data.name, data.description, data.value, data.quantity]);
+    const sql = `INSERT INTO review_campaign_reward (campaign_code, reward_code, reward_type, name, description, value, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)`
+    const [rows] = await db.query(sql, [data.campaign_code, data.reward_code, data.reward_type, data.name, data.description, data.value, data.quantity]);
 
     if (rows.affectedRows > 0) return rows.insertId;
     return null;
 }
 
 export const insertReviewCampaignRewardOption = async (data) => {
-    const sql = `INSERT INTO review_campaign_reward_option (reward_id, option_name, option_value) VALUES (?, ?, ?)`
-    const [rows] = await db.query(sql, [data.reward_id, data.option_name, data.option_value]);
+    const sql = `INSERT INTO review_campaign_reward_option (reward_code, reward_option_code, option_name, option_value) VALUES (?, ?, ?, ?)`
+    const [rows] = await db.query(sql, [data.reward_code, data.reward_option_code, data.option_name, data.option_value]);
     return rows;
 }
 
@@ -87,7 +87,7 @@ export const deleteReviewCampaignChannels = async (campaign_code) => {
 }
 
 export const deleteReviewCampaignRewardOptions = async (campaign_code) => {
-    const sql = `DELETE FROM review_campaign_reward_option WHERE reward_id IN (SELECT id FROM review_campaign_reward WHERE campaign_code = ?)`;
+    const sql = `DELETE FROM review_campaign_reward_option WHERE reward_code IN (SELECT reward_code FROM review_campaign_reward WHERE campaign_code = ?)`;
     const [rows] = await db.query(sql, [campaign_code]);
     return rows;
 }
@@ -155,7 +155,7 @@ export const getReviewCampaign = async (campaign_code) => {
     const [rewards] = await db.query(`SELECT * FROM review_campaign_reward WHERE campaign_code = ?`, [campaign_code]);
 
     for (const reward of rewards) {
-        const [options] = await db.query(`SELECT * FROM review_campaign_reward_option WHERE reward_id = ?`, [reward.id]);
+        const [options] = await db.query(`SELECT * FROM review_campaign_reward_option WHERE reward_code = ?`, [reward.reward_code]);
         reward.reward_options = options;
     }
     campaign.rewards = rewards;

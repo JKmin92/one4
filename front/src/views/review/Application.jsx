@@ -159,7 +159,7 @@ function Application() {
         rewards.forEach((reward) => {
             if (reward.reward_options) {
                 reward.reward_options.forEach((option) => {
-                    if (!selectedOptions[option.id]) {
+                    if (!selectedOptions[option.reward_option_code]) {
                         reward_options_selected = false;
                     }
                 });
@@ -223,8 +223,8 @@ function Application() {
                             <Field.Root key={index}>
                                 <Field.Label>{option.option_name}</Field.Label>
                                 <RadioGroup.Root
-                                    value={selectedOptions[option.id] || ""}
-                                    onValueChange={(e) => setSelectedOptions(prev => ({ ...prev, [option.id]: e.value }))}
+                                    value={selectedOptions[option.reward_option_code] || ""}
+                                    onValueChange={(e) => setSelectedOptions(prev => ({ ...prev, [option.reward_option_code]: e.value }))}
                                 >
                                     <HStack gap="4" flexWrap="wrap">
                                         {option.option_value && option.option_value.split(',').map((val, idx) => {
@@ -346,7 +346,7 @@ function Application() {
 
             return (
                 <Stack direction="row" key={`channel-section-${campaignChannelIndex}`}>
-                    <Heading w="2/6">{reviewChannelView.name}</Heading>
+                    <Heading w="2/6">{reviewChannelView.name} 채널</Heading>
                     <Stack w="4/6">
                         {matchingUserChannels.length > 0 ? (
                             <RadioCard.Root
@@ -391,6 +391,38 @@ function Application() {
 
     if (!campaign || !rewards) return null;
 
+    const onSubmit = async () => {
+        const payload = {
+            user_code: user.user_code,
+            options: Object.entries(selectedOptions).map(([id, value]) => ({ reward_option_code: id, reward_option_value: value })),
+            channels: Object.values(selectedReviewChannels).map(channel_code => ({ review_channel_code: channel_code })),
+            campaign_code: campaign.campaign_code,
+        };
+
+        const matchedAddr = addressList.find(addr =>
+            addr.postcode === postcode &&
+            addr.address === address &&
+            addr.detailAddress === detailAddress
+        );
+
+        if (matchedAddr) {
+            payload.address_code = matchedAddr.address_code;
+        } else if (postcode || address || detailAddress) {
+            payload.postcode = postcode;
+            payload.address = address;
+            payload.detailAddress = detailAddress;
+        }
+
+        try {
+            const resource = await axiosInstance.post(`/review/campaign/application`, payload);
+            if (resource.status === 200) {
+                navigate('/review/campaign/application');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     return (
         <>
             <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} justifyContent="center" direction={{ base: "column", md: "row" }} gap="6" separator={<StackSeparator borderLeftWidth={{ base: '0', md: '1px' }} borderTopWidth={{ '2xs': "0" }} />}>
@@ -400,15 +432,15 @@ function Application() {
                         <Stack w="4/6" gap="4">
                             <Field.Root>
                                 <Field.Label>신청자</Field.Label>
-                                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="성함을 입력해주세요." />
+                                <Input value={name} disabled placeholder="성함을 입력해주세요." />
                             </Field.Root>
                             <Field.Root>
                                 <Field.Label>연락처</Field.Label>
-                                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력해주세요." />
+                                <Input value={phone} disabled placeholder="연락처를 입력해주세요." />
                             </Field.Root>
                             <Field.Root>
                                 <Field.Label>이메일</Field.Label>
-                                <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="이메일을 입력해주세요." />
+                                <Input value={email} disabled placeholder="이메일을 입력해주세요." />
                             </Field.Root>
                             {campaign.campaign_type === 'DELIVERY' && (
                                 <Field.Root>
@@ -462,7 +494,7 @@ function Application() {
                                 <DataList.ItemValue>{campaign.application_count}/{campaign.max_applicants}명</DataList.ItemValue>
                             </DataList.Item>
                         </DataList.Root>
-                        <Button w="full" rounded="md" disabled={!allChecked}>캠페인 신청하기</Button>
+                        <Button w="full" rounded="md" disabled={!allChecked} onClick={onSubmit}>캠페인 신청하기</Button>
                     </Stack>
                 </Box>
             </Stack>

@@ -13,7 +13,7 @@ router.get('/', authMiddleware, userController.me);
 router.get('/profile', authMiddleware, userController.getUserProfile);
 
 router.get('/address', authMiddleware, userController.getUserAddress);
-router.post('/address', authMiddleware, userController.insertUserAdress);
+router.post('/address', authMiddleware, userController.insertUserAddress);
 router.put('/address', authMiddleware, userController.updateUserAddress);
 router.delete('/address/:address_code', authMiddleware, userController.deleteUserAddress);
 

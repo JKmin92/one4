@@ -69,7 +69,7 @@ function List() {
                             </Table.Cell>
                             <Table.Cell>
                                 <HStack gap="2">
-                                    <Link href={`/admin/review/campaign/update/${reviewCampaign.campaign_code}`}>
+                                    <Link href={`/admin/review/campaign/detail/${reviewCampaign.campaign_code}`}>
                                         <Image src={reviewCampaign.main_image} w="14" rounded="md" />
                                         {reviewCampaign.title}
                                     </Link>

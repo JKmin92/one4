@@ -89,7 +89,7 @@ function Category({ categories = [], location = '' }) {
 
             <HStack gap="12">
                 {categories.filter(c => c.is_visible === 1 && c.parent_id === null).map((category) => (
-                    <Link key={category.id} href={`/${location}/categorys/${category.id}`}>
+                    <Link key={category.id} href={`${location}/categorys/${category.id}`}>
                         <Text fontSize="md" fontWeight="medium">{category.name}</Text>
                     </Link>
                 ))}

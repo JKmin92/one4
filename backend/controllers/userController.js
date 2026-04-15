@@ -127,11 +127,11 @@ export const getUserAddress = async (req, res, next) => {
     }
 }
 
-export const insertUserAdress = async (req, res, next) => {
+export const insertUserAddress = async (req, res, next) => {
     try {
         const user = req.user;
         if (!user) return res.status(201).send({ message: 'no user' });
-        res.status(200).json(await userService.insertUserAdress({ ...req.body, user_code: user.user_code }));
+        res.status(200).json(await userService.insertUserAddress({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);
     }

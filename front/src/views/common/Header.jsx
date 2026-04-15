@@ -16,7 +16,7 @@ function Header() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        location.pathname.includes('/review') ? setCategoryLocation('review') : setCategoryLocation('');
+        location.pathname.includes('/review') ? setCategoryLocation('/review') : setCategoryLocation('');
 
         const fetchCategories = async () => {
             const response = location.pathname.includes('/review')

@@ -41,9 +41,9 @@ export const getUserAddress = async (user_code) => {
     return await model.getUserAddress(user_code);
 }
 
-export const insertUserAdress = async (user_address) => {
+export const insertUserAddress = async (user_address) => {
     const address_code = generateUniqueId();
-    return await model.insertUserAdress({ ...user_address, address_code: address_code });
+    return await model.insertUserAddress({ ...user_address, address_code: address_code });
 }
 
 export const updateUserAddress = async (user_address) => {

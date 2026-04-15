@@ -107,7 +107,11 @@ function Detail() {
                         </HStack>
                         <HStack>
                             <Image src="../../../public/resources/img/logo/naver.svg" w="5" rounded="md" />
-                            <Badge>{formatNumber(10000)}</Badge>
+                            {campaign.rewards.map((reward) => (
+                                reward.reward_type === 'POINT' && (
+                                    <Badge key={reward.id}>{formatNumber(reward.value)}</Badge>
+                                )
+                            ))}
                         </HStack>
                         <HStack display={{ base: 'flex', md: 'none' }} gap="4">
                             <Box w="1/3" aspectRatio="square" rounded="md">
@@ -181,7 +185,6 @@ function Detail() {
                                     <Text>제목 키워드 : {campaign.mission.mandatory_keyword ? campaign.mission.mandatory_keyword.split(',').map(tag => `${tag.trim()}`).join(', ') : ''}</Text>
                                     <Text>{campaign.campaign_type === 'DELIVERY' ? '제품명' : '매장명'} : {campaign.product_name}</Text>
                                 </Stack>
-                                <Text>{campaign.content}</Text>
                             </Stack>
                         </Box>
                     </Stack>

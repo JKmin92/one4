@@ -36,7 +36,7 @@ export const getUserAddress = async (user_code) => {
     return rows;
 }
 
-export const insertUserAdress = async (user_address) => {
+export const insertUserAddress = async (user_address) => {
     await db.query(
         `INSERT INTO user_address (user_code, address_code, name, postcode, address, detailAddress, phone, isDefault) VALUES (?,?,?,?,?,?,?,?)`,
         [user_address.user_code, user_address.address_code, user_address.name, user_address.postcode, user_address.address, user_address.detailAddress, user_address.phone, user_address.isDefault]
@@ -101,4 +101,5 @@ export const updateUserReviewChannel = async (user_review_channel) => {
 
     const [rows] = await db.query(`SELECT * FROM user_review_channel WHERE review_channel_code = ?`, [user_review_channel.review_channel_code]);
     return rows[0];
-} 
+}
+
