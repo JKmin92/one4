@@ -117,3 +117,28 @@ export const getReviewCampaignChannelView = async () => {
 export const getReviewCampaign = async (campaign_code) => {
     return await model.getReviewCampaign(campaign_code);
 }
+
+export const getReviewCampaignApplicationList = async (campaign_code) => {
+    return await model.getReviewCampaignApplicationList(campaign_code);
+}
+
+export const selectReviewCampaignApplication = async (campaign_application_code) => {
+    return await model.selectReviewCampaignApplication(campaign_application_code);
+}
+
+export const getUserAddress = async (address_code) => {
+    return await model.getUserAddress(address_code);
+}
+
+export const insertReviewCampaignApplicationDelivery = async (campaign_application_code, data) => {
+    const campaign_application_delivery_code = generateUniqueId();
+    return await model.insertReviewCampaignApplicationDelivery({ ...data, campaign_application_delivery_code, campaign_application_code });
+}
+
+export const updateReviewCampaignApplicationDelivery = async (campaign_application_delivery_code, data) => {
+    return await model.updateReviewCampaignApplicationDelivery({ ...data, campaign_application_delivery_code });
+}
+
+export const getReviewCampaignApplicationDelivery = async (campaign_application_code) => {
+    return await model.getReviewCampaignApplicationDelivery(campaign_application_code);
+}

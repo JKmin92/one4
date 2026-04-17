@@ -181,6 +181,7 @@ export const insertUserReviewChannel = async (req, res, next) => {
     try {
         const user = req.user;
         if (!user) return res.status(201).send({ message: 'no user' });
+        console.log(req.body);
         res.status(200).json(await userService.insertUserReviewChannel({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);

@@ -42,9 +42,9 @@ export const getReviewCampaignList = async (category_id) => {
     const updateSql = `
         UPDATE review_campaign
         SET state = CASE
-            WHEN NOW() < start_application_date THEN 'SCHEDULED'
-            WHEN NOW() >= start_application_date AND NOW() <= end_application_date THEN 'RECRUITING'
-            WHEN NOW() > end_application_date THEN 'SELECTING'
+            WHEN CURDATE() < DATE(start_application_date) THEN 'SCHEDULED'
+            WHEN CURDATE() >= DATE(start_application_date) AND CURDATE() <= DATE(end_application_date) THEN 'RECRUITING'
+            WHEN CURDATE() > DATE(end_application_date) THEN 'SELECTING'
             ELSE state
         END
         WHERE is_display = 1 
@@ -182,4 +182,63 @@ export const getUserReviewCampaignApplication = async (campaign_application_code
 
 
     return campaign;
+}
+
+export const updateUserReviewChannel = async (user_review_channel) => {
+    const sql = `
+        UPDATE user_review_channel SET channel_url = ?, meta_title = ?, meta_description = ?, meta_image = ? WHERE review_channel_code = ?
+    `
+    await db.query(sql, [user_review_channel.channel_url, user_review_channel.meta_title, user_review_channel.meta_description, user_review_channel.meta_image, user_review_channel.review_channel_code]);
+    return user_review_channel.review_channel_code;
+}
+
+export const getUserReviewChannel = async (review_channel_code) => {
+    const sql = `SELECT * FROM user_review_channel WHERE review_channel_code = ?`
+    const [rows] = await db.query(sql, [review_channel_code]);
+    return rows[0];
+}
+
+export const isReviewCampaignApplication = async (campaign_code, user_code) => {
+    const sql = `SELECT campaign_application_code FROM review_campaign_application WHERE campaign_code = ? AND user_code = ? AND status != 'CANCELLED'`
+    const [rows] = await db.query(sql, [campaign_code, user_code]);
+    return rows[0];
+}
+
+export const getUserAddress = async (address_code, user_code) => {
+    const sql = `SELECT * FROM user_address WHERE address_code = ? AND user_code = ?`
+    const [rows] = await db.query(sql, [address_code, user_code]);
+    return rows[0];
+}
+
+export const getReviewCampaignApplicationDelivery = async (campaign_application_code, user_code) => {
+    const sql = `
+        SELECT d.* 
+        FROM review_campaign_application_delivery d
+        JOIN review_campaign_application a ON d.campaign_application_code = a.campaign_application_code
+        WHERE d.campaign_application_code = ? AND a.user_code = ?
+    `;
+    const [rows] = await db.query(sql, [campaign_application_code, user_code]);
+    return rows[0];
+}
+
+export const insertReviewCampaignPost = async (data) => {
+    const sql = `
+        INSERT INTO review_campaign_post
+        (campaign_post_code, campaign_application_code, user_code, post_url)
+        VALUES (?, ?, ?, ?)
+    `
+    const [rows] = await db.query(sql, [data.campaign_post_code, data.campaign_application_code, data.user_code, data.post_url]);
+    return rows[0];
+}
+
+export const updateReviewCampaignPost = async (data) => {
+    const sql = `UPDATE review_campaign_post SET post_url = ? AND status = 'RESUBMITTED' WHERE campaign_post_code = ? AND user_code = ?`;
+    await db.query(sql, [data.post_url, data.campaign_post_code, data.user_code]);
+    return data.campaign_post_code;
+}
+
+export const getReviewCampaignPost = async (campaign_application_code, user_code) => {
+    const sql = `SELECT * FROM review_campaign_post WHERE campaign_application_code = ? AND user_code = ?`;
+    const [rows] = await db.query(sql, [campaign_application_code, user_code]);
+    return rows[0];
 }

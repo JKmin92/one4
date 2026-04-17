@@ -1,4 +1,5 @@
 import * as reviewCampaignModel from "../../models/review/reviewCampaignModel.js";
+import { fetchMetadataFromUrl } from "../../utils/metadataUtils.js";
 
 export const getReviewCampaign = async (campaign_code) => {
     return await reviewCampaignModel.getReviewCampaign(campaign_code);
@@ -39,4 +40,34 @@ export const getUserReviewCampaignApplicationList = async (user_code) => {
 
 export const getUserReviewCampaignApplication = async (campaign_application_code, user_code) => {
     return await reviewCampaignModel.getUserReviewCampaignApplication(campaign_application_code, user_code);
+}
+
+export const updateUserReviewChannel = async (review_channel_code) => {
+    const user_review_channel = await reviewCampaignModel.getUserReviewChannel(review_channel_code);
+
+    try {
+        const metaData = await fetchMetadataFromUrl(user_review_channel.channel_url);
+        user_review_channel.meta_title = metaData.title;
+        user_review_channel.meta_description = metaData.description;
+        user_review_channel.meta_image = metaData.image;
+        if (metaData.url) {
+            user_review_channel.channel_url = metaData.url;
+        }
+    } catch (error) {
+        console.error('Failed to update metadata for review channel:', error.message);
+    }
+
+    return await reviewCampaignModel.updateUserReviewChannel(user_review_channel);
+}
+
+export const isReviewCampaignApplication = async (campaign_code, user_code) => {
+    return await reviewCampaignModel.isReviewCampaignApplication(campaign_code, user_code);
+}
+
+export const getUserAddress = async (address_code, user_code) => {
+    return await reviewCampaignModel.getUserAddress(address_code, user_code);
+}
+
+export const getReviewCampaignApplicationDelivery = async (campaign_application_code, user_code) => {
+    return await reviewCampaignModel.getReviewCampaignApplicationDelivery(campaign_application_code, user_code);
 }

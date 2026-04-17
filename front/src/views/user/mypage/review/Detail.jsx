@@ -2,12 +2,14 @@ import { Badge, Box, Button, Clipboard, Heading, HStack, Input, Stack, StackSepa
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
-import { getDDay } from "../../../../utils/simpleUtils";
+import { getDDay, getReviewCampaignApplicationStatus } from "../../../../utils/simpleUtils";
 
 function Detail() {
 
     const { campaign_application_code } = useParams();
     const [campaign, setCampaign] = useState(null);
+    const [userAddress, setUserAddress] = useState(null);
+    const [reviewCampaignApplicationDelivery, setReviewCampaignApplicationDelivery] = useState(null);
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
     const campaignInfoTitle = { w: { base: 'full', md: "1/6" }, size: 'md' };
@@ -17,42 +19,43 @@ function Detail() {
         const getCampaign = async () => {
             const resource = await axiosInstance.get(`/review/campaign/user/application/${campaign_application_code}`);
             if (resource.status === 200) {
-                console.log(resource.data);
                 setCampaign(resource.data);
+                if (resource.data.address_code) {
+                    getUserAddress(resource.data.address_code);
+                }
             }
         }
+        const getUserAddress = async (address_code) => {
+            const resource = await axiosInstance.get(`/review/campaign/user/address/${address_code}`);
+            if (resource.status === 200) {
+                setUserAddress(resource.data);
+            }
+        }
+
+        const getReviewCampaignApplicationDelivery = async (campaign_application_code) => {
+            const resource = await axiosInstance.get(`/review/campaign/user/application/delivery/${campaign_application_code}`);
+            if (resource.status === 200) {
+                setReviewCampaignApplicationDelivery(resource.data);
+            }
+        }
+
         getCampaign();
+        getReviewCampaignApplicationDelivery(campaign_application_code);
+
     }, [campaign_application_code]);
 
     if (!campaign) return null;
 
-    const getStatus = (status) => {
-        switch (status) {
-            case 'APPLIED':
-                return { color: 'green', text: '신청 완료', date: campaign.reviewer_selection_date, title: '선정일', date_color: 'green' };
-            case 'SELECTED':
-                return { color: 'blue', text: '선정 완료, 작성 및 서비스 이용 중', date: campaign.end_write_date, title: '작성 마감일', date_color: 'orange' };
-            case 'REJECTED':
-                return { color: 'red', text: '미선정' };
-            case 'CANCELLED':
-                return { color: 'gray', text: '취소됨' };
-            case 'COMPLETED':
-                return { color: 'blue', text: '리뷰 작성 완료' };
-            default:
-                return 'gray';
-        }
-    }
-
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left" position="relative">
             <Stack gap="0">
-                <Status.Root colorPalette={getStatus(campaign.status).color}>
+                <Status.Root colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>
                     <Status.Indicator />
-                    <Text>{getStatus(campaign.status).text}</Text>
+                    <Text>{getReviewCampaignApplicationStatus(campaign.status, campaign).text}</Text>
                 </Status.Root>
                 <HStack>
                     <Heading>{campaign.title}</Heading>
-                    {getStatus(campaign.status).date && <Badge variant="outline" colorPalette={getStatus(campaign.status).color}>{getStatus(campaign.status).title} D-{getDDay(getStatus(campaign.status).date)}</Badge>}
+                    {getReviewCampaignApplicationStatus(campaign.status, campaign).date && <Badge variant="outline" colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>{getReviewCampaignApplicationStatus(campaign.status, campaign).title} D-{getDDay(getReviewCampaignApplicationStatus(campaign.status, campaign).date)}</Badge>}
                 </HStack>
             </Stack>
 
@@ -127,6 +130,29 @@ function Detail() {
                             작성이 지연될 경우 문의사항 또는 원포 카카오톡 채널로 미리 말씀 부탁드립니다.
                         </Text>
                     </Stack>
+                    {campaign.campaign_type === 'DELIVERY' && (
+                        <Stack {...campaignInfoStack}>
+                            <Heading {...campaignInfoTitle}>배송지 정보</Heading>
+                            <Stack {...campaignInfoText}>
+                                <Stack gap="0">
+                                    <Text>{userAddress?.name} {userAddress?.phone}</Text>
+                                    <Text>[{userAddress?.postcode}] {userAddress?.address} {userAddress?.detailAddress}</Text>
+                                </Stack>
+                                {reviewCampaignApplicationDelivery && (
+                                    <HStack>
+                                        <Text>{reviewCampaignApplicationDelivery?.courier}</Text>
+                                        <Text>{reviewCampaignApplicationDelivery?.tracking_number}</Text>
+                                        <Button variant="outline" size="sm" onClick={() => {
+                                            const query = `${reviewCampaignApplicationDelivery?.courier || ''} ${reviewCampaignApplicationDelivery?.tracking_number || ''}`.trim();
+                                            if (query) {
+                                                window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`, '_blank');
+                                            }
+                                        }}>배송추적</Button>
+                                    </HStack>
+                                )}
+                            </Stack>
+                        </Stack>
+                    )}
                     {campaign.status === 'SELECTED' && (
                         <Stack {...campaignInfoStack}>
                             <Heading {...campaignInfoTitle}>리뷰 작성 제출</Heading>

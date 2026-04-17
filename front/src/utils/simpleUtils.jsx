@@ -63,3 +63,38 @@ export function getDDay(targetDate) {
 
     return `${Math.max(days, 0)}`;
 }
+
+export const getReviewCampaignApplicationStatus = (status, campaign) => {
+    switch (status) {
+        case 'APPLIED':
+            return { color: 'green', text: '신청 완료', date: campaign?.reviewer_selection_date, title: '선정일', date_color: 'green' };
+        case 'SELECTED':
+            return { color: 'blue', text: '선정 완료, 작성 및 서비스 이용 중', date: campaign?.end_write_date, title: '작성 마감일', date_color: 'orange' };
+        case 'REJECTED':
+            return { color: 'red', text: '미선정' };
+        case 'SUBMITTED':
+            return { color: 'blue', text: '리뷰 제출 완료' };
+        case 'RETURNED':
+            return { color: 'orange', text: '리뷰 수정 요청' };
+        case 'CANCELLED':
+            return { color: 'gray', text: '취소됨' };
+        case 'COMPLETED':
+            return { color: 'blue', text: '리뷰 작성 완료' };
+        default:
+            return 'gray';
+    }
+}
+
+export const getReviewCampaignState = (status) => {
+    const states = [
+        { key: 'DRAFT', value: '임시저장', color: 'gray' },
+        { key: 'PENDING', value: '대기', color: 'gray' },
+        { key: 'SCHEDULED', value: '준비중', color: 'gray' },
+        { key: 'RECRUITING', value: '모집중', color: 'green' },
+        { key: 'SELECTING', value: '선정중(선정전)', color: 'blue' },
+        { key: 'REVIEWING', value: '리뷰작성중', color: 'blue' },
+        { key: 'CLOSED', value: '모집마감', color: 'gray' },
+        { key: 'COMPLETED', value: '종료', color: 'gray' }
+    ];
+    return states.find(s => s.key === status);
+}

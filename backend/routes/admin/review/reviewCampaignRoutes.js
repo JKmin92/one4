@@ -14,5 +14,12 @@ router.get('', reviewCampaignController.getReviewCampaignList);
 router.get('/drafts', reviewCampaignController.getDraftReviewCampaigns);
 router.get('/:id', reviewCampaignController.getReviewCampaign);
 router.post('/:id', authMiddleware, upload.fields([{ name: 'mainImage', maxCount: 1 }, { name: 'detailImages', maxCount: 10 }]), reviewCampaignController.updateReviewCampaign);
+router.get('/applicationList/:id', reviewCampaignController.getReviewCampaignApplicationList);
+router.put('/selectReviewer/:id', reviewCampaignController.selectReviewCampaignApplication);
+router.get('/userAddress/:id', reviewCampaignController.getUserAddress);
+
+router.post('/delivery/:id', reviewCampaignController.insertReviewCampaignApplicationDelivery);
+router.put('/delivery/:id', reviewCampaignController.updateReviewCampaignApplicationDelivery);
+router.get('/delivery/:id', reviewCampaignController.getReviewCampaignApplicationDelivery);
 
 export default router;

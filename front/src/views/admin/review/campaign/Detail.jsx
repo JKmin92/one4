@@ -1,20 +1,26 @@
-import { DataList, Heading, HStack, Image, Stack, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Badge, Box, Button, CloseButton, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Tabs, Text } from "@chakra-ui/react";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
-import { formatDateYMD } from "../../../../utils/simpleUtils";
+import { formatDateYMD, getReviewCampaignState } from "../../../../utils/simpleUtils";
+import { InfoTip } from "../../../../components/ui/toggle-tip";
+import { Tooltip } from "../../../../components/ui/tooltip";
+import { toaster } from "../../../../components/ui/toaster";
+import AppliedList from "./detail/AppliedList";
+import SelectedList from "./detail/SelectedList";
 
 function Detail() {
 
     const { id } = useParams();
     const [campaign, setCampaign] = useState(null);
     const [reviewCampaignChannelView, setReviewCampaignChannelView] = useState([]);
+    const [reviewCampaignApplicationList, setReviewCampaignApplicationList] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchCampaign = async () => {
             try {
                 const resource = await axiosInstance.get(`/admin/review/campaign/${id}`);
-                console.log(resource.data);
                 setCampaign(resource.data);
             } catch {
                 console.error('오류')
@@ -24,7 +30,6 @@ function Detail() {
         const fetchReviewCampaignChannelView = async () => {
             try {
                 const resources = await axiosInstance.get('/admin/review/campaign/channel');
-                console.log(resources.data);
                 setReviewCampaignChannelView(resources.data);
             } catch (error) {
                 console.error("Failed to fetch review campaign channel view", error);
@@ -32,39 +37,143 @@ function Detail() {
             }
         };
 
+
+
         fetchCampaign();
         fetchReviewCampaignChannelView();
+        fetchReviewCampaignApplicationList();
     }, [id]);
 
+    const fetchReviewCampaignApplicationList = async () => {
+        try {
+            const resources = await axiosInstance.get(`/admin/review/campaign/applicationList/${id}`);
+            setReviewCampaignApplicationList(resources.data);
+        } catch (error) {
+            console.error("Failed to fetch review campaign application list", error);
+            toaster.create({ title: '오류가 발생되었습니다.', type: 'error' });
+        }
+    };
+
+    const lists = useMemo(() => {
+        return {
+            applied: reviewCampaignApplicationList.filter(app => app.status === 'APPLIED'),
+            selected: reviewCampaignApplicationList.filter(app => app.status === 'SELECTED'),
+            completed: reviewCampaignApplicationList.filter(app => ['SUBMITTED', 'RETURNED', 'COMPLETED'].includes(app.status)),
+            cancelled: reviewCampaignApplicationList.filter(app => app.status === 'CANCELLED')
+        };
+    }, [reviewCampaignApplicationList]);
+
     if (!campaign) return null;
+    const tabsStatus = (state) => {
+        switch (state) {
+            case 'RECRUITING' || 'SELECTING' || 'CLOSED':
+                return 'APPLIED';
+            case 'REVIEWING':
+                return 'SELECTED';
+            case 'COMPLETED':
+                return 'COMPLETED';
+            default:
+                return 'APPLIED';
+        }
+    }
+
+
+
+    const defaultTabsState = tabsStatus(campaign.state);
 
     return (
         <Stack p="30px" px="layoutX" gap="6">
-            <Stack direction="row" gap="6">
-                <Image src={campaign.main_image} w="32" rounded="md" />
-                <Stack>
-                    <HStack>
-                        {campaign.channels.map((channel) => {
-                            const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
-                            return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
-                        })}
-                        <Text>{campaign.title}</Text>
-                    </HStack>
+            <HStack justifyContent="space-between">
+                <Stack direction="row" gap="6">
+                    <Image src={campaign.main_image} w="32" rounded="md" />
+                    <Stack>
+                        <Status.Root colorPalette={getReviewCampaignState(campaign.state).color}>
+                            <Status.Indicator />
+                            <Text>{getReviewCampaignState(campaign.state).value}</Text>
+                        </Status.Root>
+                        <HStack>
+                            {campaign.channels.map((channel) => {
+                                const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
+                                return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
+                            })}
+                            <Text>{campaign.title}</Text>
+                        </HStack>
+                        <DataList.Root orientation="horizontal" gap="2">
+                            <DataList.Item>
+                                <DataList.ItemLabel>캠페인 모집 기간</DataList.ItemLabel>
+                                <DataList.ItemValue>{formatDateYMD(campaign.start_application_date) + ' ~ ' + formatDateYMD(campaign.end_application_date)}</DataList.ItemValue>
+                            </DataList.Item>
+                            <DataList.Item>
+                                <DataList.ItemLabel>리뷰어 선정일</DataList.ItemLabel>
+                                <DataList.ItemValue>{formatDateYMD(campaign.reviewer_selection_date)}</DataList.ItemValue>
+                            </DataList.Item>
+                            <DataList.Item>
+                                <DataList.ItemLabel>캠페인 작성 기간</DataList.ItemLabel>
+                                <DataList.ItemValue>{formatDateYMD(campaign.start_write_date) + ' ~ ' + formatDateYMD(campaign.end_write_date)}</DataList.ItemValue>
+                            </DataList.Item>
+                        </DataList.Root>
+                    </Stack>
                     <DataList.Root orientation="horizontal" gap="2">
                         <DataList.Item>
-                            <DataList.ItemLabel>캠페인 모집 기간</DataList.ItemLabel>
-                            <DataList.ItemValue>{formatDateYMD(campaign.start_application_date) + ' ~ ' + formatDateYMD(campaign.end_application_date)}</DataList.ItemValue>
+                            <DataList.ItemLabel>희망 모집인원</DataList.ItemLabel>
+                            <DataList.ItemValue>{campaign.max_applicants}인(팀)</DataList.ItemValue>
                         </DataList.Item>
                         <DataList.Item>
-                            <DataList.ItemLabel>리뷰어 선정일</DataList.ItemLabel>
-                            <DataList.ItemValue>{formatDateYMD(campaign.reviewer_selection_date)}</DataList.ItemValue>
+                            <DataList.ItemLabel>신청한 총 인원<InfoTip>신청자, 선정자, 미선정자 모두 포함</InfoTip></DataList.ItemLabel>
+                            <DataList.ItemValue>{reviewCampaignApplicationList.length}인(팀)</DataList.ItemValue>
                         </DataList.Item>
                         <DataList.Item>
-                            <DataList.ItemLabel>캠페인 작성 기간</DataList.ItemLabel>
-                            <DataList.ItemValue>{formatDateYMD(campaign.start_write_date) + ' ~ ' + formatDateYMD(campaign.end_write_date)}</DataList.ItemValue>
+                            <DataList.ItemLabel>신청 인원<InfoTip>선정되지 않은 인원</InfoTip></DataList.ItemLabel>
+                            <DataList.ItemValue>{lists.applied.length}인(팀)</DataList.ItemValue>
+                        </DataList.Item>
+                        <DataList.Item>
+                            <DataList.ItemLabel>선정된 인원</DataList.ItemLabel>
+                            <DataList.ItemValue>{lists.selected.length}인(팀)</DataList.ItemValue>
+                        </DataList.Item>
+                        <DataList.Item>
+                            <DataList.ItemLabel>작성된 인원</DataList.ItemLabel>
+                            <DataList.ItemValue>{lists.completed.length}인(팀)</DataList.ItemValue>
                         </DataList.Item>
                     </DataList.Root>
                 </Stack>
+                <HStack>
+                    <Button variant="outline" onClick={() => navigate(`/admin/review/campaign/update/${id}`)}>수정</Button>
+                    <Button bg="red">삭제</Button>
+                </HStack>
+            </HStack>
+            <Stack>
+                <Tabs.Root defaultValue={defaultTabsState}
+                    variant="plain"
+                    css={{
+                        "--tabs-indicator-bg": "colors.gray.subtle",
+                        "--tabs-indicator-shadow": "shadows.xs",
+                        "--tabs-trigger-radius": "radii.full",
+                    }}
+                >
+                    <Tabs.List>
+                        <Tabs.Trigger value="APPLIED">신청자</Tabs.Trigger>
+                        <Tabs.Trigger value="SELECTED">선정자</Tabs.Trigger>
+                        <Tabs.Trigger value="COMPLETED">작성 리스트</Tabs.Trigger>
+                        <Tabs.Trigger value="CANCELLED">미선정 리스트</Tabs.Trigger>
+                        <Tabs.Indicator />
+                    </Tabs.List>
+                    <Tabs.Content value="APPLIED">
+                        <AppliedList appliedList={lists.applied} reviewCampaignChannelView={reviewCampaignChannelView} campaign={campaign} fetchReviewCampaignApplicationList={fetchReviewCampaignApplicationList} />
+                    </Tabs.Content>
+                    <Tabs.Content value="SELECTED">
+                        <SelectedList selectedList={lists.selected} reviewCampaignChannelView={reviewCampaignChannelView} campaign={campaign} fetchReviewCampaignApplicationList={fetchReviewCampaignApplicationList} />
+                    </Tabs.Content>
+                    <Tabs.Content value="COMPLETED">
+                        <Stack>
+                            <Text>총 {lists.completed.length}명의 데이터가 있습니다.</Text>
+                        </Stack>
+                    </Tabs.Content>
+                    <Tabs.Content value="CANCELLED">
+                        <Stack>
+                            <Text>총 {lists.cancelled.length}명의 데이터가 있습니다.</Text>
+                        </Stack>
+                    </Tabs.Content>
+                </Tabs.Root>
             </Stack>
         </Stack>
     )

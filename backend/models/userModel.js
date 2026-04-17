@@ -81,9 +81,9 @@ export const getUserReviewChannel = async (user_code, review_channel_code) => {
 
 export const insertUserReviewChannel = async (user_review_channel) => {
     const sql = `
-        INSERT INTO user_review_channel (review_channel_code, channel_code, user_code, channel_url) VALUE (?, ?, ?, ?)
+        INSERT INTO user_review_channel (review_channel_code, channel_code, user_code, channel_url, meta_title, meta_description, meta_image) VALUE (?, ?, ?, ?, ?, ?, ?)
     `
-    await db.query(sql, [user_review_channel.review_channel_code, user_review_channel.channel_code, user_review_channel.user_code, user_review_channel.channel_url]);
+    await db.query(sql, [user_review_channel.review_channel_code, user_review_channel.channel_code, user_review_channel.user_code, user_review_channel.channel_url, user_review_channel.meta_title, user_review_channel.meta_description, user_review_channel.meta_image]);
 
     const [rows] = await db.query(`SELECT * FROM user_review_channel WHERE review_channel_code = ?`, [user_review_channel.review_channel_code]);
     return rows[0];
@@ -95,9 +95,9 @@ export const deleteUserReviewChannel = async (review_channel_code, user_code) =>
 
 export const updateUserReviewChannel = async (user_review_channel) => {
     const sql = `
-        UPDATE user_review_channel SET channel_code = ?, channel_url = ? WHERE review_channel_code = ? AND user_code = ?
+        UPDATE user_review_channel SET channel_code = ?, channel_url = ?, meta_title = ?, meta_description = ?, meta_image = ? WHERE review_channel_code = ? AND user_code = ?
     `
-    await db.query(sql, [user_review_channel.channel_code, user_review_channel.channel_url, user_review_channel.review_channel_code, user_review_channel.user_code]);
+    await db.query(sql, [user_review_channel.channel_code, user_review_channel.channel_url, user_review_channel.meta_title, user_review_channel.meta_description, user_review_channel.meta_image, user_review_channel.review_channel_code, user_review_channel.user_code]);
 
     const [rows] = await db.query(`SELECT * FROM user_review_channel WHERE review_channel_code = ?`, [user_review_channel.review_channel_code]);
     return rows[0];

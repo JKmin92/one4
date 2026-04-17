@@ -52,6 +52,7 @@ function Register() {
     const [title, setTitle] = useState("");
     const [shortDescription, setShortDescription] = useState("");
     const [productName, setProductName] = useState("");
+    const [hasApplications, setHasApplications] = useState(false);
 
     // Detail images
     const [detailImageItems, setDetailImageItems] = useState([]);
@@ -155,13 +156,23 @@ function Register() {
                     setCampaignType(data.campaign_type || "VISIT");
                     setIsDisplay(data.is_display !== undefined ? data.is_display : 1);
                     setMaxApplicants(data.max_applicants || 0);
+                    setHasApplications(data.application_count > 0);
                     setContent(data.content || "");
 
-                    setStartApplicationDate(data.start_application_date ? data.start_application_date.substring(0, 10) : "");
-                    setEndApplicationDate(data.end_application_date ? data.end_application_date.substring(0, 10) : "");
-                    setReviewerSelectionDate(data.reviewer_selection_date ? data.reviewer_selection_date.substring(0, 10) : "");
-                    setStartWriteDate(data.start_write_date ? data.start_write_date.substring(0, 10) : "");
-                    setEndWriteDate(data.end_write_date ? data.end_write_date.substring(0, 10) : "");
+                    const toInputDate = (isoString) => {
+                        if (!isoString) return "";
+                        const date = new Date(isoString);
+                        const yyyy = date.getFullYear();
+                        const mm = String(date.getMonth() + 1).padStart(2, '0');
+                        const dd = String(date.getDate()).padStart(2, '0');
+                        return `${yyyy}-${mm}-${dd}`;
+                    };
+
+                    setStartApplicationDate(toInputDate(data.start_application_date));
+                    setEndApplicationDate(toInputDate(data.end_application_date));
+                    setReviewerSelectionDate(toInputDate(data.reviewer_selection_date));
+                    setStartWriteDate(toInputDate(data.start_write_date));
+                    setEndWriteDate(toInputDate(data.end_write_date));
 
                     if (data.main_image) {
                         setMainImagePreview(data.main_image);
@@ -730,10 +741,16 @@ function Register() {
             </Stack>
 
             {/* 5. 리워드 설정 */}
-            <Stack gap="6" borderWidth="1px" p="6" borderRadius="md">
-                <HStack justifyContent="space-between">
+            <Stack gap="6" borderWidth="1px" p="6" borderRadius="md"
+                   opacity={hasApplications ? 0.6 : 1}
+                   pointerEvents={hasApplications ? "none" : "auto"}
+            >
+                <HStack justifyContent="space-between" flexWrap={{base: "wrap", md: "nowrap"}}>
                     <Heading size="md">리워드 설정</Heading>
-                    <Button size="sm" onClick={handleAddReward} leftIcon={<LuPlus />}>리워드 추가</Button>
+                    <HStack>
+                        {hasApplications && <Text fontSize="sm" color="red.500" fontWeight="bold">신청자가 있는 캠페인은 리워드를 수정할 수 없습니다.</Text>}
+                        <Button size="sm" onClick={handleAddReward} leftIcon={<LuPlus />}>리워드 추가</Button>
+                    </HStack>
                 </HStack>
 
                 {rewards.map((reward, index) => (

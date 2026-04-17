@@ -140,7 +140,8 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
         if (user_review_channel) {
             const res = await axiosInstance.put('/user/review/channel', {
                 channel_url: channelLink,
-                review_channel_code: user_review_channel.review_channel_code
+                review_channel_code: user_review_channel.review_channel_code,
+                metaData: metaData
             });
             if (res.status === 200) {
                 toaster.create({ title: '채널이 수정되었습니다.', type: 'success' });
@@ -148,7 +149,7 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
                 setAddReviewChannelStatus(false);
             }
         } else {
-            const res = await axiosInstance.post('/user/review/channel', { channel_url: channelLink });
+            const res = await axiosInstance.post('/user/review/channel', { channel_url: channelLink, metaData: metaData });
             if (res.status === 200) {
                 toaster.create({ title: '채널이 추가되었습니다.', type: 'success' });
                 setReviewChannelList(prev => [...prev, res.data]);

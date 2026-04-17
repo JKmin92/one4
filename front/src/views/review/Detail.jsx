@@ -12,6 +12,7 @@ function Detail() {
 
     const [detailOpen, setDetailOpen] = useState(false);
     const [campaign, setCampaign] = useState(null);
+    const [reviewCampaignApplicationCode, setReviewCampaignApplicationCode] = useState(null);
     const { user } = useAuth();
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
@@ -31,6 +32,8 @@ function Detail() {
         if (!user) {
             toaster.create({ title: '로그인이 필요한 서비스입니다.', type: 'warning' });
             navigate('/login', { state: { redirect: `/review/application/${campaign.campaign_code}` } });
+        } else if (reviewCampaignApplicationCode) {
+            toaster.create({ title: '이미 신청이 완료되었습니다.', type: 'warning', action: { label: '신청내역 보기', onClick: () => navigate(`/mypage/review/${reviewCampaignApplicationCode.campaign_application_code}`) } });
         } else {
             navigate(`/review/application/${campaign.campaign_code}`);
         }
@@ -41,7 +44,13 @@ function Detail() {
             const resource = await axiosInstance.get(`/review/campaign/${campaign_code}`);
             setCampaign(resource.data);
         };
+        const fetchReviewCampaignApplication = async () => {
+            const resource = await axiosInstance.get(`/review/campaign/application/${campaign_code}`);
+            console.log(resource.data);
+            setReviewCampaignApplicationCode(resource.data);
+        };
         fetchCampaign();
+        fetchReviewCampaignApplication();
     }, [campaign_code]);
 
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -246,9 +255,18 @@ function Detail() {
                             <Button {...removeButton} onClick={() => scrollTo(cautionRef)}>주의사항</Button>
                         </Stack>
                         <Box bg="bg.muted" w="full" rounded="md" p="10px" textAlign="center">
-                            D-{pad(timeLeft.days)} {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
+                            {timeLeft.days >= 1 && `D-${pad(timeLeft.days)} `}
+                            {(timeLeft.days >= 1 || timeLeft.hours >= 1) && `${pad(timeLeft.hours)}:`}
+                            {pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
                         </Box>
-                        <Button w="full" rounded="md" onClick={handleApplicationClick}>캠페인 신청하기</Button>
+                        <Button w="full" rounded="md" onClick={handleApplicationClick}
+                            bg={reviewCampaignApplicationCode ? "bg.muted" : undefined}
+                            color={reviewCampaignApplicationCode ? "fg.muted" : undefined}
+                            _hover={reviewCampaignApplicationCode ? {} : undefined}
+                            cursor={reviewCampaignApplicationCode ? "not-allowed" : "pointer"}
+                        >
+                            {reviewCampaignApplicationCode ? '신청이 완료된 캠페인입니다' : '캠페인 신청하기'}
+                        </Button>
                     </Stack>
                 </Box>
                 <Box w={{ base: "full", md: "1/6" }} position="relative">
@@ -279,7 +297,14 @@ function Detail() {
                     </Stack>
                 </Box>
             </Stack>
-            <Button position="fixed" bottom="0" left="0" right="0" w="full" h="60px" rounded="none" colorScheme="main" zIndex="100" display={{ base: 'block', md: 'none' }} onClick={handleApplicationClick}>캠페인 신청하기</Button>
+            <Button position="fixed" bottom="0" left="0" right="0" w="full" h="60px" rounded="none" colorScheme="main" zIndex="100" display={{ base: 'block', md: 'none' }} onClick={handleApplicationClick}
+                bg={reviewCampaignApplicationCode ? "bg.subtle" : undefined}
+                color={reviewCampaignApplicationCode ? "fg.muted" : undefined}
+                _hover={reviewCampaignApplicationCode ? {} : undefined}
+                cursor={reviewCampaignApplicationCode ? "not-allowed" : "pointer"}
+            >
+                {reviewCampaignApplicationCode ? '신청이 완료된 캠페인입니다' : '캠페인 신청하기'}
+            </Button>
         </Stack>
     )
 }

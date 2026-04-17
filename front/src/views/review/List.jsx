@@ -90,7 +90,9 @@ function List() {
                                         return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
                                     })}
                                 </HStack>
-                                <Text>D-{getDDay(campaign.end_application_date)}</Text>
+                                <Text>
+                                    {getDDay(campaign.end_application_date) === '0' ? '오늘 마감' : `D-${getDDay(campaign.end_application_date)}`}
+                                </Text>
                             </HStack>
                             <Text>{campaign.title}</Text>
                             <Text fontSize="xs" color="fg.muted">{campaign.offer}</Text>
@@ -98,6 +100,7 @@ function List() {
                         </Stack>
                     </Box>
                 ))}
+                {campaignList.length === 0 && <Stack w="full" alignItems="center" justifyContent="center" minH="xs" color="fg.muted">캠페인이 없습니다.</Stack>}
             </Flex>
         </Stack>
     )

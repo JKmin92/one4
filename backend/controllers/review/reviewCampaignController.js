@@ -66,6 +66,9 @@ export const insertReviewCampaignApplication = async (req, res, next) => {
 
         const channels = req.body.channels || []; // 프론트엔드에서 channel_code 문자열 배열로 보냄
         for (let i = 0; i < channels.length; i++) {
+            if (channels[i].review_channel_code) {
+                await reviewCampaignService.updateUserReviewChannel(channels[i].review_channel_code);
+            }
             await reviewCampaignService.insertReviewCampaignApplicationChannel({ campaign_application_code: campaign_application_code, ...channels[i] });
         }
 
@@ -94,6 +97,45 @@ export const getUserReviewCampaignApplication = async (req, res, next) => {
 
         const campaign = await reviewCampaignService.getUserReviewCampaignApplication(campaign_application_code, user.user_code);
         res.status(200).json(campaign);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const isReviewCampaignApplication = async (req, res, next) => {
+    try {
+        const { campaign_code } = req.params;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const campaign = await reviewCampaignService.isReviewCampaignApplication(campaign_code, user.user_code);
+        res.status(200).json(campaign);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getUserAddress = async (req, res, next) => {
+    try {
+        const { address_code } = req.params;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const address = await reviewCampaignService.getUserAddress(address_code, user.user_code);
+        res.status(200).json(address);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getReviewCampaignApplicationDelivery = async (req, res, next) => {
+    try {
+        const { campaign_application_code } = req.params;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const delivery = await reviewCampaignService.getReviewCampaignApplicationDelivery(campaign_application_code, user.user_code);
+        res.status(200).json(delivery);
     } catch (error) {
         next(error);
     }

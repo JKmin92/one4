@@ -67,7 +67,11 @@ export const insertUserReviewChannel = async (user_review_channel) => {
     const channel_code = user_review_channel.channel_url.includes('instagram.com') ?
         '202603171603001' : user_review_channel.channel_url.includes('youtube.com') ?
             '202603171603002' : user_review_channel.channel_url.includes('naver.com') ? '202603171602001' : '';
-    return await model.insertUserReviewChannel({ ...user_review_channel, review_channel_code: review_channel_code, channel_code: channel_code });
+    const meta_title = user_review_channel.metaData.title;
+    const meta_description = user_review_channel.metaData.description;
+    const meta_image = user_review_channel.metaData.image;
+    const channel_url = user_review_channel.metaData.url || user_review_channel.channel_url;
+    return await model.insertUserReviewChannel({ ...user_review_channel, review_channel_code: review_channel_code, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url });
 }
 
 export const deleteUserReviewChannel = async (review_channel_code, user_code) => {
@@ -78,5 +82,10 @@ export const updateUserReviewChannel = async (user_review_channel) => {
     const channel_code = user_review_channel.channel_url.includes('instagram.com') ?
         '202603171603001' : user_review_channel.channel_url.includes('youtube.com') ?
             '202603171603002' : user_review_channel.channel_url.includes('naver.com') ? '202603171602001' : '';
-    return await model.updateUserReviewChannel({ ...user_review_channel, channel_code: channel_code });
+    const meta_title = user_review_channel.metaData.title;
+    const meta_description = user_review_channel.metaData.description;
+    const meta_image = user_review_channel.metaData.image;
+    const channel_url = user_review_channel.metaData.url || user_review_channel.channel_url;
+
+    return await model.updateUserReviewChannel({ ...user_review_channel, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url });
 }
