@@ -102,6 +102,7 @@ export const getReviewCampaignList = async () => {
     const updateSql = `
         UPDATE review_campaign
         SET state = CASE
+            WHEN NOW() >= start_write_date THEN 'REVIEWING'
             WHEN CURDATE() < DATE(start_application_date) THEN 'SCHEDULED'
             WHEN CURDATE() >= DATE(start_application_date) AND CURDATE() <= DATE(end_application_date) THEN 'RECRUITING'
             WHEN CURDATE() > DATE(end_application_date) THEN 'SELECTING'
@@ -152,6 +153,21 @@ export const getReviewCampaignChannelView = async () => {
 }
 
 export const getReviewCampaign = async (campaign_code) => {
+    const updateSql = `
+        UPDATE review_campaign
+        SET state = CASE
+            WHEN NOW() >= start_write_date THEN 'REVIEWING'
+            WHEN CURDATE() < DATE(start_application_date) THEN 'SCHEDULED'
+            WHEN CURDATE() >= DATE(start_application_date) AND CURDATE() <= DATE(end_application_date) THEN 'RECRUITING'
+            WHEN CURDATE() > DATE(end_application_date) THEN 'SELECTING'
+            ELSE state
+        END
+        WHERE is_display = 1 
+          AND state IN ('PENDING', 'SCHEDULED', 'RECRUITING', 'SELECTING')
+          AND campaign_code = ?
+    `;
+    await db.query(updateSql, [campaign_code]);
+
     const sql = `SELECT * FROM review_campaign WHERE campaign_code = ?`;
     const [rows] = await db.query(sql, [campaign_code]);
 
@@ -200,6 +216,12 @@ export const getReviewCampaignApplicationList = async (campaign_code) => {
             WHERE campaign_application_code = ?
         `, [application.campaign_application_code]);
         application.reward_options = rewardOptions;
+
+        const [post] = await db.query(`
+            SELECT * FROM review_campaign_post 
+            WHERE campaign_application_code = ?
+        `, [application.campaign_application_code]);
+        application.postList = post || [];
     }
 
     return applications;
@@ -208,6 +230,23 @@ export const getReviewCampaignApplicationList = async (campaign_code) => {
 export const selectReviewCampaignApplication = async (campaign_application_code) => {
     const sql = `UPDATE review_campaign_application SET status = 'SELECTED' WHERE campaign_application_code = ?`;
     const [rows] = await db.query(sql, [campaign_application_code]);
+
+    const checkSql = `
+        SELECT rc.campaign_code, rc.max_applicants, 
+               (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code AND rca.status = 'SELECTED') as selected_count
+        FROM review_campaign_application app
+        JOIN review_campaign rc ON app.campaign_code = rc.campaign_code
+        WHERE app.campaign_application_code = ?
+    `;
+    const [checkRows] = await db.query(checkSql, [campaign_application_code]);
+
+    if (checkRows.length > 0) {
+        const { campaign_code, max_applicants, selected_count } = checkRows[0];
+        if (selected_count >= max_applicants) {
+            await db.query(`UPDATE review_campaign SET state = 'REVIEWING' WHERE campaign_code = ?`, [campaign_code]);
+        }
+    }
+
     return rows;
 }
 

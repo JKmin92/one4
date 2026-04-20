@@ -17,4 +17,8 @@ router.get("/user/address/:address_code", authMiddleware, reviewCampaignControll
 
 router.get("/user/application/delivery/:campaign_application_code", authMiddleware, reviewCampaignController.getReviewCampaignApplicationDelivery);
 
+router.post("/application/post", authMiddleware, reviewCampaignController.insertReviewCampaignPost);
+router.put("/application/post", authMiddleware, reviewCampaignController.updateReviewCampaignPost);
+router.get("/application/post/:campaign_application_code", authMiddleware, reviewCampaignController.getReviewCampaignPost);
+
 export default router;

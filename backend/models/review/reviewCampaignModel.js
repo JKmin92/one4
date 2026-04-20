@@ -228,11 +228,12 @@ export const insertReviewCampaignPost = async (data) => {
         VALUES (?, ?, ?, ?)
     `
     const [rows] = await db.query(sql, [data.campaign_post_code, data.campaign_application_code, data.user_code, data.post_url]);
+
     return rows[0];
 }
 
 export const updateReviewCampaignPost = async (data) => {
-    const sql = `UPDATE review_campaign_post SET post_url = ? AND status = 'RESUBMITTED' WHERE campaign_post_code = ? AND user_code = ?`;
+    const sql = `UPDATE review_campaign_post SET post_url = ? , status = 'RESUBMITTED' WHERE campaign_post_code = ? AND user_code = ?`;
     await db.query(sql, [data.post_url, data.campaign_post_code, data.user_code]);
     return data.campaign_post_code;
 }
@@ -241,4 +242,10 @@ export const getReviewCampaignPost = async (campaign_application_code, user_code
     const sql = `SELECT * FROM review_campaign_post WHERE campaign_application_code = ? AND user_code = ?`;
     const [rows] = await db.query(sql, [campaign_application_code, user_code]);
     return rows[0];
+}
+
+export const submitReviewCampaignApplicationStatus = async (campaign_application_code, user_code) => {
+    const sql = `UPDATE review_campaign_application SET status = 'SUBMITTED' WHERE campaign_application_code = ? AND user_code = ?`;
+    await db.query(sql, [campaign_application_code, user_code]);
+    return campaign_application_code;
 }

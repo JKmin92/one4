@@ -140,3 +140,51 @@ export const getReviewCampaignApplicationDelivery = async (req, res, next) => {
         next(error);
     }
 }
+
+export const insertReviewCampaignPost = async (req, res, next) => {
+    try {
+        const { campaign_application_code, post_url } = req.body;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const campaign_application = await reviewCampaignService.getUserReviewCampaignApplication(campaign_application_code, user.user_code);
+        if (campaign_application.user_code != user.user_code) return res.status(401).json({ message: "권한이 없습니다." });
+
+        const campaign = await reviewCampaignService.insertReviewCampaignPost({ campaign_application_code, post_url, user_code: user.user_code });
+        res.status(200).json(campaign);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const updateReviewCampaignPost = async (req, res, next) => {
+    try {
+        const { campaign_application_post_code, post_url } = req.body;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const campaign_application = await reviewCampaignService.getUserReviewCampaignApplication(campaign_application_post_code, user.user_code);
+        if (campaign_application.user_code != user.user_code) return res.status(401).json({ message: "권한이 없습니다." });
+
+        const campaign = await reviewCampaignService.updateReviewCampaignPost({ campaign_application_post_code, post_url, user_code: user.user_code });
+        res.status(200).json(campaign);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getReviewCampaignPost = async (req, res, next) => {
+    try {
+        const { campaign_application_code } = req.params;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const campaign_application = await reviewCampaignService.getUserReviewCampaignApplication(campaign_application_code, user.user_code);
+        if (campaign_application.user_code != user.user_code) return res.status(401).json({ message: "권한이 없습니다." });
+
+        const campaign = await reviewCampaignService.getReviewCampaignPost(campaign_application_code, user.user_code);
+        res.status(200).json(campaign);
+    } catch (error) {
+        next(error);
+    }
+}

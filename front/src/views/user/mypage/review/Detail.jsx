@@ -1,8 +1,9 @@
-import { Badge, Box, Button, Clipboard, Heading, HStack, Input, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Clipboard, Dialog, Heading, HStack, Input, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
 import { getDDay, getReviewCampaignApplicationStatus } from "../../../../utils/simpleUtils";
+import { toaster } from "../../../../components/ui/toaster";
 
 function Detail() {
 
@@ -10,6 +11,9 @@ function Detail() {
     const [campaign, setCampaign] = useState(null);
     const [userAddress, setUserAddress] = useState(null);
     const [reviewCampaignApplicationDelivery, setReviewCampaignApplicationDelivery] = useState(null);
+    const [postUrl, setPostUrl] = useState('');
+    const [loadPost, setLoadPost] = useState(false);
+    const [openDialog, setOpenDialog] = useState(false);
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
     const campaignInfoTitle = { w: { base: 'full', md: "1/6" }, size: 'md' };
@@ -39,10 +43,27 @@ function Detail() {
             }
         }
 
+        const getReviewCampaignApplicationPost = async (campaign_application_code) => {
+            const resource = await axiosInstance.get(`/review/campaign/application/post/${campaign_application_code}`);
+            if (resource.data.post_url) {
+                setPostUrl(resource.data.post_url);
+                setLoadPost(true);
+            }
+        }
+
         getCampaign();
         getReviewCampaignApplicationDelivery(campaign_application_code);
+        getReviewCampaignApplicationPost(campaign_application_code);
 
     }, [campaign_application_code]);
+
+    const submitReview = async () => {
+        const resource = await axiosInstance.post(`/review/campaign/application/post`, { campaign_application_code, post_url: postUrl });
+        if (resource.status === 200) {
+            toaster.create({ title: '리뷰가 제출되었습니다.', type: 'success' });
+            setLoadPost(true);
+        }
+    }
 
     if (!campaign) return null;
 
@@ -153,13 +174,35 @@ function Detail() {
                             </Stack>
                         </Stack>
                     )}
-                    {campaign.status === 'SELECTED' && (
+                    {(campaign.status === 'SELECTED' || campaign.status === 'SUBMITTED' || campaign.status === 'RETURNED' || campaign.status === 'COMPLETED') && (
                         <Stack {...campaignInfoStack}>
                             <Heading {...campaignInfoTitle}>리뷰 작성 제출</Heading>
-                            <HStack {...campaignInfoText}>
-                                <Input placeholder="리뷰 링크를 입력해주세요." />
-                                <Button>제출</Button>
-                            </HStack>
+                            <Stack {...campaignInfoText}>
+                                <HStack>
+                                    <Input placeholder="리뷰 링크를 입력해주세요." disabled={loadPost ? true : false} value={postUrl} onChange={(e) => setPostUrl(e.target.value)} />
+                                    <Dialog.Root open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
+                                        <Dialog.Trigger asChild>
+                                            <Button disabled={loadPost ? true : false}>제출</Button>
+                                        </Dialog.Trigger>
+                                        <Dialog.Backdrop />
+                                        <Dialog.Positioner>
+                                            <Dialog.Content>
+                                                <Dialog.Header>
+                                                    <Dialog.Title>리뷰 등록</Dialog.Title>
+                                                </Dialog.Header>
+                                                <Dialog.Body>
+                                                    <Text>리뷰를 등록 하시겠습니까?</Text>
+                                                </Dialog.Body>
+                                                <Dialog.Footer>
+                                                    <Button variant="outline" onClick={() => setOpenDialog(false)}>취소</Button>
+                                                    <Button onClick={() => { submitReview(); setOpenDialog(false); }}>확인</Button>
+                                                </Dialog.Footer>
+                                            </Dialog.Content>
+                                        </Dialog.Positioner>
+                                    </Dialog.Root>
+                                </HStack>
+                                {loadPost && <Text fontSize="xs" wordBreak="keep-all">리뷰가 제출되었습니다. 작성된 리뷰는 검토 진행되며 요청사항이 누락되었거나 해당 제품(또는 서비스)에 잘못된 정보가 있다면 수정 요청드릴 수 있습니다.</Text>}
+                            </Stack>
                         </Stack>
                     )}
                 </Stack>

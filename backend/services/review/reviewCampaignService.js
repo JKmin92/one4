@@ -1,4 +1,5 @@
 import * as reviewCampaignModel from "../../models/review/reviewCampaignModel.js";
+import { generateUniqueId } from "../../utils/customUtils.js";
 import { fetchMetadataFromUrl } from "../../utils/metadataUtils.js";
 
 export const getReviewCampaign = async (campaign_code) => {
@@ -70,4 +71,19 @@ export const getUserAddress = async (address_code, user_code) => {
 
 export const getReviewCampaignApplicationDelivery = async (campaign_application_code, user_code) => {
     return await reviewCampaignModel.getReviewCampaignApplicationDelivery(campaign_application_code, user_code);
+}
+
+export const insertReviewCampaignPost = async (data) => {
+    const campaign_post_code = generateUniqueId();
+    const result = await reviewCampaignModel.insertReviewCampaignPost({ ...data, campaign_post_code: campaign_post_code });
+    await reviewCampaignModel.submitReviewCampaignApplicationStatus(data.campaign_application_code, data.user_code);
+    return result;
+}
+
+export const updateReviewCampaignPost = async (data) => {
+    return await reviewCampaignModel.updateReviewCampaignPost(data);
+}
+
+export const getReviewCampaignPost = async (campaign_application_code, user_code) => {
+    return await reviewCampaignModel.getReviewCampaignPost(campaign_application_code, user_code);
 }

@@ -8,6 +8,7 @@ import { Tooltip } from "../../../../components/ui/tooltip";
 import { toaster } from "../../../../components/ui/toaster";
 import AppliedList from "./detail/AppliedList";
 import SelectedList from "./detail/SelectedList";
+import CompletedList from "./detail/CompletedList";
 
 function Detail() {
 
@@ -66,7 +67,9 @@ function Detail() {
     if (!campaign) return null;
     const tabsStatus = (state) => {
         switch (state) {
-            case 'RECRUITING' || 'SELECTING' || 'CLOSED':
+            case 'RECRUITING':
+            case 'SELECTING':
+            case 'CLOSED':
                 return 'APPLIED';
             case 'REVIEWING':
                 return 'SELECTED';
@@ -77,9 +80,8 @@ function Detail() {
         }
     }
 
-
-
-    const defaultTabsState = tabsStatus(campaign.state);
+    const isAllCompleted = reviewCampaignApplicationList.length > 0 && reviewCampaignApplicationList.every(app => ['SUBMITTED', 'RETURNED', 'COMPLETED'].includes(app.status));
+    const defaultTabsState = isAllCompleted ? 'COMPLETED' : tabsStatus(campaign.state);
 
     return (
         <Stack p="30px" px="layoutX" gap="6">
@@ -164,9 +166,7 @@ function Detail() {
                         <SelectedList selectedList={lists.selected} reviewCampaignChannelView={reviewCampaignChannelView} campaign={campaign} fetchReviewCampaignApplicationList={fetchReviewCampaignApplicationList} />
                     </Tabs.Content>
                     <Tabs.Content value="COMPLETED">
-                        <Stack>
-                            <Text>총 {lists.completed.length}명의 데이터가 있습니다.</Text>
-                        </Stack>
+                        <CompletedList completedList={lists.completed} reviewCampaignChannelView={reviewCampaignChannelView} campaign={campaign} fetchReviewCampaignApplicationList={fetchReviewCampaignApplicationList} />
                     </Tabs.Content>
                     <Tabs.Content value="CANCELLED">
                         <Stack>

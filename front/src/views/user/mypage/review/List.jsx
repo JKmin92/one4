@@ -2,7 +2,7 @@ import { Button, Flex, Heading, HStack, Image, Link, Stack, Status, Text } from 
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { useNavigate } from "react-router-dom";
-import { getDDay } from "../../../../utils/simpleUtils";
+import { getDDay, formatDateToMonthDay } from "../../../../utils/simpleUtils";
 
 function List() {
 
@@ -67,7 +67,12 @@ function List() {
                                         return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
                                     })}
                                 </HStack>
-                                <Text>D-{getDDay(reviewApplication.reviewer_selection_date)}</Text>
+                                {reviewApplication.status === 'APPLIED' && (
+                                    <Text>{formatDateToMonthDay(reviewApplication.reviewer_selection_date).replace('.', '-')} 선정 예정</Text>
+                                )}
+                                {reviewApplication.status === 'SELECTED' && (
+                                    <Text>{formatDateToMonthDay(reviewApplication.end_write_date).replace('.', '-')} 까지 작성</Text>
+                                )}
                             </HStack>
                             <Heading fontSize="sm">{reviewApplication.title}</Heading>
                         </Stack>
