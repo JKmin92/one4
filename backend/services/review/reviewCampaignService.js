@@ -87,3 +87,11 @@ export const updateReviewCampaignPost = async (data) => {
 export const getReviewCampaignPost = async (campaign_application_code, user_code) => {
     return await reviewCampaignModel.getReviewCampaignPost(campaign_application_code, user_code);
 }
+
+export const getReviewCampaignPostByCampaignPostCode = async (campaign_post_code) => {
+    return await reviewCampaignModel.getReviewCampaignPostByCampaignPostCode(campaign_post_code);
+}
+
+export const getReviewCampaignFeedbackList = async (campaign_application_code, user_code) => {
+    return await reviewCampaignModel.getReviewCampaignFeedbackList(campaign_application_code, user_code);
+}

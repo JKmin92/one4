@@ -29,6 +29,7 @@ function List() {
     }, []);
 
     const getStatus = (status) => {
+        console.log(status);
         switch (status) {
             case 'APPLIED':
                 return { color: 'green', text: '신청 완료' };
@@ -38,12 +39,18 @@ function List() {
                 return { color: 'red', text: '미선정' };
             case 'CANCELLED':
                 return { color: 'gray', text: '취소됨' };
-            case 'COMPLETED':
+            case 'SUBMITTED':
                 return { color: 'blue', text: '리뷰 작성 완료' };
+            case 'RETURNED':
+                return { color: 'orange', text: '수정요청됨' };
+            case 'COMPLETED':
+                return { color: 'blue', text: '리뷰캠페인 완료' };
             default:
                 return 'gray';
         }
     }
+
+
 
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">

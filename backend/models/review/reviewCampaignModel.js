@@ -234,7 +234,18 @@ export const insertReviewCampaignPost = async (data) => {
 
 export const updateReviewCampaignPost = async (data) => {
     const sql = `UPDATE review_campaign_post SET post_url = ? , status = 'RESUBMITTED' WHERE campaign_post_code = ? AND user_code = ?`;
-    await db.query(sql, [data.post_url, data.campaign_post_code, data.user_code]);
+    const [rows] = await db.query(sql, [data.post_url, data.campaign_post_code, data.user_code]);
+    
+    if (rows.affectedRows > 0) {
+        const updateSql = `
+            UPDATE review_campaign_application 
+            SET status = 'SUBMITTED' 
+            WHERE campaign_application_code = (SELECT campaign_application_code FROM review_campaign_post WHERE campaign_post_code = ?)
+              AND user_code = ?
+        `;
+        await db.query(updateSql, [data.campaign_post_code, data.user_code]);
+    }
+    
     return data.campaign_post_code;
 }
 
@@ -244,8 +255,25 @@ export const getReviewCampaignPost = async (campaign_application_code, user_code
     return rows[0];
 }
 
+export const getReviewCampaignPostByCampaignPostCode = async (campaign_post_code) => {
+    const sql = `SELECT * FROM review_campaign_post WHERE campaign_post_code = ?`;
+    const [rows] = await db.query(sql, [campaign_post_code]);
+    return rows[0];
+}
+
 export const submitReviewCampaignApplicationStatus = async (campaign_application_code, user_code) => {
     const sql = `UPDATE review_campaign_application SET status = 'SUBMITTED' WHERE campaign_application_code = ? AND user_code = ?`;
     await db.query(sql, [campaign_application_code, user_code]);
     return campaign_application_code;
+}
+
+export const getReviewCampaignFeedbackList = async (campaign_application_code, user_code) => {
+    const sql = `
+        SELECT f.* 
+        FROM review_campaign_feedback f
+        JOIN review_campaign_application a ON f.campaign_application_code = a.campaign_application_code
+        WHERE f.campaign_application_code = ? AND a.user_code = ?
+    `;
+    const [rows] = await db.query(sql, [campaign_application_code, user_code]);
+    return rows;
 }

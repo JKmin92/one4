@@ -36,7 +36,7 @@ export const insertReviewCampaignReward = async (data) => {
     const sql = `INSERT INTO review_campaign_reward (campaign_code, reward_code, reward_type, name, description, value, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)`
     const [rows] = await db.query(sql, [data.campaign_code, data.reward_code, data.reward_type, data.name, data.description, data.value, data.quantity]);
 
-    if (rows.affectedRows > 0) return rows.insertId;
+    if (rows.affectedRows > 0) return data.reward_code;
     return null;
 }
 
@@ -272,4 +272,37 @@ export const getReviewCampaignApplicationDelivery = async (campaign_application_
     const sql = `SELECT * FROM review_campaign_application_delivery WHERE campaign_application_code = ?`;
     const [rows] = await db.query(sql, [campaign_application_code]);
     return rows[0];
+}
+
+export const insertReviewCampaignFeedback = async (data) => {
+    const sql = `INSERT INTO review_campaign_feedback (campaign_feedback_code, campaign_application_code, request_content) VALUES (?, ?, ?)`
+    const [rows] = await db.query(sql, [data.campaign_feedback_code, data.campaign_application_code, data.request_content]);
+
+    if (rows.affectedRows > 0) {
+        await db.query(`UPDATE review_campaign_application SET status = 'RETURNED' WHERE campaign_application_code = ?`, [data.campaign_application_code]);
+        await db.query(`UPDATE review_campaign_post SET status = 'RETURNED' WHERE campaign_application_code = ?`, [data.campaign_application_code]);
+    }
+
+    return rows;
+}
+
+export const updateReviewCampaignFeedback = async (data) => {
+    const sql = `UPDATE review_campaign_feedback SET request_content = ? WHERE campaign_feedback_code = ?`
+    const [rows] = await db.query(sql, [data.request_content, data.campaign_feedback_code]);
+    return rows;
+}
+
+export const getReviewCampaignFeedback = async (campaign_application_code) => {
+    const sql = `SELECT * FROM review_campaign_feedback WHERE campaign_application_code = ?`;
+    const [rows] = await db.query(sql, [campaign_application_code]);
+    return rows;
+}
+
+export const completeReviewCampaignApplication = async (campaign_application_code) => {
+    const sql = `UPDATE review_campaign_application SET status = 'COMPLETED' WHERE campaign_application_code = ?`;
+    const [rows] = await db.query(sql, [campaign_application_code]);
+    if (rows.affectedRows > 0) {
+        await db.query(`UPDATE review_campaign_post SET status = 'COMPLETED' WHERE campaign_application_code = ?`, [campaign_application_code]);
+    }
+    return rows;
 }

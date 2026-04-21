@@ -142,3 +142,20 @@ export const updateReviewCampaignApplicationDelivery = async (campaign_applicati
 export const getReviewCampaignApplicationDelivery = async (campaign_application_code) => {
     return await model.getReviewCampaignApplicationDelivery(campaign_application_code);
 }
+
+export const insertReviewCampaignFeedback = async (data) => {
+    const campaign_feedback_code = generateUniqueId();
+    return await model.insertReviewCampaignFeedback({ ...data, campaign_feedback_code });
+}
+
+export const updateReviewCampaignFeedback = async (data) => {
+    return await model.updateReviewCampaignFeedback({ ...data });
+}
+
+export const getReviewCampaignFeedback = async (campaign_application_code) => {
+    return await model.getReviewCampaignFeedback(campaign_application_code);
+}
+
+export const completeReviewCampaignApplication = async (campaign_application_code) => {
+    return await model.completeReviewCampaignApplication(campaign_application_code);
+}

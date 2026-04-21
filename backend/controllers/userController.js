@@ -68,13 +68,16 @@ export const refreshToken = async (req, res) => {
         }
 
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const userPayload = decode.user || decode;
+        
         const data = {
-            user_code: decode.user.user_code,
-            role: decode.user.role,
-            status: decode.user.status,
-            name: decode.user.name,
-            email: decode.user.email,
-            profile: decode.user.profile
+            user_code: userPayload.user_code,
+            role: userPayload.role,
+            status: userPayload.status,
+            name: userPayload.name,
+            email: userPayload.email,
+            profile: userPayload.profile,
+            phone: userPayload.phone
         };
         const newAccessToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' });
 

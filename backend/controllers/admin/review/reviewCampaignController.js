@@ -83,12 +83,12 @@ export const updateReviewCampaign = async (req, res, next) => {
             await reviewCampaignService.deleteReviewCampaignRewards(campaign_code);
 
             for (const reward of rewards) {
-                const reward_id = await reviewCampaignService.insertReviewCampaignReward({ ...reward, campaign_code });
+                const reward_code = await reviewCampaignService.insertReviewCampaignReward({ ...reward, campaign_code });
                 const reward_options = reward.options;
                 if (reward_options && reward_options.length > 0) {
                     for (const reward_option of reward_options) {
                         await reviewCampaignService.insertReviewCampaignRewardOption({
-                            reward_id,
+                            reward_code,
                             option_name: reward_option.name || reward_option.option_name,
                             option_value: reward_option.values || reward_option.option_value
                         });
@@ -205,6 +205,45 @@ export const getReviewCampaignApplicationDelivery = async (req, res, next) => {
     try {
         const { id } = req.params;
         const result = await reviewCampaignService.getReviewCampaignApplicationDelivery(id);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const insertReviewCampaignFeedback = async (req, res, next) => {
+    try {
+        const result = await reviewCampaignService.insertReviewCampaignFeedback(req.body);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const updateReviewCampaignFeedback = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const result = await reviewCampaignService.updateReviewCampaignFeedback({ ...req.body, campaign_application_code: id });
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getReviewCampaignFeedback = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const result = await reviewCampaignService.getReviewCampaignFeedback(id);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const completeReviewCampaignApplication = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const result = await reviewCampaignService.completeReviewCampaignApplication(id);
         res.status(200).json(result);
     } catch (error) {
         next(error);

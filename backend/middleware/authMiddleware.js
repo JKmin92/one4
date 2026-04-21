@@ -6,7 +6,8 @@ export const authMiddleware = (req, res, next) => {
     if (!token || token === 'null' || !authHeader.startsWith('Bearer ')) return res.status(200).json({ message: 'no token' });
 
     try {
-        req.user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        req.user = decoded.user || decoded;
         next();
     } catch {
         return res.status(401).send({ error: 'Invalid Token' });

@@ -11,9 +11,10 @@ function Detail() {
     const [campaign, setCampaign] = useState(null);
     const [userAddress, setUserAddress] = useState(null);
     const [reviewCampaignApplicationDelivery, setReviewCampaignApplicationDelivery] = useState(null);
-    const [postUrl, setPostUrl] = useState('');
+    const [post, setPost] = useState(null);
     const [loadPost, setLoadPost] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const [reviewCampaignFeedbackList, setReviewCampaignFeedbackList] = useState([]);
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
     const campaignInfoTitle = { w: { base: 'full', md: "1/6" }, size: 'md' };
@@ -46,22 +47,40 @@ function Detail() {
         const getReviewCampaignApplicationPost = async (campaign_application_code) => {
             const resource = await axiosInstance.get(`/review/campaign/application/post/${campaign_application_code}`);
             if (resource.data.post_url) {
-                setPostUrl(resource.data.post_url);
-                setLoadPost(true);
+                setPost(resource.data);
+                if (resource.data.status == 'SUBMITTED' || resource.data.status == 'RESUBMITTED' || resource.data.status == 'COMPLETED') {
+                    setLoadPost(true);
+                }
+            }
+        }
+
+        const getReviewCampaignFeedbackList = async (campaign_application_code) => {
+            const resource = await axiosInstance.get(`/review/campaign/application/feedback/${campaign_application_code}`);
+            if (resource.status === 200) {
+                setReviewCampaignFeedbackList(resource.data);
             }
         }
 
         getCampaign();
         getReviewCampaignApplicationDelivery(campaign_application_code);
         getReviewCampaignApplicationPost(campaign_application_code);
+        getReviewCampaignFeedbackList(campaign_application_code);
 
     }, [campaign_application_code]);
 
-    const submitReview = async () => {
-        const resource = await axiosInstance.post(`/review/campaign/application/post`, { campaign_application_code, post_url: postUrl });
-        if (resource.status === 200) {
-            toaster.create({ title: '리뷰가 제출되었습니다.', type: 'success' });
-            setLoadPost(true);
+    const submitReview = async (campaign_post_code) => {
+        if (campaign_post_code) {
+            const resource = await axiosInstance.put(`/review/campaign/application/post`, { campaign_post_code, post_url: post?.post_url });
+            if (resource.status === 200) {
+                toaster.create({ title: '리뷰가 수정되었습니다.', type: 'success' });
+                setLoadPost(true);
+            }
+        } else {
+            const resource = await axiosInstance.post(`/review/campaign/application/post`, { campaign_application_code, post_url: post?.post_url });
+            if (resource.status === 200) {
+                toaster.create({ title: '리뷰가 제출되었습니다.', type: 'success' });
+                setLoadPost(true);
+            }
         }
     }
 
@@ -174,28 +193,36 @@ function Detail() {
                             </Stack>
                         </Stack>
                     )}
+                    {reviewCampaignFeedbackList.length > 0 && (
+                        <Stack {...campaignInfoStack}>
+                            <Heading {...campaignInfoTitle}>리뷰 피드백</Heading>
+                            <Stack {...campaignInfoText}>
+                                <Text>{reviewCampaignFeedbackList[reviewCampaignFeedbackList.length - 1].request_content}</Text>
+                            </Stack>
+                        </Stack>
+                    )}
                     {(campaign.status === 'SELECTED' || campaign.status === 'SUBMITTED' || campaign.status === 'RETURNED' || campaign.status === 'COMPLETED') && (
                         <Stack {...campaignInfoStack}>
                             <Heading {...campaignInfoTitle}>리뷰 작성 제출</Heading>
                             <Stack {...campaignInfoText}>
                                 <HStack>
-                                    <Input placeholder="리뷰 링크를 입력해주세요." disabled={loadPost ? true : false} value={postUrl} onChange={(e) => setPostUrl(e.target.value)} />
+                                    <Input placeholder="리뷰 링크를 입력해주세요." disabled={loadPost ? true : false} value={post?.post_url} onChange={(e) => setPost({ ...post, post_url: e.target.value })} />
                                     <Dialog.Root open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
                                         <Dialog.Trigger asChild>
-                                            <Button disabled={loadPost ? true : false}>제출</Button>
+                                            <Button disabled={loadPost ? true : false}>{post?.campaign_post_code ? '수정' : '제출'}</Button>
                                         </Dialog.Trigger>
                                         <Dialog.Backdrop />
                                         <Dialog.Positioner>
                                             <Dialog.Content>
                                                 <Dialog.Header>
-                                                    <Dialog.Title>리뷰 등록</Dialog.Title>
+                                                    <Dialog.Title>{post?.campaign_post_code ? '리뷰 수정' : '리뷰 등록'}</Dialog.Title>
                                                 </Dialog.Header>
                                                 <Dialog.Body>
-                                                    <Text>리뷰를 등록 하시겠습니까?</Text>
+                                                    <Text>{post?.campaign_post_code ? '리뷰를 수정 하시겠습니까?' : '리뷰를 등록 하시겠습니까?'}</Text>
                                                 </Dialog.Body>
                                                 <Dialog.Footer>
                                                     <Button variant="outline" onClick={() => setOpenDialog(false)}>취소</Button>
-                                                    <Button onClick={() => { submitReview(); setOpenDialog(false); }}>확인</Button>
+                                                    <Button onClick={() => { submitReview(post?.campaign_post_code); setOpenDialog(false); }}>확인</Button>
                                                 </Dialog.Footer>
                                             </Dialog.Content>
                                         </Dialog.Positioner>

@@ -416,7 +416,7 @@ function Application() {
         try {
             const resource = await axiosInstance.post(`/review/campaign/application`, payload);
             if (resource.status === 200) {
-                navigate('/review/campaign/application');
+                navigate('/mypage/review');
             }
         } catch (error) {
             console.error(error);

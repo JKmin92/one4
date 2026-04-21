@@ -21,4 +21,6 @@ router.post("/application/post", authMiddleware, reviewCampaignController.insert
 router.put("/application/post", authMiddleware, reviewCampaignController.updateReviewCampaignPost);
 router.get("/application/post/:campaign_application_code", authMiddleware, reviewCampaignController.getReviewCampaignPost);
 
+router.get("/application/feedback/:campaign_application_code", authMiddleware, reviewCampaignController.getReviewCampaignFeedbackList);
+
 export default router;

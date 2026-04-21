@@ -22,4 +22,10 @@ router.post('/delivery/:id', reviewCampaignController.insertReviewCampaignApplic
 router.put('/delivery/:id', reviewCampaignController.updateReviewCampaignApplicationDelivery);
 router.get('/delivery/:id', reviewCampaignController.getReviewCampaignApplicationDelivery);
 
+router.post('/application/feedback', reviewCampaignController.insertReviewCampaignFeedback);
+router.put('/application/feedback/:id', reviewCampaignController.updateReviewCampaignFeedback);
+router.get('/application/feedback/:id', reviewCampaignController.getReviewCampaignFeedback);
+
+router.put('/application/complete/:id', reviewCampaignController.completeReviewCampaignApplication);
+
 export default router;

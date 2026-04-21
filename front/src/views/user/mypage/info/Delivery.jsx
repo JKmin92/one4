@@ -220,11 +220,10 @@ function Delivery({ deliveryList, setDeliveryList }) {
                                                 <RadioCard.ItemControl>
                                                     <RadioCard.ItemIndicator />
                                                     <RadioCard.ItemContent>
-                                                        <RadioCard.ItemText>{del.name}</RadioCard.ItemText>
+                                                        <RadioCard.ItemText>{del.name} [{del.phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}]</RadioCard.ItemText>
                                                         <RadioCard.ItemDescription>
                                                             <Stack gap="0">
                                                                 <Text>[{del.postcode}] {del.address} {del.detailAddress}</Text>
-                                                                <Text>{del.phone}</Text>
                                                             </Stack>
                                                         </RadioCard.ItemDescription>
                                                     </RadioCard.ItemContent>
