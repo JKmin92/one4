@@ -1,5 +1,20 @@
 import * as cheerio from 'cheerio';
 
+const parseFollowerCount = (countStr) => {
+    if (!countStr) return null;
+    let numStr = countStr.replace(/,/g, '').toUpperCase();
+    let multiplier = 1;
+    if (numStr.endsWith('K')) {
+        multiplier = 1000;
+        numStr = numStr.slice(0, -1);
+    } else if (numStr.endsWith('M')) {
+        multiplier = 1000000;
+        numStr = numStr.slice(0, -1);
+    }
+    const num = parseFloat(numStr) * multiplier;
+    return isNaN(num) ? null : num;
+};
+
 export const fetchMetadataFromUrl = async (url) => {
     if (!url) {
         throw new Error('URL is required');
@@ -10,9 +25,14 @@ export const fetchMetadataFromUrl = async (url) => {
         targetUrl = 'https://' + targetUrl;
     }
 
+    const isInstagram = targetUrl.includes('instagram.com');
+    const userAgent = isInstagram
+        ? 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+        : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36';
+
     const response = await fetch(targetUrl, {
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+            'User-Agent': userAgent
         }
     });
 
@@ -50,7 +70,7 @@ export const fetchMetadataFromUrl = async (url) => {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
                         }
                     });
-                    
+
                     if (iframeRes.ok) {
                         const iframeHtml = await iframeRes.text();
                         const $iframe = cheerio.load(iframeHtml);
@@ -66,6 +86,19 @@ export const fetchMetadataFromUrl = async (url) => {
         }
     }
 
+    let followerCount = null;
+    if (isInstagram) {
+        if (description) {
+            const match = description.match(/([\d.,KkMm]+)\s*Followers/i);
+            if (match && match[1]) {
+                followerCount = parseFollowerCount(match[1]);
+            }
+        }
+        if (title) {
+            title = title.replace(/\s*•\s*Instagram photos and videos/i, '').trim();
+        }
+    }
+
     if (image && image.startsWith('//')) {
         image = 'https:' + image;
     } else if (image && image.startsWith('/')) {
@@ -73,5 +106,5 @@ export const fetchMetadataFromUrl = async (url) => {
         image = urlObj.origin + image;
     }
 
-    return { title, description, image, url: targetUrl };
+    return { title, description, image, url: targetUrl, followerCount };
 };

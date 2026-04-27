@@ -52,7 +52,10 @@ function Info() {
                     <Box w="100px" h="100px" rounded="full" bg="gray.200" display="flex" alignItems="center" justifyContent="center">
                         <LuUserRound size="25" />
                     </Box>
-                    <Text color="fg.muted">{user.email}</Text>
+                    <Stack gap="0">
+                        <Text fontSize="lg" fontWeight="bold">{user.name}</Text>
+                        <Text color="fg.muted">{user.email}</Text>
+                    </Stack>
                 </HStack>
                 <Stack separator={<StackSeparator />}>
                     <Button variant="ghost" justifyContent="space-between">개인정보 수정<LuChevronRight /></Button>

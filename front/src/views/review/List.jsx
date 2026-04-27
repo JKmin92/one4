@@ -1,8 +1,9 @@
-import { Box, Flex, Heading, HStack, Image, Link, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex, Heading, HStack, Icon, Image, Link, Stack, Text } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { getDDay } from "../../utils/simpleUtils";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/api";
+import { PiSmileySad } from "react-icons/pi";
 
 function List() {
 
@@ -45,8 +46,7 @@ function List() {
 
         const fetchCampaignList = async () => {
             const response = await axiosInstance.get(`/review/campaign/list/${id}`);
-            const data = response.data;
-            setCampaignList(data);
+            setCampaignList(response.data);
         };
 
         const fetchReviewCampaignChannelView = async () => {
@@ -100,7 +100,14 @@ function List() {
                         </Stack>
                     </Box>
                 ))}
-                {campaignList.length === 0 && <Stack w="full" alignItems="center" justifyContent="center" minH="xs" color="fg.muted">캠페인이 없습니다.</Stack>}
+                {campaignList.length === 0 &&
+                    <Stack w="full" alignItems="center" justifyContent="center" minH="xs" color="fg.muted">
+                        <Icon fontSize="7xl">
+                            <PiSmileySad />
+                        </Icon>
+                        <Text>진행중인 캠페인이 없습니다.</Text>
+                    </Stack>
+                }
             </Flex>
         </Stack>
     )

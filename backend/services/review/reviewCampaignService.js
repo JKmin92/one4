@@ -95,3 +95,7 @@ export const getReviewCampaignPostByCampaignPostCode = async (campaign_post_code
 export const getReviewCampaignFeedbackList = async (campaign_application_code, user_code) => {
     return await reviewCampaignModel.getReviewCampaignFeedbackList(campaign_application_code, user_code);
 }
+
+export const getReviewCampaignApplicationChannel = async (campaign_application_code, user_code) => {
+    return await reviewCampaignModel.getReviewCampaignApplicationChannel(campaign_application_code, user_code);
+}

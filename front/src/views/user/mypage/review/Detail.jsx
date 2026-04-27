@@ -1,4 +1,4 @@
-import { Badge, Box, Button, Clipboard, Dialog, Heading, HStack, Input, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Clipboard, Dialog, Heading, HStack, Image, Input, Link, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
@@ -15,6 +15,7 @@ function Detail() {
     const [loadPost, setLoadPost] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [reviewCampaignFeedbackList, setReviewCampaignFeedbackList] = useState([]);
+    const [reviewCampaignApplicationChannelList, setReviewCampaignApplicationChannelList] = useState([]);
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
     const campaignInfoTitle = { w: { base: 'full', md: "1/6" }, size: 'md' };
@@ -61,10 +62,19 @@ function Detail() {
             }
         }
 
+        const getReviewCampaignApplicationChannel = async (campaign_application_code) => {
+            const resource = await axiosInstance.get(`/review/campaign/user/application/channel/${campaign_application_code}`);
+            if (resource.status === 200) {
+                console.log(resource.data);
+                setReviewCampaignApplicationChannelList(resource.data);
+            }
+        }
+
         getCampaign();
         getReviewCampaignApplicationDelivery(campaign_application_code);
         getReviewCampaignApplicationPost(campaign_application_code);
         getReviewCampaignFeedbackList(campaign_application_code);
+        getReviewCampaignApplicationChannel(campaign_application_code);
 
     }, [campaign_application_code]);
 
@@ -193,7 +203,25 @@ function Detail() {
                             </Stack>
                         </Stack>
                     )}
-                    {reviewCampaignFeedbackList.length > 0 && (
+                    {reviewCampaignApplicationChannelList.length > 0 && (
+                        <Stack {...campaignInfoStack}>
+                            <Heading {...campaignInfoTitle}>채널</Heading>
+                            <Stack {...campaignInfoText}>
+                                {reviewCampaignApplicationChannelList.map(channel => (
+                                    <Link href={channel.channel_url} target="_blank" display="inline-flex" key={channel.campaign_application_channel_code}>
+                                        <Stack direction="row" border="1px solid" borderColor="gray.200" alignItems="center" px="4" py="2" gap="4" rounded="md" w="full" >
+                                            {channel.meta_image && (<Image src={channel.meta_image} w="16" rounded="md" />)}
+                                            <Stack gap="0">
+                                                <Text fontSize="sm" fontWeight="bold">{channel.meta_title}</Text>
+                                                <Text fontSize="xs" color="gray.500">{channel.meta_description}</Text>
+                                            </Stack>
+                                        </Stack>
+                                    </Link>
+                                ))}
+                            </Stack>
+                        </Stack>
+                    )}
+                    {(reviewCampaignFeedbackList.length > 0 && campaign.status === 'RETURNED') && (
                         <Stack {...campaignInfoStack}>
                             <Heading {...campaignInfoTitle}>리뷰 피드백</Heading>
                             <Stack {...campaignInfoText}>
@@ -209,7 +237,7 @@ function Detail() {
                                     <Input placeholder="리뷰 링크를 입력해주세요." disabled={loadPost ? true : false} value={post?.post_url} onChange={(e) => setPost({ ...post, post_url: e.target.value })} />
                                     <Dialog.Root open={openDialog} onOpenChange={(e) => setOpenDialog(e.open)}>
                                         <Dialog.Trigger asChild>
-                                            <Button disabled={loadPost ? true : false}>{post?.campaign_post_code ? '수정' : '제출'}</Button>
+                                            {(campaign.status != 'COMPLETED' || campaign.status === 'SUBMITTED') && (<Button disabled={loadPost ? true : false}>{post?.campaign_post_code ? '수정' : '제출'}</Button>)}
                                         </Dialog.Trigger>
                                         <Dialog.Backdrop />
                                         <Dialog.Positioner>
@@ -228,7 +256,7 @@ function Detail() {
                                         </Dialog.Positioner>
                                     </Dialog.Root>
                                 </HStack>
-                                {loadPost && <Text fontSize="xs" wordBreak="keep-all">리뷰가 제출되었습니다. 작성된 리뷰는 검토 진행되며 요청사항이 누락되었거나 해당 제품(또는 서비스)에 잘못된 정보가 있다면 수정 요청드릴 수 있습니다.</Text>}
+                                {loadPost && (campaign.status === 'SUBMITTED' || campaign.status === 'RETURNED') && <Text fontSize="xs" wordBreak="keep-all">리뷰가 제출되었습니다. 작성된 리뷰는 검토 진행되며 요청사항이 누락되었거나 해당 제품(또는 서비스)에 잘못된 정보가 있다면 수정 요청드릴 수 있습니다.</Text>}
                             </Stack>
                         </Stack>
                     )}

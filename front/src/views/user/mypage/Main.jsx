@@ -1,10 +1,58 @@
 import { Alert, Box, Button, Heading, HStack, Image, Link, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
-import { formatNumber } from "../../../utils/simpleUtils";
+import { formatNumber, getReviewCampaignApplicationStatus } from "../../../utils/simpleUtils";
 import { LuChevronRight } from "react-icons/lu";
+import { useEffect, useState } from "react";
+import axiosInstance from "../../../utils/api";
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
 
 function Main() {
+
+    const [reviewCampaignApplicationList, setReviewCampaignApplicationList] = useState([]);
+    const [reviewCampaignChannelView, setReviewCampaignChannelView] = useState([]);
+
+    useEffect(() => {
+        const getReviewCampaignApplicationList = async () => {
+            const res = await axiosInstance.get('/review/campaign/user/application');
+            console.log(res.data);
+            const targetStatuses = ['APPLIED', 'SELECTED', 'SUBMITTED', 'RETURNED'];
+            const now = new Date().getTime();
+
+            const filteredData = res.data.filter(item => {
+                if (targetStatuses.includes(item.status)) return true;
+                if (item.status === 'COMPLETED') {
+                    const updatedTime = new Date(item.updated_at).getTime();
+                    const diffDays = (now - updatedTime) / (1000 * 60 * 60 * 24);
+                    return diffDays <= 7;
+                }
+                return false;
+            });
+            setReviewCampaignApplicationList(filteredData);
+        }
+
+        const getReviewCampaignChannelView = async () => {
+            const resource = await axiosInstance.get(`/review/campaign/channel`);
+            if (resource.status === 200) {
+                setReviewCampaignChannelView(resource.data);
+            }
+        }
+
+        getReviewCampaignApplicationList();
+        getReviewCampaignChannelView();
+    }, []);
+
+    const swiperSet = {
+        slidesPerView: 1,
+        pagination: { clickable: true },
+        modules: [Pagination]
+    }
+
+
     return (
-        <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
+        <Stack w="full" minW="0" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
             <Alert.Root status="error" alignItems="center">
                 <Alert.Indicator />
                 <Alert.Content gap="1">
@@ -21,25 +69,50 @@ function Main() {
                 </HStack>
                 <LuChevronRight size="20" />
             </Link>
-            <Stack w="full" gap="0">
-                <Heading fontSize="sm" textAlign="left">진행중인 리뷰 캠페인(2)</Heading>
-                <Stack direction="row" w="full" justifyContent="space-between" alignItems="end">
-                    <Stack direction="row" gap="6">
-                        <Box w="100px" h="100px" bg="gray.200" rounded="md"></Box>
-                        <Stack textAlign="left" fontSize="sm">
-                            <Status.Root colorPalette="blue">
-                                <Status.Indicator /> 캠페인 신청
-                            </Status.Root>
-                            <HStack>
-                                <Image src={`/public/resources/img/logo/naver.svg`} w="5" rounded="md" />
-                                <Text>캠페인 제목</Text>
-                            </HStack>
-                            <Text color="fg.muted">와바미 파데 1개 제공 · 21호</Text>
-                        </Stack>
-                    </Stack>
-                    <Button size="xs" variant="outline">자세히 보기</Button>
+            {reviewCampaignApplicationList.length > 0 && (
+                <Stack w="full" gap="4" minW="0">
+                    <Heading fontSize="sm" textAlign="left">진행중인 리뷰 캠페인({reviewCampaignApplicationList.length})</Heading>
+                    <Box w="full" overflow="hidden" pb="6" css={{ '& .swiper-pagination': { bottom: '0' } }}>
+                        <Swiper {...swiperSet}>
+                            {reviewCampaignApplicationList.map(application => {
+                                const applicationStatusView = getReviewCampaignApplicationStatus(application.status);
+                                return (
+                                    <SwiperSlide key={application.id}>
+                                        <Stack direction="row" justifyContent="space-between" alignItems="end">
+                                            <Stack direction="row" gap="6">
+                                                <Image src={application.main_image} w="100px" rounded="md" />
+                                                <Stack textAlign="left" fontSize="sm">
+                                                    <Status.Root colorPalette={applicationStatusView.color}>
+                                                        <Status.Indicator /> {applicationStatusView.text}
+                                                    </Status.Root>
+                                                    <HStack>
+                                                        <HStack>
+                                                            {application.channels.map((channel, index) => {
+                                                                const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
+                                                                return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
+                                                            })}
+                                                        </HStack>
+                                                        <Text>{application.title}</Text>
+                                                    </HStack>
+                                                    <HStack>
+                                                        {application.rewards.map(reward => {
+                                                            if (reward.reward_type === 'PRODUCT') {
+                                                                return (<Text color="fg.muted" key={reward.reward_code}>{reward.name} {reward.quantity}개</Text>)
+                                                            }
+                                                        })}
+                                                    </HStack>
+                                                </Stack>
+                                            </Stack>
+                                            <Button size="xs" variant="outline">자세히 보기</Button>
+                                        </Stack>
+                                    </SwiperSlide>
+                                )
+                            })}
+                        </Swiper>
+                    </Box>
                 </Stack>
-            </Stack>
+            )}
+
             <Stack w="full" gap="0">
                 <Heading fontSize="sm" textAlign="left">구매한 상품(2)</Heading>
                 <Stack direction="row" w="full" justifyContent="space-between" alignItems="end">

@@ -3,6 +3,20 @@ import { Tooltip } from "../../../../../components/ui/tooltip";
 import axiosInstance from "../../../../../utils/api";
 import { toaster } from "../../../../../components/ui/toaster";
 
+const formatFollowerCount = (count) => {
+    if (!count) return '';
+    const num = Number(count);
+    if (isNaN(num)) return count;
+
+    if (num >= 100000000) {
+        return parseFloat((num / 100000000).toFixed(1)) + '억';
+    } else if (num >= 10000) {
+        return parseFloat((num / 10000).toFixed(1)) + '만';
+    } else {
+        return num.toString();
+    }
+};
+
 function AppliedList({ appliedList, reviewCampaignChannelView, campaign, fetchReviewCampaignApplicationList }) {
 
     const selectReviewer = async (campaign_application_code) => {
@@ -27,13 +41,17 @@ function AppliedList({ appliedList, reviewCampaignChannelView, campaign, fetchRe
                             return (
                                 <Stack key={channelView.id} direction="row" alignItems="center" gap="6">
                                     <Image src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />
-                                    <Image src={channel.meta_image} rounded="full" w="16" />
+                                    {channel.meta_image && (
+                                        <Image src={channel.meta_image} rounded="full" w="16" />
+                                    )}
                                     <Stack gap="0">
                                         <Link href={channel.channel_url} target="_blank">
                                             <Heading size="md">{channel.meta_title}</Heading>
                                         </Link>
                                         <Text fontSize="sm" color="fg.muted">{channel.channel_url}</Text>
-                                        <Text fontSize="sm" color="fg.muted">최근 일방문자 : 300</Text>
+                                        <Text fontSize="sm" color="fg.muted">
+                                            {channel.follower_count ? `팔로워 : ${formatFollowerCount(channel.follower_count)}` : '최근 일방문자 : 300'}
+                                        </Text>
                                     </Stack>
                                     <Stack>
                                         <HStack>

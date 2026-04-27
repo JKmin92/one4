@@ -29,7 +29,6 @@ function List() {
     }, []);
 
     const getStatus = (status) => {
-        console.log(status);
         switch (status) {
             case 'APPLIED':
                 return { color: 'green', text: '신청 완료' };
@@ -67,21 +66,33 @@ function List() {
                                 <Status.Indicator />
                                 <Text>{getStatus(reviewApplication.status).text}</Text>
                             </Status.Root>
-                            <HStack>
+                            {(reviewApplication.status === 'APPLIED' || reviewApplication.status === 'SELECTED' || reviewApplication.status === 'RETURNED') && (
                                 <HStack>
-                                    {reviewApplication.channels.map((channel, index) => {
-                                        const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
-                                        return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
-                                    })}
+                                    <HStack>
+                                        {reviewApplication.channels.map((channel, index) => {
+                                            const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
+                                            return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
+                                        })}
+                                    </HStack>
+                                    {reviewApplication.status === 'APPLIED' && (
+                                        <Text>{formatDateToMonthDay(reviewApplication.reviewer_selection_date).replace('.', '-')} 선정 예정</Text>
+                                    )}
+                                    {(reviewApplication.status === 'SELECTED' || reviewApplication.status === 'RETURNED') && (
+                                        <Text>{formatDateToMonthDay(reviewApplication.end_write_date).replace('.', '-')} 까지 작성</Text>
+                                    )}
                                 </HStack>
-                                {reviewApplication.status === 'APPLIED' && (
-                                    <Text>{formatDateToMonthDay(reviewApplication.reviewer_selection_date).replace('.', '-')} 선정 예정</Text>
+                            )}
+                            <HStack>
+                                {(reviewApplication.status === 'SUBMITTED' || reviewApplication.status === 'COMPLETED') && (
+                                    <HStack>
+                                        {reviewApplication.channels.map((channel, index) => {
+                                            const channelView = reviewCampaignChannelView.find((channelView) => channelView.channel_code === channel.channel_code);
+                                            return channelView ? (<Image key={channelView.id} src={`/public/resources/img/logo/${channelView.icon}`} w="5" rounded="md" />) : '';
+                                        })}
+                                    </HStack>
                                 )}
-                                {reviewApplication.status === 'SELECTED' && (
-                                    <Text>{formatDateToMonthDay(reviewApplication.end_write_date).replace('.', '-')} 까지 작성</Text>
-                                )}
+                                <Heading fontSize="sm">{reviewApplication.title}</Heading>
                             </HStack>
-                            <Heading fontSize="sm">{reviewApplication.title}</Heading>
                         </Stack>
                     </Stack>
                 ))}

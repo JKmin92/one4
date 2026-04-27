@@ -71,7 +71,8 @@ export const insertUserReviewChannel = async (user_review_channel) => {
     const meta_description = user_review_channel.metaData.description;
     const meta_image = user_review_channel.metaData.image;
     const channel_url = user_review_channel.metaData.url || user_review_channel.channel_url;
-    return await model.insertUserReviewChannel({ ...user_review_channel, review_channel_code: review_channel_code, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url });
+    const follower_count = user_review_channel.metaData.followerCount || null;
+    return await model.insertUserReviewChannel({ ...user_review_channel, review_channel_code: review_channel_code, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url, follower_count: follower_count });
 }
 
 export const deleteUserReviewChannel = async (review_channel_code, user_code) => {
@@ -86,6 +87,7 @@ export const updateUserReviewChannel = async (user_review_channel) => {
     const meta_description = user_review_channel.metaData.description;
     const meta_image = user_review_channel.metaData.image;
     const channel_url = user_review_channel.metaData.url || user_review_channel.channel_url;
+    const follower_count = user_review_channel.metaData.followerCount || null;
 
-    return await model.updateUserReviewChannel({ ...user_review_channel, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url });
+    return await model.updateUserReviewChannel({ ...user_review_channel, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url, follower_count: follower_count });
 }

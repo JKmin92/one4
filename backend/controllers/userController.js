@@ -69,7 +69,7 @@ export const refreshToken = async (req, res) => {
 
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         const userPayload = decode.user || decode;
-        
+
         const data = {
             user_code: userPayload.user_code,
             role: userPayload.role,
@@ -184,7 +184,6 @@ export const insertUserReviewChannel = async (req, res, next) => {
     try {
         const user = req.user;
         if (!user) return res.status(201).send({ message: 'no user' });
-        console.log(req.body);
         res.status(200).json(await userService.insertUserReviewChannel({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);

@@ -201,3 +201,17 @@ export const getReviewCampaignFeedbackList = async (req, res, next) => {
         next(error);
     }
 }
+
+export const getReviewCampaignApplicationChannel = async (req, res, next) => {
+    try {
+        const { campaign_application_code } = req.params;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+
+        const campaign_application_channel = await reviewCampaignService.getReviewCampaignApplicationChannel(campaign_application_code, user.user_code);
+        res.status(200).json(campaign_application_channel);
+    } catch (error) {
+        next(error);
+    }
+}

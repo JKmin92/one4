@@ -54,7 +54,7 @@ export const getReviewCampaignList = async (category_id) => {
 
     // 2. is_display = 1 이며 state = 'RECRUITING' 인 캠페인만 조회 (category_id 묶음 기준)
     const sql = `SELECT rc.*,
-            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code) AS application_count
+            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code AND rca.status = 'APPLIED') AS application_count
             FROM review_campaign rc 
             WHERE (rc.campaign_category_id = ? 
                OR rc.campaign_category_id IN (SELECT id FROM review_campaign_category WHERE parent_id = ?))
@@ -127,10 +127,12 @@ export const getUserReviewCampaignApplicationList = async (user_code) => {
 
     const campaignCodes = [...new Set(rows.map(r => r.campaign_code))];
     const [channelRows] = await db.query(`SELECT * FROM review_campaign_channel WHERE campaign_code IN (?)`, [campaignCodes]);
+    const [rewardRows] = await db.query(`SELECT * FROM review_campaign_reward WHERE campaign_code IN (?)`, [campaignCodes]);
 
     return rows.map(row => ({
         ...row,
-        channels: channelRows.filter(channel => channel.campaign_code === row.campaign_code)
+        channels: channelRows.filter(channel => channel.campaign_code === row.campaign_code),
+        rewards: rewardRows.filter(reward => reward.campaign_code === row.campaign_code)
     }));
 }
 
@@ -235,7 +237,7 @@ export const insertReviewCampaignPost = async (data) => {
 export const updateReviewCampaignPost = async (data) => {
     const sql = `UPDATE review_campaign_post SET post_url = ? , status = 'RESUBMITTED' WHERE campaign_post_code = ? AND user_code = ?`;
     const [rows] = await db.query(sql, [data.post_url, data.campaign_post_code, data.user_code]);
-    
+
     if (rows.affectedRows > 0) {
         const updateSql = `
             UPDATE review_campaign_application 
@@ -245,7 +247,7 @@ export const updateReviewCampaignPost = async (data) => {
         `;
         await db.query(updateSql, [data.campaign_post_code, data.user_code]);
     }
-    
+
     return data.campaign_post_code;
 }
 
@@ -273,6 +275,17 @@ export const getReviewCampaignFeedbackList = async (campaign_application_code, u
         FROM review_campaign_feedback f
         JOIN review_campaign_application a ON f.campaign_application_code = a.campaign_application_code
         WHERE f.campaign_application_code = ? AND a.user_code = ?
+    `;
+    const [rows] = await db.query(sql, [campaign_application_code, user_code]);
+    return rows;
+}
+
+export const getReviewCampaignApplicationChannel = async (campaign_application_code, user_code) => {
+    const sql = `
+        SELECT rcac.*, urc.*
+        FROM review_campaign_application_channel rcac
+        JOIN user_review_channel urc ON rcac.review_channel_code = urc.review_channel_code
+        WHERE rcac.campaign_application_code = ? AND urc.user_code = ?
     `;
     const [rows] = await db.query(sql, [campaign_application_code, user_code]);
     return rows;
