@@ -64,19 +64,19 @@ function List() {
                             const is_display = product.is_display === 1 ? '진열중' : '진열중지';
 
                             return (
-                                <Table.Row key={product.id} data-selected={selection.includes(product.id) ? '' : undefined}>
+                                <Table.Row key={product.product_code} data-selected={selection.includes(product.product_code) ? '' : undefined}>
                                     <Table.Cell>
                                         <Checkbox.Root
-                                            checked={selection.includes(product.id)}
+                                            checked={selection.includes(product.product_code)}
                                             onCheckedChange={(e) => {
-                                                setSelection((prev) => e.checked ? [...prev, product.id] : selection.filter((code) => code !== product.id))
+                                                setSelection((prev) => e.checked ? [...prev, product.product_code] : selection.filter((code) => code !== product.product_code))
                                             }}
                                         >
                                             <Checkbox.HiddenInput />
                                             <Checkbox.Control />
                                         </Checkbox.Root>
                                     </Table.Cell>
-                                    <Table.Cell>{product.id}</Table.Cell>
+                                    <Table.Cell>{product.product_code}</Table.Cell>
                                     <Table.Cell>{is_sale}</Table.Cell>
                                     <Table.Cell>{is_display}</Table.Cell>
                                     <Table.Cell>
@@ -84,13 +84,13 @@ function List() {
                                             <Box width="14" aspectRatio="1" bg="bg.muted" rounded="md" overflow="hidden">
                                                 {imageUrl && <Image src={imageUrl} w="full" h="full" objectFit="cover" />}
                                             </Box>
-                                            <Link href={`/admin/shop/product/update/${product.id}`}>{product.name}</Link>
+                                            <Link href={`/admin/shop/product/update/${product.product_code}`}>{product.name}</Link>
                                         </HStack>
 
                                     </Table.Cell>
                                     <Table.Cell>{formatNumber(product.price || 0)}</Table.Cell>
                                     <Table.Cell>{formatNumber(product.price || 0)}</Table.Cell>
-                                    <Table.Cell><Button asChild><Link href="#">바로가기</Link></Button></Table.Cell>
+                                    <Table.Cell><Button asChild><Link href={`/products/${product.product_code}`} target="_blank">바로가기</Link></Button></Table.Cell>
                                 </Table.Row>
                             )
                         })}

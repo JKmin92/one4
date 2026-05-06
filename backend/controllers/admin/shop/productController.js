@@ -31,8 +31,8 @@ export const updateCategory = async (req, res, next) => {
 
 export const deleteCategory = async (req, res, next) => {
     try {
-        const id = req.params.id;
-        const result = await productService.deleteProductCategory(id);
+        const category_code = req.params.category_code;
+        const result = await productService.deleteProductCategory(category_code);
         res.status(200).json(result);
     } catch (e) {
         next(e);

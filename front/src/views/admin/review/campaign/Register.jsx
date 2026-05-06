@@ -1,6 +1,6 @@
-import { Box, Button, Checkbox, CloseButton, Field, Heading, HStack, Image, Input, RadioGroup, Stack, TagsInput, Text, Textarea } from "@chakra-ui/react";
+import { Box, Button, Checkbox, CloseButton, DatePicker, Field, Heading, HStack, Image, Input, LocaleProvider, RadioGroup, Stack, TagsInput, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { LuImage, LuInfo, LuPlus, LuTrash } from "react-icons/lu";
+import { LuCalendar, LuImage, LuInfo, LuPlus, LuTrash } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
@@ -47,6 +47,7 @@ function Register() {
 
     const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
     const [drafts, setDrafts] = useState([]);
+    const [campaignState, setCampaignState] = useState("DRAFT");
 
     // Basic Info
     const [title, setTitle] = useState("");
@@ -143,6 +144,7 @@ function Register() {
 
                     setTitle(data.title || "");
                     setProductName(data.product_name || "");
+                    setCampaignState(data.state);
                     if (data.short_description) setShortDescription(data.short_description);
                     if (data.detail_images) {
                         try {
@@ -431,10 +433,12 @@ function Register() {
         <Stack p="30px" px="layoutX" gap="10" pb="20">
             <HStack justifyContent="space-between" position="sticky" top="0" bg="white" zIndex="10" py="4" mt="-4">
                 <Heading>캠페인 {id ? '수정' : '등록'}</Heading>
-                <HStack>
-                    <Button bg="bg" variant="surface" onClick={fetchDrafts}>임시저장 목록</Button>
-                    <Button bg="bg.info" variant="surface" onClick={() => handleSubmit('DRAFT')}>임시저장</Button>
-                </HStack>
+                {campaignState === 'DRAFT' && (
+                    <HStack>
+                        <Button bg="bg" variant="surface" onClick={fetchDrafts}>임시저장 목록</Button>
+                        <Button bg="bg.info" variant="surface" onClick={() => handleSubmit('DRAFT')}>임시저장</Button>
+                    </HStack>
+                )}
             </HStack>
 
             {/* 1. 기본 정보 */}
@@ -483,7 +487,7 @@ function Register() {
                             >
                                 <option value="">카테고리를 선택해주세요</option>
                                 {categories.filter(c => c.type === campaignType).map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                    <option key={c.category_code} value={c.category_code}>{c.name}</option>
                                 ))}
                             </Box>
                         </Field.Root>
@@ -742,10 +746,10 @@ function Register() {
 
             {/* 5. 리워드 설정 */}
             <Stack gap="6" borderWidth="1px" p="6" borderRadius="md"
-                   opacity={hasApplications ? 0.6 : 1}
-                   pointerEvents={hasApplications ? "none" : "auto"}
+                opacity={hasApplications ? 0.6 : 1}
+                pointerEvents={hasApplications ? "none" : "auto"}
             >
-                <HStack justifyContent="space-between" flexWrap={{base: "wrap", md: "nowrap"}}>
+                <HStack justifyContent="space-between" flexWrap={{ base: "wrap", md: "nowrap" }}>
                     <Heading size="md">리워드 설정</Heading>
                     <HStack>
                         {hasApplications && <Text fontSize="sm" color="red.500" fontWeight="bold">신청자가 있는 캠페인은 리워드를 수정할 수 없습니다.</Text>}

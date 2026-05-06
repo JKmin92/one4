@@ -1,5 +1,5 @@
 import { Box, Button, HStack, IconButton, Popover, Stack, Text, Checkbox, Span } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo } from "react";
 import { LuChevronDown, LuChevronRight, LuFile, LuFolder, LuSearch } from "react-icons/lu";
 
 function CategoryView({ categories = [], setSelectedCategory }) {
@@ -9,13 +9,14 @@ function CategoryView({ categories = [], setSelectedCategory }) {
     const tree = useMemo(() => {
         const map = {};
         const roots = [];
-        // Deep copy to avoid mutating props
+
         categories.forEach(cat => {
-            map[cat.id] = { ...cat, children: [] };
+            map[cat.category_code] = { ...cat, children: [] };
         });
+
         categories.forEach(cat => {
-            const node = map[cat.id];
-            const pid = cat.parent_id !== undefined ? cat.parent_id : cat.parentId;
+            const node = map[cat.category_code];
+            const pid = cat.parent_code !== undefined ? cat.parent_code : null;
 
             if (pid === null || pid === undefined) {
                 roots.push(node);
@@ -26,20 +27,19 @@ function CategoryView({ categories = [], setSelectedCategory }) {
         return roots;
     }, [categories]);
 
-    const toggleOpen = (id) => {
+    const toggleOpen = (category_code) => {
         setOpenIds(prev =>
-            prev.includes(id)
-                ? prev.filter(oid => oid !== id)
-                : [...prev, id]
+            prev.includes(category_code)
+                ? prev.filter(oid => oid !== category_code)
+                : [...prev, category_code]
         );
     };
 
-    const handleCheck = (e, category) => {
-        e.stopPropagation(); // Stop event bubbling
-        const isChecked = e.target.checked;
+    const toggleCheck = (category) => {
+        const isChecked = !checkedIds.includes(category.category_code);
         const newCheckedIds = isChecked
-            ? [...checkedIds, category.id]
-            : checkedIds.filter(id => id !== category.id);
+            ? [...checkedIds, category.category_code]
+            : checkedIds.filter(category_code => category_code !== category.category_code);
 
         setCheckedIds(newCheckedIds);
 
@@ -47,18 +47,18 @@ function CategoryView({ categories = [], setSelectedCategory }) {
         setSelectedCategory(prev => {
             if (isChecked) {
                 // Prevent duplicates
-                if (prev.some(p => p.id === category.id)) return prev;
+                if (prev.some(p => p.category_code === category.category_code)) return prev;
                 return [...prev, category];
             } else {
-                return prev.filter(p => p.id !== category.id);
+                return prev.filter(p => p.category_code !== category.category_code);
             }
         });
     };
 
     const CategoryTreeItem = ({ item, depth = 0 }) => {
         const hasChildren = item.children && item.children.length > 0;
-        const isChecked = checkedIds.includes(item.id);
-        const isOpen = openIds.includes(item.id);
+        const isChecked = checkedIds.includes(item.category_code);
+        const isOpen = openIds.includes(item.category_code);
 
         return (
             <Stack gap={0}>
@@ -67,22 +67,19 @@ function CategoryView({ categories = [], setSelectedCategory }) {
                         size="xs"
                         variant="ghost"
                         visibility={hasChildren ? "visible" : "hidden"}
-                        onClick={(e) => toggleOpen(item.id)}
+                        onClick={(e) => toggleOpen(item.category_code)}
                         minW="4" h="4"
                     >
                         {isOpen ? <LuChevronDown /> : <LuChevronRight />}
                     </IconButton>
 
-                    <Box color="gray.500">{hasChildren ? <LuFolder /> : <LuFile />}</Box>
-
-                    <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => handleCheck(e, item)}
-                        style={{ cursor: 'pointer' }}
-                    />
-
-                    <Text fontSize="sm" cursor="default" onClick={() => toggleOpen(item.id)}>
+                    <Text 
+                        fontSize="sm" 
+                        cursor="pointer" 
+                        color={isChecked ? "blue.600" : "inherit"}
+                        fontWeight={isChecked ? "bold" : "normal"}
+                        onClick={() => toggleCheck(item)}
+                    >
                         {item.name}<Span color="red.500" fontSize='xs'>{!item.is_visible && `(미노출)`}</Span>
                     </Text>
                 </HStack>
@@ -90,7 +87,7 @@ function CategoryView({ categories = [], setSelectedCategory }) {
                 {isOpen && hasChildren && (
                     <Stack gap={0} borderLeftWidth="1px" borderLeftColor="gray.100" ml={4}>
                         {item.children.map(child => (
-                            <CategoryTreeItem key={child.id} item={child} depth={depth + 1} />
+                            <CategoryTreeItem key={child.category_code} item={child} depth={depth + 1} />
                         ))}
                     </Stack>
                 )}
@@ -105,23 +102,26 @@ function CategoryView({ categories = [], setSelectedCategory }) {
                     <LuSearch /> 카테고리 찾기
                 </Button>
             </Popover.Trigger>
-            <Popover.Content width="300px">
-                <Popover.Arrow />
-                <Popover.Body p={0}>
-                    <Box p={3} borderBottomWidth="1px" bg="gray.50">
-                        <Text fontWeight="bold" fontSize="sm">카테고리 선택</Text>
-                    </Box>
-                    <Box maxH="300px" overflowY="auto" p={2}>
-                        <Stack gap={1}>
-                            {tree.map(category => (
-                                <CategoryTreeItem key={category.id} item={category} />
-                            ))}
-                        </Stack>
-                    </Box>
-                </Popover.Body>
-            </Popover.Content>
+            <Popover.Positioner>
+                <Popover.Content width="300px">
+                    <Popover.Arrow />
+                    <Popover.Body p={0}>
+                        <Box p={3} borderBottomWidth="1px" bg="gray.50">
+                            <Text fontWeight="bold" fontSize="sm">카테고리 선택</Text>
+                        </Box>
+                        <Box maxH="300px" overflowY="auto" p={2}>
+                            <Stack gap={1}>
+                                {tree.map(category => (
+                                    <CategoryTreeItem key={category.category_code} item={category} />
+                                ))}
+                            </Stack>
+                        </Box>
+                    </Popover.Body>
+                </Popover.Content>
+            </Popover.Positioner>
+
         </Popover.Root>
     )
 }
 
-export default CategoryView;
+export default memo(CategoryView);

@@ -91,3 +91,11 @@ export const updateUserReviewChannel = async (user_review_channel) => {
 
     return await model.updateUserReviewChannel({ ...user_review_channel, channel_code: channel_code, meta_title: meta_title, meta_description: meta_description, meta_image: meta_image, channel_url: channel_url, follower_count: follower_count });
 }
+
+export const updatePassword = async (user_code, currentPassword, newPassword) => {
+    const userPassword = await model.getUserPassword(user_code);
+    const isMatch = await bcrypt.compare(currentPassword, userPassword);
+    if (!isMatch) return { result: false, code: '001' };
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return await model.updateUserPassword(user_code, hashedPassword);
+}

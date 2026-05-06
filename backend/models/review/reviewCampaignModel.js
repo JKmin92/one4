@@ -37,7 +37,7 @@ export const getReviewCategory = async () => {
     return rows;
 }
 
-export const getReviewCampaignList = async (category_id) => {
+export const getReviewCampaignList = async (category_code) => {
     // 1. 데이터를 가져오기 전 현재 시간에 맞춰 상태(state) 최신화 업데이트
     const updateSql = `
         UPDATE review_campaign
@@ -52,15 +52,15 @@ export const getReviewCampaignList = async (category_id) => {
     `;
     await db.query(updateSql);
 
-    // 2. is_display = 1 이며 state = 'RECRUITING' 인 캠페인만 조회 (category_id 묶음 기준)
+    // 2. is_display = 1 이며 state = 'RECRUITING' 인 캠페인만 조회 (category_code 묶음 기준)
     const sql = `SELECT rc.*,
             (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code AND rca.status = 'APPLIED') AS application_count
             FROM review_campaign rc 
-            WHERE (rc.campaign_category_id = ? 
-               OR rc.campaign_category_id IN (SELECT id FROM review_campaign_category WHERE parent_id = ?))
+            WHERE (rc.campaign_category_code = ? 
+               OR rc.campaign_category_code IN (SELECT category_code FROM review_campaign_category WHERE parent_code = ?))
               AND rc.is_display = 1 
               AND rc.state = 'RECRUITING'`;
-    const [rows] = await db.query(sql, [category_id, category_id]);
+    const [rows] = await db.query(sql, [category_code, category_code]);
 
     if (rows.length === 0) return rows;
 

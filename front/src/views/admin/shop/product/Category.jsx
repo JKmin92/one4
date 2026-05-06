@@ -7,7 +7,7 @@ import { toaster } from '../../../../components/ui/toaster';
 
 function Category() {
     const [categories, setCategories] = useState([]);
-    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [selectedCategoryCode, setSelectedCategoryCode] = useState(null);
     const [editingCategory, setEditingCategory] = useState(null); // Local state for editing
 
     // Helper: Build Tree from Flat List
@@ -58,11 +58,11 @@ function Category() {
         fetchCategories();
     }, []);
 
-    const findCategory = (items, id) => {
+    const findCategory = (items, category_code) => {
         for (const item of items) {
-            if (item.id === id) return item;
+            if (item.category_code === category_code) return item;
             if (item.children) {
-                const found = findCategory(item.children, id);
+                const found = findCategory(item.children, category_code);
                 if (found) return found;
             }
         }
@@ -71,13 +71,13 @@ function Category() {
 
     // When selection changes, update editingCategory
     useEffect(() => {
-        if (selectedCategoryId) {
-            const category = findCategory(categories, selectedCategoryId);
+        if (selectedCategoryCode) {
+            const category = findCategory(categories, selectedCategoryCode);
             setEditingCategory(category ? { ...category } : null);
         } else {
             setEditingCategory(null);
         }
-    }, [selectedCategoryId, categories]);
+    }, [selectedCategoryCode, categories]);
 
     const toggleOpen = (id) => {
         const toggleRecursive = (items) => {
@@ -106,7 +106,7 @@ function Category() {
 
         const newCategoryDef = {
             name: '새 카테고리',
-            is_visible: true,
+            is_visible: false,
             isOpen: true,
             sort_order: nextOrder,
             children: [],
@@ -138,19 +138,19 @@ function Category() {
                 setCategories(prev => addRecursive(prev));
             }
             // Auto-select the new category
-            setSelectedCategoryId(createdCategory.id);
+            setSelectedCategoryCode(createdCategory.category_code);
         } catch (error) {
             console.error("Failed to add category:", error);
             toaster.create({ title: "카테고리 추가에 실패했습니다.", type: "error" });
         }
     };
 
-    const deleteCategory = async (id) => {
+    const deleteCategory = async (category_code) => {
         try {
-            await axiosInstance.delete(`/admin/product/category/${id}`);
+            await axiosInstance.delete(`/admin/shop/product/category/${category_code}`);
 
             const deleteRecursive = (items) => {
-                return items.filter(item => item.id !== id).map(item => {
+                return items.filter(item => item.category_code !== category_code).map(item => {
                     if (item.children) {
                         return { ...item, children: deleteRecursive(item.children) };
                     }
@@ -158,21 +158,20 @@ function Category() {
                 });
             };
             setCategories(prev => deleteRecursive(prev));
-            if (selectedCategoryId === id) setSelectedCategoryId(null);
+            if (selectedCategoryCode === category_code) setSelectedCategoryCode(null);
         } catch (error) {
             console.error("Failed to delete category:", error);
             toaster.create({ title: "카테고리 삭제에 실패했습니다.", type: "error" });
         }
     };
 
-    const moveCategory = (id, direction) => {
+    const moveCategory = (category_code, direction) => {
         const moveRecursive = (items) => {
-            const index = items.findIndex(item => item.id === id);
+            const index = items.findIndex(item => item.category_code === category_code);
             if (index > -1) {
                 if (direction === 'up' && index > 0) {
                     const newItems = [...items];
                     [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
-                    // Update sort_order locally for immediate feedback
                     const tempOrder = newItems[index].sort_order;
                     newItems[index].sort_order = newItems[index - 1].sort_order;
                     newItems[index - 1].sort_order = tempOrder;
@@ -181,7 +180,6 @@ function Category() {
                 if (direction === 'down' && index < items.length - 1) {
                     const newItems = [...items];
                     [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
-                    // Update sort_order locally
                     const tempOrder = newItems[index].sort_order;
                     newItems[index].sort_order = newItems[index + 1].sort_order;
                     newItems[index + 1].sort_order = tempOrder;
@@ -209,18 +207,14 @@ function Category() {
         }
     };
 
-    // Save Logic
     const handleSave = async () => {
         if (!editingCategory) return;
-        console.log(editingCategory);
         try {
-            await axiosInstance.put('/admin/product/category', editingCategory);
+            await axiosInstance.put('/admin/shop/product/category', editingCategory);
 
-            // Update the main categories state to reflect changes
             const updateRecursive = (items) => {
                 return items.map(item => {
-                    if (item.id === editingCategory.id) {
-                        // Merge edits, preserve children
+                    if (item.category_code === editingCategory.category_code) {
                         return { ...item, ...editingCategory, children: item.children };
                     }
                     if (item.children) {
@@ -240,7 +234,7 @@ function Category() {
 
     // Tree Item Component
     const CategoryItem = ({ item, depth = 0 }) => {
-        const isSelected = selectedCategoryId === item.id;
+        const isSelected = selectedCategoryCode === item.category_code;
         const hasChildren = item.children && item.children.length > 0;
 
         return (
@@ -251,7 +245,7 @@ function Category() {
                     bg={isSelected ? "blue.50" : "transparent"}
                     _hover={{ bg: isSelected ? "blue.50" : "gray.50" }}
                     cursor="pointer"
-                    onClick={() => setSelectedCategoryId(item.id)}
+                    onClick={() => setSelectedCategoryCode(item.category_code)}
                     borderRadius="md"
                     justifyContent="space-between"
                     borderWidth="1px"
@@ -260,7 +254,7 @@ function Category() {
                 >
                     <HStack gap={2} flex={1}>
                         <IconButton size="xs" variant="ghost" visibility={hasChildren ? "visible" : "hidden"}
-                            onClick={(e) => { e.stopPropagation(); toggleOpen(item.id); }}>
+                            onClick={(e) => { e.stopPropagation(); toggleOpen(item.category_code); }}>
                             {item.isOpen ? <LuChevronDown /> : <LuChevronRight />}
                         </IconButton>
                         <Box color={isSelected ? "blue.500" : "gray.500"}>
@@ -271,17 +265,17 @@ function Category() {
                     </HStack>
 
                     <HStack display={isSelected ? 'flex' : 'none'}>
-                        <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); addCategory(item.id); }}><LuPlus /></IconButton>
-                        <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); moveCategory(item.id, 'up'); }}><LuArrowUp /></IconButton>
-                        <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); moveCategory(item.id, 'down'); }}><LuArrowDown /></IconButton>
-                        <IconButton size="xs" colorScheme="red" variant="ghost" onClick={(e) => { e.stopPropagation(); if (confirm('정말 삭제하시겠습니까?')) deleteCategory(item.id); }}><LuTrash /></IconButton>
+                        <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); addCategory(item.category_code); }}><LuPlus /></IconButton>
+                        <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); moveCategory(item.category_code, 'up'); }}><LuArrowUp /></IconButton>
+                        <IconButton size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); moveCategory(item.category_code, 'down'); }}><LuArrowDown /></IconButton>
+                        <IconButton size="xs" colorScheme="red" variant="ghost" onClick={(e) => { e.stopPropagation(); if (confirm('정말 삭제하시겠습니까?')) deleteCategory(item.category_code); }}><LuTrash /></IconButton>
                     </HStack>
                 </HStack>
 
                 {item.isOpen && hasChildren && (
                     <Stack gap={0} borderLeftWidth="1px" borderLeftColor="gray.100" ml={4}>
                         {item.children.map(child => (
-                            <CategoryItem key={child.id} item={child} depth={depth + 1} />
+                            <CategoryItem key={child.category_code} item={child} depth={depth + 1} />
                         ))}
                     </Stack>
                 )}
@@ -324,7 +318,7 @@ function Category() {
                     <Box overflowY="auto" p={2}>
                         <Stack gap={1}>
                             {categories.map(category => (
-                                <CategoryItem key={category.id} item={category} />
+                                <CategoryItem key={category.category_code} item={category} />
                             ))}
                             {categories.length === 0 && (
                                 <Text color="gray.400" textAlign="center" py={10}>

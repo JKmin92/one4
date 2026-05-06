@@ -6,7 +6,7 @@ import Superscript from "@tiptap/extension-superscript";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Box, Button, Dialog, FileUpload, Icon, Input, Tabs } from "@chakra-ui/react";
 import { LuGripVertical, LuImage, LuLink, LuUpload } from "react-icons/lu";
 import DragHandle from "@tiptap/extension-drag-handle-react";
@@ -96,6 +96,8 @@ function InsertImageControl() {
 }
 
 function ProductEditor({ content, setContent }) {
+    const timeoutRef = useRef(null);
+
     const editor = useEditor({
         extensions: [
             StarterKit.configure({
@@ -115,10 +117,13 @@ function ProductEditor({ content, setContent }) {
             }),
         ],
         content: content,
-        shouldRerenderOnTransaction: true,
+        shouldRerenderOnTransaction: false,
         immediatelyRender: false,
         onUpdate({ editor }) {
-            setContent(editor.getHTML());
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => {
+                setContent(editor.getHTML());
+            }, 300);
         }
     })
 
@@ -180,4 +185,4 @@ function ProductEditor({ content, setContent }) {
     )
 }
 
-export default ProductEditor;
+export default memo(ProductEditor);

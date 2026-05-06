@@ -11,7 +11,7 @@ export const getCategories = async (req, res, next) => {
 
 export const getCategoryById = async (req, res, next) => {
     try {
-        const category = await ProductService.getCategoryById(req.params.id);
+        const category = await ProductService.getCategoryByCode(req.params.id);
         res.status(200).json(category);
     } catch (error) {
         next(error);
@@ -20,16 +20,16 @@ export const getCategoryById = async (req, res, next) => {
 
 export const getSubCategoryById = async (req, res, next) => {
     try {
-        const subCategory = await ProductService.getSubCategoryById(req.params.id);
+        const subCategory = await ProductService.getSubCategoriesByCode(req.params.id);
         res.status(200).json(subCategory);
     } catch (error) {
         next(error);
     }
 };
 
-export const getProductsByCategoryId = async (req, res, next) => {
+export const getProductsByCategoryCode = async (req, res, next) => {
     try {
-        const products = await ProductService.getProductsByCategoryId(req.params.id);
+        const products = await ProductService.getProductsByCategoryCode(req.params.id);
         res.status(200).json(products);
     } catch (error) {
         next(error);

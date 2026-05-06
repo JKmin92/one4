@@ -9,15 +9,15 @@ export const insertProductReview = async ({ review_code, product_id, user_code, 
     return rows;
 }
 
-export const getReviewsByProductId = async (product_id) => {
+export const getReviewsByProductCode = async (product_code) => {
     const sql = `
         SELECT r.*, u.name as user_name
         FROM product_review r
         LEFT JOIN user u ON r.user_code = u.user_code
-        WHERE r.product_id = ?
+        WHERE r.product_code = ?
         ORDER BY r.created_at DESC
     `;
-    const [rows] = await db.query(sql, [product_id]);
+    const [rows] = await db.query(sql, [product_code]);
     return rows;
 }
 
@@ -45,15 +45,15 @@ export const createProductInquiry = async ({ inquiry_code, product_id, user_code
     return rows;
 }
 
-export const getProductInquiriesByProductId = async (product_id) => {
+export const getProductInquiriesByProductCode = async (product_code) => {
     const sql = `
         SELECT i.*, u.name as user_name
         FROM product_inquiry i
         LEFT JOIN user u ON i.user_code = u.user_code
-        WHERE i.product_id = ?
+        WHERE i.product_code = ?
         ORDER BY i.created_at DESC
     `;
-    const [rows] = await db.query(sql, [product_id]);
+    const [rows] = await db.query(sql, [product_code]);
     return rows;
 }
 

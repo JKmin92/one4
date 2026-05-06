@@ -5,17 +5,17 @@ export const getCategories = async () => {
     return rows;
 };
 
-export const getCategoryById = async (id) => {
-    const [rows] = await db.query('SELECT * FROM product_category WHERE id = ?', [id]);
+export const getCategoryByCode = async (category_code) => {
+    const [rows] = await db.query('SELECT * FROM product_category WHERE category_code = ?', [category_code]);
     return rows[0];
 };
 
-export const getSubCategoryById = async (id) => {
-    const [rows] = await db.query('SELECT * FROM product_category WHERE parent_id = ?', [id]);
+export const getSubCategoriesByCode = async (parent_code) => {
+    const [rows] = await db.query('SELECT * FROM product_category WHERE parent_code = ?', [parent_code]);
     return rows;
 };
 
-export const getProductsByCategoryId = async (categoryId) => {
+export const getProductsByCategoryCode = async (category_code) => {
     const sql = `
         SELECT p.*, 
                (
@@ -28,44 +28,44 @@ export const getProductsByCategoryId = async (categoryId) => {
                               )
                           )
                    FROM product_image pi
-                   WHERE pi.product_id = p.id
+                   WHERE pi.product_code = p.product_code
                ) as images
         FROM product p
-        JOIN product_category_connect pcc ON p.id = pcc.product_id
-        WHERE pcc.category_id = ? AND p.is_display = 1
+        JOIN product_category_connect pcc ON p.product_code = pcc.product_code
+        WHERE pcc.category_code = ? AND p.is_display = 1
         ORDER BY p.created_at DESC
     `;
-    const [rows] = await db.query(sql, [categoryId]);
+    const [rows] = await db.query(sql, [category_code]);
     return rows;
 };
 
-export const getActivePromotions = async (productIds) => {
-    if (productIds.length === 0) return [];
+export const getActivePromotions = async (product_codes) => {
+    if (product_codes.length === 0) return [];
 
     const sql = `
-        SELECT pp.*, ppt.target_type, ppt.target_id,
+        SELECT pp.*, ppt.target_type, ppt.target_code,
                CASE 
-                   WHEN ppt.target_type = 'product' THEN ppt.target_id
-                   WHEN ppt.target_type = 'category' THEN pcc.product_id
-               END as related_product_id
+                   WHEN ppt.target_type = 'product' THEN ppt.target_code
+                   WHEN ppt.target_type = 'category' THEN pcc.product_code
+               END as related_product_code
         FROM product_promotion pp
-        JOIN product_promotion_target ppt ON pp.id = ppt.promotion_id
-        LEFT JOIN product_category_connect pcc ON ppt.target_type = 'category' AND ppt.target_id = pcc.category_id
+        JOIN product_promotion_target ppt ON pp.product_promotion_code = ppt.product_promotion_code
+        LEFT JOIN product_category_connect pcc ON ppt.target_type = 'category' AND ppt.target_code = pcc.category_code
         WHERE pp.is_active = 1 
           AND NOW() BETWEEN pp.start_date AND pp.end_date
           AND (
-              (ppt.target_type = 'product' AND ppt.target_id IN (?))
+              (ppt.target_type = 'product' AND ppt.target_code IN (?))
               OR 
-              (ppt.target_type = 'category' AND pcc.product_id IN (?))
+              (ppt.target_type = 'category' AND pcc.product_code IN (?))
           )
         ORDER BY pp.created_at DESC
     `;
 
-    const [rows] = await db.query(sql, [productIds, productIds]);
+    const [rows] = await db.query(sql, [product_codes, product_codes]);
     return rows;
 };
 
-export const getProductById = async (id) => {
+export const getProductById = async (product_code) => {
     const sql = `
         SELECT p.*, 
                (
@@ -78,32 +78,33 @@ export const getProductById = async (id) => {
                               )
                           )
                    FROM product_image pi
-                   WHERE pi.product_id = p.id
+                   WHERE pi.product_code = p.product_code
                ) as images,
                (
                    SELECT JSON_ARRAYAGG(
                               JSON_OBJECT(
                                   'option_num', po.option_num,
+                                  'product_option_code', po.product_option_code,
                                   'name', po.name,
                                   'value', po.value,
                                   'stock', po.stock
                               )
                           )
                    FROM product_option po
-                   WHERE po.product_id = p.id
+                   WHERE po.product_code = p.product_code
                ) as options,
                (
                     SELECT JSON_ARRAYAGG(
                         JSON_OBJECT(
-                            'category_id', pcc.category_id
+                            'category_code', pcc.category_code
                         )
                     )
                     FROM product_category_connect pcc
-                    WHERE pcc.product_id = p.id
+                    WHERE pcc.product_code = p.product_code
                ) as categories
         FROM product p
-        WHERE p.id = ? AND p.is_display = 1
+        WHERE p.product_code = ?
     `;
-    const [rows] = await db.query(sql, [id]);
+    const [rows] = await db.query(sql, [product_code]);
     return rows[0];
 };

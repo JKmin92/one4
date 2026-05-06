@@ -4,9 +4,9 @@ import * as fileUpload from '../../../utils/fileUpload.js';
 
 export const insertProductCategory = async (category) => {
     const timePart = moment().format('YYMMDDHHmmss');
-    const id = `${timePart}`;
-    await model.insertProductCategory({ ...category, id: id });
-    return { ...category, id };
+    const category_code = `${timePart}`;
+    await model.insertProductCategory({ ...category, category_code: category_code });
+    return { ...category, category_code };
 }
 
 export const selectProductCategory = async () => {
@@ -17,8 +17,8 @@ export const updateProductCategory = async (category) => {
     return await model.updateProductCategory(category);
 }
 
-export const deleteProductCategory = async (id) => {
-    return await model.deleteProductCategory(id);
+export const deleteProductCategory = async (category_code) => {
+    return await model.deleteProductCategory(category_code);
 }
 
 export const updateProductCategorySortOrder = async (categories) => {
@@ -27,21 +27,22 @@ export const updateProductCategorySortOrder = async (categories) => {
 
 export const insertProduct = async (productData, files) => {
 
-    const id = moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const product_code = moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const product_option_code = `opt${moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
     let mainImageUrl = '';
     if (files.mainImage && files.mainImage[0]) {
-        mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'product', id);
+        mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'product', product_code);
     }
 
     const subImageUrls = [];
     if (files.subImages && files.subImages.length > 0) {
         for (const file of files.subImages) {
-            const url = await fileUpload.uploadFile(file, 'product', id);
+            const url = await fileUpload.uploadFile(file, 'product', product_code);
             subImageUrls.push(url);
         }
     }
-    await model.insertProduct({ ...productData, id: id });
+    await model.insertProduct({ ...productData, product_code: product_code });
 
     if (productData.has_option === 'on' && productData.options) {
         let options = [];
@@ -53,7 +54,8 @@ export const insertProduct = async (productData, files) => {
 
         for (const opt of options) {
             await model.insertProductOption({
-                product_id: id,
+                product_code: product_code,
+                product_option_code: product_option_code,
                 name: opt.name,
                 value: opt.value,
                 stock: opt.stock
@@ -63,7 +65,7 @@ export const insertProduct = async (productData, files) => {
 
     if (mainImageUrl) {
         await model.insertProductImage({
-            product_id: id,
+            product_code: product_code,
             image_url: mainImageUrl,
             is_main: 1,
             sort_order: 1
@@ -73,42 +75,42 @@ export const insertProduct = async (productData, files) => {
     let sortOrder = 1;
     for (const url of subImageUrls) {
         await model.insertProductImage({
-            product_id: id,
+            product_code: product_code,
             image_url: url,
             is_main: 0,
             sort_order: sortOrder++
         });
     }
 
-    if (productData.category_ids) {
-        let categoryIds = [];
+    if (productData.category_codes) {
+        let categoryCodes = [];
         try {
-            categoryIds = typeof productData.category_ids === 'string' ? JSON.parse(productData.category_ids) : productData.category_ids;
+            categoryCodes = typeof productData.category_codes === 'string' ? JSON.parse(productData.category_codes) : productData.category_codes;
         } catch (e) {
-            console.error("Failed to parse category_ids JSON", e);
+            console.error("Failed to parse category_codes JSON", e);
         }
 
-        if (!Array.isArray(categoryIds)) {
-            categoryIds = [categoryIds];
+        if (!Array.isArray(categoryCodes)) {
+            categoryCodes = [categoryCodes];
         }
 
-        for (const catId of categoryIds) {
-            await model.insertProductCategoryConnect({ product_id: id, category_id: catId });
+        for (const catCode of categoryCodes) {
+            await model.insertProductCategoryConnect({ product_code: product_code, category_code: catCode });
         }
     }
 
-    return { success: true, id };
+    return { success: true, product_code };
 };
 
-export const getProductDetails = async (id) => {
-    const product = await model.selectProduct(id);
+export const getProductDetails = async (product_code) => {
+    const product = await model.selectProduct(product_code);
     if (!product) {
         throw new Error('Product not found');
     }
 
-    const options = await model.selectProductOptions(id);
-    const images = await model.selectProductImages(id);
-    const categories = await model.selectProductCategories(id);
+    const options = await model.selectProductOptions(product_code);
+    const images = await model.selectProductImages(product_code);
+    const categories = await model.selectProductCategories(product_code);
 
     return { ...product, options, images, categories };
 };
@@ -128,25 +130,25 @@ export const getProductList = async (keyword) => {
     });
 };
 
-export const updateProduct = async (id, productData, files) => {
-    await model.updateProduct({ ...productData, id });
+export const updateProduct = async (product_code, productData, files) => {
+    await model.updateProduct({ ...productData, product_code });
 
-    if (productData.category_ids) {
-        let categoryIds = [];
+    if (productData.category_codes) {
+        let categoryCodes = [];
         try {
-            categoryIds = typeof productData.category_ids === 'string' ? JSON.parse(productData.category_ids) : productData.category_ids;
+            categoryCodes = typeof productData.category_codes === 'string' ? JSON.parse(productData.category_codes) : productData.category_codes;
         } catch (e) {
-            console.error("Failed to parse category_ids JSON", e);
+            console.error("Failed to parse category_codes JSON", e);
         }
 
-        if (!Array.isArray(categoryIds)) {
-            categoryIds = [categoryIds];
+        if (!Array.isArray(categoryCodes)) {
+            categoryCodes = [categoryCodes];
         }
 
-        await model.deleteProductCategoryConnect(id);
+        await model.deleteProductCategoryConnect(product_code);
 
-        for (const catId of categoryIds) {
-            await model.insertProductCategoryConnect({ product_id: id, category_id: catId });
+        for (const catCode of categoryCodes) {
+            await model.insertProductCategoryConnect({ product_code: product_code, category_code: catCode });
         }
     }
 
@@ -158,28 +160,28 @@ export const updateProduct = async (id, productData, files) => {
             console.error("Failed to parse options JSON", e);
         }
 
-        await model.deleteProductOptions(id);
+        await model.deleteProductOptions(product_code);
 
         for (const opt of options) {
             await model.insertProductOption({
-                product_id: id,
+                product_code: product_code,
                 name: opt.name,
                 value: opt.value,
                 stock: opt.stock
             });
         }
     } else {
-        await model.deleteProductOptions(id);
+        await model.deleteProductOptions(product_code);
     }
 
     /**
      * TODO : 이미지 실제 삭제 로직 필요
      */
     if (files.mainImage && files.mainImage[0]) {
-        const mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'product', id);
-        await model.deleteProductMainImage(id);
+        const mainImageUrl = await fileUpload.uploadFile(files.mainImage[0], 'product', product_code);
+        await model.deleteProductMainImage(product_code);
         await model.insertProductImage({
-            product_id: id,
+            product_code: product_code,
             image_url: mainImageUrl,
             is_main: 1,
             sort_order: 1
@@ -202,7 +204,7 @@ export const updateProduct = async (id, productData, files) => {
         existingImageIds = [existingImageIds];
     }
 
-    await model.deleteProductImages(id, existingImageIds);
+    await model.deleteProductImages(product_code, existingImageIds);
 
     let sortOrder = 1;
     for (const imgId of existingImageIds) {
@@ -211,9 +213,9 @@ export const updateProduct = async (id, productData, files) => {
 
     if (files.subImages && files.subImages.length > 0) {
         for (const file of files.subImages) {
-            const url = await fileUpload.uploadFile(file, 'product', id);
+            const url = await fileUpload.uploadFile(file, 'product', product_code);
             await model.insertProductImage({
-                product_id: id,
+                product_code: product_code,
                 image_url: url,
                 is_main: 0,
                 sort_order: sortOrder++

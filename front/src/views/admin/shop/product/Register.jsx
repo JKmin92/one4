@@ -1,6 +1,6 @@
 import { Box, Button, Checkbox, CloseButton, Field, Heading, HStack, Image, Input, List, RadioGroup, Stack, Table, Text, Textarea } from "@chakra-ui/react";
 import CategoryView from "./CategoryView";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { LuImage, LuPlus, LuTrash } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
@@ -22,6 +22,27 @@ function SortableImage({ id, src, onRemove }) {
             <CloseButton size="xs" position="absolute" top="1" right="1" bg="white" onClick={(e) => { e.stopPropagation(); onRemove(id); }} />
         </Box>
     );
+}
+
+function FastInput({ value, onChange, ...props }) {
+    const [localValue, setLocalValue] = useState(value || "");
+    const timeoutRef = useRef(null);
+
+    useEffect(() => {
+        setLocalValue(value || "");
+    }, [value]);
+
+    const handleChange = (e) => {
+        const val = e.target.value;
+        setLocalValue(val);
+
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+            onChange({ target: { value: val } });
+        }, 300);
+    };
+
+    return <Input {...props} value={localValue} onChange={handleChange} />;
 }
 
 function Register() {
@@ -61,7 +82,6 @@ function Register() {
             try {
                 const categoryResponse = await axiosInstance.get("/admin/shop/product/category");
                 setCategories(categoryResponse.data);
-
                 if (id) {
                     const productResponse = await axiosInstance.get(`/admin/shop/product/${id}`);
                     const data = productResponse.data;
@@ -204,7 +224,7 @@ function Register() {
         formData.append("is_unlimited_stock", isUnlimitedStock);
         formData.append("stock", totalStock);
 
-        formData.append("category_ids", JSON.stringify(selectedCategory.map(c => c.id)));
+        formData.append("category_codes", JSON.stringify(selectedCategory.map(c => c.category_code)));
 
         if (hasOptions === "on") formData.append("options", JSON.stringify(options));
 
@@ -299,9 +319,9 @@ function Register() {
                             <List.Root gap="2" listStyle="none">
                                 {selectedCategory.length === 0 && <Text color="gray.400" fontSize="sm">카테고리를 선택해주세요.</Text>}
                                 {selectedCategory.map((cate) => (
-                                    <List.Item key={cate.id} position="relative" display="flex" alignItems="center" justifyContent="space-between" borderWidth="1px" p="2" borderRadius="md" bg="gray.50">
+                                    <List.Item key={cate.category_code} position="relative" display="flex" alignItems="center" justifyContent="space-between" borderWidth="1px" p="2" borderRadius="md" bg="gray.50">
                                         <Text fontSize="sm">{cate.name}</Text>
-                                        <CloseButton size="xs" onClick={() => setSelectedCategory(prev => prev.filter(i => i.id !== cate.id))} />
+                                        <CloseButton size="xs" onClick={() => setSelectedCategory(prev => prev.filter(i => i.category_code !== cate.category_code))} />
                                     </List.Item>
                                 ))}
                             </List.Root>
@@ -315,7 +335,7 @@ function Register() {
                 <Heading size="md">상품 기본 정보</Heading>
                 <Field.Root required>
                     <Field.Label mb="2">상품명</Field.Label>
-                    <Input placeholder="상품명을 입력해주세요" value={productName} onChange={(e) => setProductName(e.target.value)} />
+                    <FastInput placeholder="상품명을 입력해주세요" value={productName} onChange={(e) => setProductName(e.target.value)} />
                 </Field.Root>
                 <Field.Root>
                     <Field.Label mb="2">상세 설명</Field.Label>
@@ -328,7 +348,7 @@ function Register() {
                 <Heading size="md">판매가 설정</Heading>
                 <Field.Root required>
                     <Field.Label mb="2">판매가</Field.Label>
-                    <Input type="number" placeholder="판매가를 입력해주세요" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+                    <FastInput type="number" placeholder="판매가를 입력해주세요" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
                 </Field.Root>
             </Stack>
 
@@ -380,15 +400,15 @@ function Register() {
                             <HStack alignItems="end">
                                 <Field.Root>
                                     <Field.Label fontSize="sm">옵션명 (예: 색상)</Field.Label>
-                                    <Input size="sm" bg="white" value={newOption.name} onChange={(e) => setNewOption({ ...newOption, name: e.target.value })} />
+                                    <FastInput size="sm" bg="white" value={newOption.name} onChange={(e) => setNewOption({ ...newOption, name: e.target.value })} />
                                 </Field.Root>
                                 <Field.Root>
                                     <Field.Label fontSize="sm">옵션값 (예: 빨강, 파랑, 검정)</Field.Label>
-                                    <Input size="sm" bg="white" value={newOption.value} onChange={(e) => setNewOption({ ...newOption, value: e.target.value })} placeholder="쉼표(,)로 구분" />
+                                    <FastInput size="sm" bg="white" value={newOption.value} onChange={(e) => setNewOption({ ...newOption, value: e.target.value })} placeholder="쉼표(,)로 구분" />
                                 </Field.Root>
                                 <Field.Root w="44">
                                     <Field.Label fontSize="sm">재고</Field.Label>
-                                    <Input size="sm" type="number" bg="white" value={newOption.stock} onChange={(e) => setNewOption({ ...newOption, stock: Number(e.target.value) })} />
+                                    <FastInput size="sm" type="number" bg="white" value={newOption.stock} onChange={(e) => setNewOption({ ...newOption, stock: Number(e.target.value) })} />
                                 </Field.Root>
                                 <Button size="sm" onClick={handleAddOption} leftIcon={<LuPlus />}>추가</Button>
                             </HStack>
@@ -407,7 +427,7 @@ function Register() {
                                 {options.map((opt) => (
                                     <Table.Row key={opt.option_num}>
                                         <Table.Cell>
-                                            <Input
+                                            <FastInput
                                                 size="sm"
                                                 variant="subtle"
                                                 value={opt.name}
@@ -415,7 +435,7 @@ function Register() {
                                             />
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Input
+                                            <FastInput
                                                 size="sm"
                                                 variant="subtle"
                                                 value={opt.value}
@@ -423,7 +443,7 @@ function Register() {
                                             />
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Input
+                                            <FastInput
                                                 size="sm"
                                                 variant="subtle"
                                                 type="number"

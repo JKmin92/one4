@@ -111,3 +111,12 @@ export const updateUserReviewChannel = async (user_review_channel) => {
     return rows[0];
 }
 
+export const getUserPassword = async (user_code) => {
+    const [rows] = await db.query(`SELECT password FROM user WHERE user_code = ? AND status != 'WITHDRAW'`, [user_code]);
+    return rows[0].password;
+}
+
+export const updateUserPassword = async (user_code, newPassword) => {
+    await db.query(`UPDATE user SET password = ? WHERE user_code = ? AND status != 'WITHDRAW'`, [newPassword, user_code]);
+    return { result: true };
+}

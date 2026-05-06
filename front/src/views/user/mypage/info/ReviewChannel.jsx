@@ -221,6 +221,10 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
     }
 
 
+    const isDuplicate = reviewChannelList.some(channel => 
+        channel.channel_url === channelLink && 
+        channel.review_channel_code !== user_review_channel?.review_channel_code
+    );
 
     return (
         <Stack gap="4">
@@ -236,10 +240,13 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
                     />
                 </Group>
             </Field.Root>
-            {metaData && metaData.error && (
+            {isDuplicate && (
+                <Text color="red.500" fontSize="sm">이미 등록된 채널입니다.</Text>
+            )}
+            {metaData && metaData.error && !isDuplicate && (
                 <Text color="red.500" fontSize="sm">{metaData.error}</Text>
             )}
-            {metaData && !metaData.error && (
+            {metaData && !metaData.error && !isDuplicate && (
                 <Box borderWidth="1px" borderColor="gray.200" borderRadius="md" p="3" bg="white">
                     <HStack alignItems="flex-start" gap="3">
                         {metaData.image && (
@@ -252,10 +259,10 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
                     </HStack>
                 </Box>
             )}
-            {isLoadingMeta && !metaData?.error && (
+            {isLoadingMeta && !metaData?.error && !isDuplicate && (
                 <Text fontSize="xs" color="gray.500" textAlign="center">링크 정보를 가져오는 중...</Text>
             )}
-            <Button w="full" disabled={!channelLink || !metaData || !!metaData.error || isLoadingMeta} onClick={addChannel}>{user_review_channel ? '채널 수정' : '채널 추가'}</Button>
+            <Button w="full" disabled={!channelLink || !metaData || !!metaData.error || isLoadingMeta || isDuplicate} onClick={addChannel}>{user_review_channel ? '채널 수정' : '채널 추가'}</Button>
             {user_review_channel && (
                 <Button w="full" bg={"red.500"} _hover={{ bg: "red.600" }} onClick={deleteChannel}>삭제</Button>
             )}

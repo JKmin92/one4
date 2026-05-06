@@ -23,4 +23,6 @@ router.post('/review/channel', authMiddleware, userController.insertUserReviewCh
 router.put('/review/channel', authMiddleware, userController.updateUserReviewChannel);
 router.delete('/review/channel/:review_channel_code', authMiddleware, userController.deleteUserReviewChannel);
 
+router.put('/password', authMiddleware, userController.updatePassword);
+
 export default router;

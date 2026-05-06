@@ -1,13 +1,13 @@
 import * as boardModel from "../../models/shop/boardModel.js";
 import { generateUniqueId } from "../../utils/customUtils.js";
 
-export const insertProductReview = async ({ product_id, user_code, order_id, rating, content, images }) => {
+export const insertProductReview = async ({ product_code, user_code, order_id, rating, content, images }) => {
     const review_code = generateUniqueId();
-    return await boardModel.insertProductReview({ review_code, product_id, user_code, order_id, rating, content, images });
+    return await boardModel.insertProductReview({ review_code, product_code, user_code, order_id, rating, content, images });
 }
 
-export const getReviewsByProductId = async (product_id) => {
-    const reviews = await boardModel.getReviewsByProductId(product_id);
+export const getReviewsByProductCode = async (product_code) => {
+    const reviews = await boardModel.getReviewsByProductCode(product_code);
     return reviews.map(review => {
         if (review.user_name && review.user_name.length > 1) {
             return {
@@ -44,8 +44,8 @@ export const insertProductInquiry = async (product_inquiry) => {
     });
 }
 
-export const getProductInquiryByProductId = async (product_id) => {
-    const inquiries = await boardModel.getProductInquiriesByProductId(product_id);
+export const getProductInquiryByProductCode = async (product_code) => {
+    const inquiries = await boardModel.getProductInquiriesByProductCode(product_code);
     return inquiries.map(inquiry => {
         if (inquiry.user_name && inquiry.user_name.length > 1) {
             return {

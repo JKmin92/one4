@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Delivery from "./info/Delivery";
 import axiosInstance from "../../../utils/api";
 import ReviewChannel from "./info/ReviewChannel";
+import Password from "./info/Password";
 
 function Info() {
 
@@ -59,7 +60,7 @@ function Info() {
                 </HStack>
                 <Stack separator={<StackSeparator />}>
                     <Button variant="ghost" justifyContent="space-between">개인정보 수정<LuChevronRight /></Button>
-                    <Button variant="ghost" justifyContent="space-between">비밀번호 변경<LuChevronRight /></Button>
+                    <Password />
                     <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
                     <ReviewChannel reviewChannelList={reviewChannelList} setReviewChannelList={setReviewChannelList} reviewCampaignChannelViewList={reviewCampaignChannelViewList} />
                     <Button variant="ghost" justifyContent="space-between">알림 설정<LuChevronRight /></Button>

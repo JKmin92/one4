@@ -43,15 +43,15 @@ function Category({ categories = [], location = '' }) {
         const categoryMap = {};
         const tree = [];
 
-        categories.forEach(cat => { categoryMap[cat.id] = { ...cat, children: [] } });
+        categories.forEach(cat => { categoryMap[cat.category_code] = { ...cat, children: [] } });
 
         categories.forEach(cat => {
             if (cat.is_visible === 0) return;
-            if (cat.parent_id === null) {
-                tree.push(categoryMap[cat.id]);
+            if (cat.parent_code === null) {
+                tree.push(categoryMap[cat.category_code]);
             } else {
-                if (categoryMap[cat.parent_id]) {
-                    categoryMap[cat.parent_id].children.push(categoryMap[cat.id]);
+                if (categoryMap[cat.parent_code]) {
+                    categoryMap[cat.parent_code].children.push(categoryMap[cat.category_code]);
                 }
             }
         });
@@ -88,8 +88,8 @@ function Category({ categories = [], location = '' }) {
             </Drawer.Root>
 
             <HStack gap="12">
-                {categories.filter(c => c.is_visible === 1 && c.parent_id === null).map((category) => (
-                    <Link key={category.id} href={`${location}/categorys/${category.id}`}>
+                {categories.filter(c => c.is_visible === 1 && c.parent_code === null).map((category) => (
+                    <Link key={category.category_code} href={`${location}/categorys/${category.category_code}`}>
                         <Text fontSize="md" fontWeight="medium">{category.name}</Text>
                     </Link>
                 ))}

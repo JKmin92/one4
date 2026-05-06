@@ -51,8 +51,8 @@ function ProductList() {
                         <Heading size="2xl">{category?.name}</Heading>
                         <Stack direction={{ base: 'row', md: "column" }} marginTop="15px" gap="2" paddingTop="15px" borderTop="3px solid" borderTopColor="main" overflowX='auto'>
                             {subCategorys.map((subCategory) => (
-                                <Button variant="plain" key={subCategory.id} justifyContent="start" padding="0">
-                                    <Link href={`/categorys/${subCategory.id}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.name}</Link>
+                                <Button variant="plain" key={subCategory.category_code} justifyContent="start" padding="0">
+                                    <Link href={`/categorys/${subCategory.category_code}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.name}</Link>
                                 </Button>
                             ))}
                         </Stack>
@@ -76,7 +76,7 @@ function ProductList() {
                             const imageUrl = mainImage ? mainImage.url : '';
 
                             return (
-                                <Link href={`/products/${product.id}`} key={product.id} alignItems="start">
+                                <Link href={`/products/${product.product_code}`} key={product.product_code} alignItems="start">
                                     <Stack width="full">
                                         <Box bg="bg.emphasized" aspectRatio="square" rounded="md" overflow="hidden">
                                             {imageUrl && <img src={imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}

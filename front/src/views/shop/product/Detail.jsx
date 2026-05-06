@@ -337,7 +337,9 @@ function PriceView({ selectedOptions = [], product, discount, onRemove, onChange
                                 </HStack>
                             </NumberInput.Root>
                             <Heading>{formatNumber(unitPrice * selectedOption.quantity)}</Heading>
-                            <CloseButton size="0" rounded="full" variant="solid" bg="gray.focusRing" onClick={() => onRemove(index)}><Icon size="xs"><HiX /></Icon></CloseButton>
+                            {!selectedOption.unique && (
+                                <CloseButton size="0" rounded="full" variant="solid" bg="gray.focusRing" onClick={() => onRemove(index)}><Icon size="xs"><HiX /></Icon></CloseButton>
+                            )}
                         </HStack>
                     </Flex>
                 ))}
@@ -356,7 +358,7 @@ function PriceView({ selectedOptions = [], product, discount, onRemove, onChange
 function Detail() {
 
     const { id } = useParams();
-
+    const navigate = useNavigate();
     const swiperCustomButton = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', zIndex: '2', size: 'xs', rounded: 'full' };
     const swiperPrev = { ...swiperCustomButton, left: '30px' };
     const swiperNext = { ...swiperCustomButton, right: '30px' };
@@ -372,15 +374,34 @@ function Detail() {
     const [reviewScore, setReviewScore] = useState(0);
     const [inquiryList, setInquiryList] = useState([]);
 
+    const { user } = useAuth();
+
     useEffect(() => {
         const getProduct = async () => {
             try {
                 const response = await axiosInstance.get(`/shop/product/${id}`);
                 const data = response.data;
+
+                if (!data.is_display) {
+                    if (user == null || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+                        toaster.create({ title: '잘못된 접근입니다.', type: 'error' });
+                        navigate(-1); //뒤로 가기
+                        return;
+                    }
+                }
                 setProduct(data);
 
-                if (data.options && Array.isArray(data.options)) {
+                if (data.options && Array.isArray(data.options) && data.options.length > 0) {
                     setOptions(data.options);
+                } else {
+                    const singleOption = {
+                        optionId: `unique`,
+                        label: data.name,
+                        value: data.name,
+                        stock: data.is_unlimited_stock ? 9999999999 : data.stock,
+                    }
+
+                    setOptionValueList([{ options: [singleOption], unique: true, quantity: 1, stock: data.is_unlimited_stock ? 9999999999 : data.stock }]);
                 }
 
                 let score = 0;
@@ -452,6 +473,7 @@ function Detail() {
 
             } catch (error) {
                 toaster.create({ title: '상품 정보를 불러오는데 실패했습니다.', type: 'error' });
+                console.error(error);
             }
         };
 
@@ -515,7 +537,6 @@ function Detail() {
             prev.map((item, i) => {
                 if (i === index) {
                     const maxStock = item.stock;
-                    // Ensure quantity doesn't exceed maxStock
                     const newQuantity = Math.min(quantity, maxStock);
                     return { ...item, quantity: newQuantity };
                 }
@@ -534,6 +555,10 @@ function Detail() {
             items: option.items
         })
     }));
+
+    const submitOrder = () => {
+        console.log(optionValueList);
+    }
 
 
     return (
@@ -573,7 +598,7 @@ function Detail() {
                                     <RatingGroup.HiddenInput />
                                     <RatingGroup.Control />
                                 </RatingGroup.Root>
-                                <Button variant="plain" borderBottom="1px solid #000" p="0" rounded="0" height="auto" onClick={() => scrollViewPosition('review')}>12개 리뷰 보기</Button>
+                                {reviewList.length > 0 && <Button variant="plain" borderBottom="1px solid #000" p="0" rounded="0" height="auto" onClick={() => scrollViewPosition('review')}>{reviewList.length}개 리뷰 보기</Button>}
                             </HStack>
                             <Stack gap="0">
                                 {discount.price > 0 && <Text fontSize="md" textDecoration="line-through" color="fg.subtle">{formatNumber(product.price)}</Text>}
@@ -632,10 +657,14 @@ function Detail() {
                                 ))}
                             </Stack>
                             <PriceView selectedOptions={optionValueList} product={product} discount={discount} onRemove={removeOptionValueList} onChangeQuantity={updateOptionQuantity} />
-                            <HStack>
-                                <Button variant="outline" width="1/2">장바구니 담기</Button>
-                                <Button width="1/2">바로 구매하기</Button>
-                            </HStack>
+                            {product.is_sale ? (
+                                <HStack>
+                                    <Button variant="outline" width="1/2">장바구니 담기</Button>
+                                    <Button width="1/2" onClick={() => submitOrder()}>바로 구매하기</Button>
+                                </HStack>
+                            ) : (
+                                <Button disabled={true}>구매 불가</Button>
+                            )}
                         </Stack>
                     </Box>
                 </Stack>

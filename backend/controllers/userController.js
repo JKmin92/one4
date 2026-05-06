@@ -209,3 +209,13 @@ export const updateUserReviewChannel = async (req, res, next) => {
         next(err);
     }
 }
+
+export const updatePassword = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.updatePassword(user.user_code, req.body.currentPassword, req.body.newPassword));
+    } catch (err) {
+        next(err);
+    }
+}

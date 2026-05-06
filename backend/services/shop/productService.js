@@ -4,33 +4,33 @@ export const getCategories = async () => {
     return await ProductModel.getCategories();
 };
 
-export const getCategoryById = async (id) => {
-    return await ProductModel.getCategoryById(id);
+export const getCategoryByCode = async (category_code) => {
+    return await ProductModel.getCategoryByCode(category_code);
 };
 
-export const getSubCategoryById = async (id) => {
-    return await ProductModel.getSubCategoryById(id);
+export const getSubCategoriesByCode = async (parent_code) => {
+    return await ProductModel.getSubCategoriesByCode(parent_code);
 };
 
-export const getProductsByCategoryId = async (categoryId) => {
-    const products = await ProductModel.getProductsByCategoryId(categoryId);
+export const getProductsByCategoryCode = async (category_code) => {
+    const products = await ProductModel.getProductsByCategoryCode(category_code);
 
     if (products.length === 0) return [];
 
-    const productIds = products.map(p => p.id);
-    const promotions = await ProductModel.getActivePromotions(productIds);
+    const productCodes = products.map(p => p.product_code);
+    const promotions = await ProductModel.getActivePromotions(productCodes);
 
     return products.map(product => {
         if (product.images && typeof product.images === 'string') {
             try {
                 product.images = JSON.parse(product.images);
             } catch (e) {
-                console.error("Failed to parse images JSON for product", product.id, e);
+                console.error("Failed to parse images JSON for product", product.product_code, e);
                 product.images = [];
             }
         }
 
-        const productPromotions = promotions.filter(p => p.related_product_id === product.id);
+        const productPromotions = promotions.filter(p => p.related_product_code === product.product_code);
 
         productPromotions.sort((a, b) => {
             if (a.target_type !== b.target_type) {
@@ -61,6 +61,7 @@ export const getProductsByCategoryId = async (categoryId) => {
 export const getProductById = async (id) => {
     const product = await ProductModel.getProductById(id);
     if (!product) return null;
+
 
     const jsonFields = ['images', 'options', 'categories'];
     jsonFields.forEach(field => {

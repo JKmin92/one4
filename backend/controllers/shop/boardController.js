@@ -41,10 +41,10 @@ export const insertProductReview = async (req, res, next) => {
     }
 }
 
-export const getReviewsByProductId = async (req, res, next) => {
+export const getReviewsByProductCode = async (req, res, next) => {
     try {
-        const product_id = req.params.id;
-        const reviews = await boardService.getReviewsByProductId(product_id);
+        const product_code = req.params.product_code;
+        const reviews = await boardService.getReviewsByProductCode(product_code);
         return res.status(200).json(reviews);
     } catch (error) {
         next(error);
@@ -146,10 +146,10 @@ export const insertProductInquiry = async (req, res, next) => {
     }
 }
 
-export const getProductInquiryByProductId = async (req, res, next) => {
+export const getProductInquiryByProductCode = async (req, res, next) => {
     try {
-        const product_id = req.params.id;
-        const inquiries = await boardService.getProductInquiryByProductId(product_id);
+        const product_code = req.params.product_code;
+        const inquiries = await boardService.getProductInquiryByProductCode(product_code);
         return res.status(200).json(inquiries);
     } catch (error) {
         next(error);
