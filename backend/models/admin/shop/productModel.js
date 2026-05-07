@@ -45,8 +45,8 @@ export const insertProduct = async (product) => {
 };
 
 export const insertProductOption = async (option) => {
-    const sql = `INSERT INTO product_option (product_code, name, value, stock) VALUES (?, ?, ?, ?)`;
-    return await db.query(sql, [option.product_code, option.name, option.value, option.stock]);
+    const sql = `INSERT INTO product_option (product_code, product_option_code, name, value, stock) VALUES (?, ?, ?, ?, ?)`;
+    return await db.query(sql, [option.product_code, option.product_option_code, option.name, option.value, option.stock]);
 };
 
 export const insertProductImage = async (image) => {

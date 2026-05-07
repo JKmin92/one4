@@ -102,6 +102,7 @@ function Register() {
                     if (data.options && data.options.length > 0) {
                         setOptions(data.options.map(opt => ({
                             option_num: opt.option_num,
+                            product_option_code: opt.product_option_code,
                             name: opt.name,
                             value: opt.value,
                             stock: opt.stock
@@ -155,13 +156,13 @@ function Register() {
         setNewOption({ name: "", value: "", stock: 0 });
     };
 
-    const handleDeleteOption = (id) => {
-        setOptions(options.filter(opt => opt.id !== id));
+    const handleDeleteOption = (product_option_code) => {
+        setOptions(options.filter(opt => opt.product_option_code !== product_option_code));
     };
 
-    const handleOptionChange = (id, field, value) => {
+    const handleOptionChange = (product_option_code, field, value) => {
         setOptions(options.map(opt =>
-            opt.id === id ? { ...opt, [field]: value } : opt
+            opt.product_option_code === product_option_code ? { ...opt, [field]: value } : opt
         ));
     };
 
@@ -425,13 +426,13 @@ function Register() {
                             </Table.Header>
                             <Table.Body>
                                 {options.map((opt) => (
-                                    <Table.Row key={opt.option_num}>
+                                    <Table.Row key={opt.product_option_code}>
                                         <Table.Cell>
                                             <FastInput
                                                 size="sm"
                                                 variant="subtle"
                                                 value={opt.name}
-                                                onChange={(e) => handleOptionChange(opt.id, 'name', e.target.value)}
+                                                onChange={(e) => handleOptionChange(opt.product_option_code, 'name', e.target.value)}
                                             />
                                         </Table.Cell>
                                         <Table.Cell>
@@ -439,7 +440,7 @@ function Register() {
                                                 size="sm"
                                                 variant="subtle"
                                                 value={opt.value}
-                                                onChange={(e) => handleOptionChange(opt.id, 'value', e.target.value)}
+                                                onChange={(e) => handleOptionChange(opt.product_option_code, 'value', e.target.value)}
                                             />
                                         </Table.Cell>
                                         <Table.Cell>
@@ -448,11 +449,11 @@ function Register() {
                                                 variant="subtle"
                                                 type="number"
                                                 value={opt.stock}
-                                                onChange={(e) => handleOptionChange(opt.id, 'stock', Number(e.target.value))}
+                                                onChange={(e) => handleOptionChange(opt.product_option_code, 'stock', Number(e.target.value))}
                                             />
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <CloseButton size="xs" onClick={() => handleDeleteOption(opt.id)} />
+                                            <CloseButton size="xs" onClick={() => handleDeleteOption(opt.product_option_code)} />
                                         </Table.Cell>
                                     </Table.Row>
                                 ))}

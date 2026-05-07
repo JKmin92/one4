@@ -116,7 +116,8 @@ export const getProductById = async (id) => {
             optionsMap[opt.name].items.push({
                 label: opt.value,
                 value: opt.value,
-                stock: opt.stock
+                stock: opt.stock,
+                product_option_code: opt.product_option_code
             });
         }
     });

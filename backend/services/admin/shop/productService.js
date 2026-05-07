@@ -28,7 +28,7 @@ export const updateProductCategorySortOrder = async (categories) => {
 export const insertProduct = async (productData, files) => {
 
     const product_code = moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    const product_option_code = `opt${moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+
 
     let mainImageUrl = '';
     if (files.mainImage && files.mainImage[0]) {
@@ -53,6 +53,7 @@ export const insertProduct = async (productData, files) => {
         }
 
         for (const opt of options) {
+            const product_option_code = `opt${moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
             await model.insertProductOption({
                 product_code: product_code,
                 product_option_code: product_option_code,
@@ -162,12 +163,15 @@ export const updateProduct = async (product_code, productData, files) => {
 
         await model.deleteProductOptions(product_code);
 
+
         for (const opt of options) {
+            const product_option_code = `opt${moment().format('YYYYMMDDHHmmss') + Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
             await model.insertProductOption({
                 product_code: product_code,
                 name: opt.name,
                 value: opt.value,
-                stock: opt.stock
+                stock: opt.stock,
+                product_option_code: product_option_code
             });
         }
     } else {

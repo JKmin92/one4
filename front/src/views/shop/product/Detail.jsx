@@ -390,6 +390,7 @@ function Detail() {
                     }
                 }
                 setProduct(data);
+                console.log(data.options);
 
                 if (data.options && Array.isArray(data.options) && data.options.length > 0) {
                     setOptions(data.options);
@@ -406,7 +407,6 @@ function Detail() {
 
                 let score = 0;
 
-                // Fetch reviews
                 const reviewsResponse = await axiosInstance.get(`/shop/board/product/review/${id}`);
                 const formattedReviews = reviewsResponse.data.map(review => {
                     const contentItems = [];
@@ -495,6 +495,8 @@ function Detail() {
         const selectedItem = option.value.items.find(
             (item) => item.value === value
         );
+        console.log('value : ', value);
+        console.log('option : ', optionIndex);
 
         if (!selectedItem) return;
 
@@ -504,7 +506,8 @@ function Detail() {
                 optionId: option.id,
                 label: selectedItem.label,
                 value: selectedItem.value,
-                stock: selectedItem.stock
+                stock: selectedItem.stock,
+                product_option_code: selectedItem.product_option_code
             };
 
             if (next.length == options.length && next.every(Boolean)) {
@@ -557,7 +560,8 @@ function Detail() {
     }));
 
     const submitOrder = () => {
-        console.log(optionValueList);
+        const order = { ...optionValueList, product_code: product.product_code };
+        console.log(order);
     }
 
 
@@ -629,32 +633,36 @@ function Detail() {
                             </DataList.Root>
 
                             <Stack>
-                                {optionList.map((option, index) => (
-                                    <Select.Root
-                                        collection={option.value}
-                                        key={option.id}
-                                        value={selectedOptions[index] ? [selectedOptions[index].value] : []}
-                                        onValueChange={(e) => handleSelectChange(index, option, e.value[0])}
-                                    >
-                                        <Select.HiddenSelect />
-                                        <Select.Control>
-                                            <Select.Trigger>
-                                                <Select.ValueText placeholder={option.label} />
-                                            </Select.Trigger>
-                                            <Select.IndicatorGroup><Select.Indicator /></Select.IndicatorGroup>
-                                        </Select.Control>
-                                        <Select.Positioner>
-                                            <Select.Content>
-                                                {option.value.items.map((item) => (
-                                                    <Select.Item item={item} key={item.value}>
-                                                        {item.label}
-                                                        <Select.ItemIndicator />
-                                                    </Select.Item>
-                                                ))}
-                                            </Select.Content>
-                                        </Select.Positioner>
-                                    </Select.Root>
-                                ))}
+                                {optionList.map((option, index) => {
+                                    console.log('selectedOptions[index] : ', selectedOptions[index]);
+                                    return (
+                                        <Select.Root
+                                            collection={option.value}
+                                            key={option.id}
+                                            value={selectedOptions[index] ? [selectedOptions[index].product_option_code] : []}
+                                            onValueChange={(e) => handleSelectChange(index, option, e.value[0])}
+                                        >
+                                            <Select.HiddenSelect />
+                                            <Select.Control>
+                                                <Select.Trigger>
+                                                    <Select.ValueText placeholder={option.label} />
+                                                </Select.Trigger>
+                                                <Select.IndicatorGroup><Select.Indicator /></Select.IndicatorGroup>
+                                            </Select.Control>
+                                            <Select.Positioner>
+                                                <Select.Content>
+                                                    {option.value.items.map((item) => (
+                                                        <Select.Item item={item} key={item.product_option_code}>
+                                                            {item.label}
+                                                            <Select.ItemIndicator />
+                                                        </Select.Item>
+                                                    ))}
+                                                </Select.Content>
+                                            </Select.Positioner>
+                                        </Select.Root>
+                                    )
+
+                                })}
                             </Stack>
                             <PriceView selectedOptions={optionValueList} product={product} discount={discount} onRemove={removeOptionValueList} onChangeQuantity={updateOptionQuantity} />
                             {product.is_sale ? (
