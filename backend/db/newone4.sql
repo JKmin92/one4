@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `product_image` (
   CONSTRAINT `FK_product_image_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_image:~5 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.product_image:~4 rows (대략적) 내보내기
 INSERT INTO `product_image` (`i_num`, `product_code`, `url`, `is_main`, `sort_order`) VALUES
 	(15, '20260209165809589', '/uploads/2026/02/09/product/20260209165809589/1770623889549-o9z5kytsu.webp', 1, NULL),
 	(16, '20260209165809589', '/uploads/2026/02/09/product/20260209165809589/1770623889702-2ahs0n5th.webp', 0, 1),
@@ -163,32 +163,125 @@ CREATE TABLE IF NOT EXISTS `product_option` (
 
 -- 테이블 데이터 newone4.product_option:~4 rows (대략적) 내보내기
 INSERT INTO `product_option` (`option_num`, `product_code`, `product_option_code`, `name`, `value`, `stock`) VALUES
-	(9, '20260209165809589', '0', '컬러', '블루', '10'),
-	(10, '20260209165809589', '0', '컬러', '레드', '10'),
-	(11, '20260209165809589', '0', '컬러', '블랙', '10'),
-	(12, '20260209165809589', '0', '컬러', '퍼플', '10');
+	(9, '20260209165809589', 'opt20260209165809589', '컬러', '블루', '10'),
+	(10, '20260209165809589', 'opt20260209165809015', '컬러', '레드', '10'),
+	(11, '20260209165809589', 'opt20260209165809142', '컬러', '블랙', '10'),
+	(12, '20260209165809589', 'opt20260209165809180', '컬러', '퍼플', '10');
 
 -- 테이블 newone4.product_order 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `order_code` varchar(50) NOT NULL DEFAULT '0',
-  `product_code` varchar(50) NOT NULL DEFAULT '0',
-  `product_option_code` varchar(50) NOT NULL DEFAULT '0',
   `user_code` varchar(50) NOT NULL DEFAULT '0',
+  `address_code` varchar(50) NOT NULL DEFAULT '0',
+  `total_product_price` double NOT NULL DEFAULT 0 COMMENT '제품 금액 총합(할인 적용 후)',
+  `delivery_fee` double NOT NULL DEFAULT 0 COMMENT '배송비',
+  `used_mileage` double NOT NULL DEFAULT 0 COMMENT '마일리지 사용',
+  `actual_payment_amount` double NOT NULL DEFAULT 0 COMMENT '실제 결제 비용',
+  `status` enum('PENDING','PAID','PROCESSING','SHIPPING','DELIVERED','COMPLETED') NOT NULL DEFAULT 'PENDING',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `FK_product_order_product` (`product_code`),
   KEY `order_code` (`order_code`),
-  CONSTRAINT `FK_product_order_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `FK_product_order_user` (`user_code`),
+  KEY `FK_product_order_user_address` (`address_code`),
+  CONSTRAINT `FK_product_order_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_user_address` FOREIGN KEY (`address_code`) REFERENCES `user_address` (`address_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.product_order:~0 rows (대략적) 내보내기
+
+-- 테이블 newone4.product_order_basket 구조 내보내기
+CREATE TABLE IF NOT EXISTS `product_order_basket` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_basket_code` varchar(50) NOT NULL,
+  `user_code` varchar(50) NOT NULL,
+  `product_code` varchar(50) NOT NULL,
+  `product_option_code` varchar(50) DEFAULT NULL,
+  `quantity` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `order_basket_code` (`order_basket_code`),
+  KEY `FK_product_order_basket_user` (`user_code`),
+  KEY `FK_product_order_basket_product` (`product_code`),
+  KEY `FK_product_order_basket_product_option` (`product_option_code`),
+  CONSTRAINT `FK_product_order_basket_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_basket_product_option` FOREIGN KEY (`product_option_code`) REFERENCES `product_option` (`product_option_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_basket_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.product_order_basket:~3 rows (대략적) 내보내기
+INSERT INTO `product_order_basket` (`id`, `order_basket_code`, `user_code`, `product_code`, `product_option_code`, `quantity`, `created_at`, `updated_at`) VALUES
+	(4, '202605081337218659', 'jeo7334Wt202601', '20260209165809589', 'opt20260209165809589', 5, '2026-05-08 04:37:21', '2026-05-11 02:18:08'),
+	(10, '202605081512545832', 'jeo7334Wt202601', '20260506111049033', NULL, 1, '2026-05-08 06:12:54', '2026-05-08 06:12:54'),
+	(11, '202605111650532077', 'jeo7334Wt202601', '20260209165809589', 'opt20260209165809142', 1, '2026-05-11 07:50:53', '2026-05-11 07:50:53');
+
+-- 테이블 newone4.product_order_claim 구조 내보내기
+CREATE TABLE IF NOT EXISTS `product_order_claim` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_claim_code` varchar(50) NOT NULL DEFAULT '0',
+  `order_code` varchar(50) NOT NULL DEFAULT '0',
+  `order_item_code` varchar(50) NOT NULL DEFAULT '0',
+  `user_code` varchar(50) NOT NULL DEFAULT '0',
+  `claim_type` enum('CANCEL','RETURN','EXCHANGE') NOT NULL DEFAULT 'CANCEL',
+  `claim_status` enum('REQUESTED','PROCESSING','COMPLETED','REJECTED') NOT NULL DEFAULT 'REQUESTED',
+  `claim_quantity` int(11) NOT NULL,
+  `fault_party` enum('BUYER','SELLER') NOT NULL DEFAULT 'BUYER',
+  `reason_category` enum('MIND','DEFECTIVE','WRONG','MISSING','DELAYED','OUT','OTHER') NOT NULL DEFAULT 'MIND',
+  `reason_detail` text NOT NULL,
+  `target_product_amount` double NOT NULL DEFAULT 0,
+  `deducted_delivery_fee` double NOT NULL DEFAULT 0,
+  `total_refund_amount` double NOT NULL DEFAULT 0,
+  `refund_method` enum('ORIGINAL_PAYMENT','MILEAGE_ONLY') NOT NULL DEFAULT 'ORIGINAL_PAYMENT',
+  `refund_mileage` double NOT NULL DEFAULT 0,
+  `refund_cash` double NOT NULL DEFAULT 0,
+  `return_tracking_number` varchar(100) NOT NULL DEFAULT '0' COMMENT '구매자에게로부터 교환, 반품으로 판매자에게 돌아오는 송장번호',
+  `return_tacking_company` varchar(100) NOT NULL DEFAULT '0' COMMENT '구매자에게로부터 교환, 반품으로 판매자에게 돌아오는 택배사',
+  `exchange_tracking_number` varchar(100) NOT NULL DEFAULT '0' COMMENT '판매자가 구매자에게 클래임으로 인해 재발송한 송장번호',
+  `exchange_tacking_company` varchar(100) NOT NULL DEFAULT '0' COMMENT '판매자가 구매자에게 클래임으로 인해 재발송한 택배사',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `completed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_claim_code` (`order_claim_code`),
+  KEY `FK_product_order_claim_product_order` (`order_code`),
+  KEY `FK_product_order_claim_product_order_item` (`order_item_code`),
+  KEY `FK_product_order_claim_user` (`user_code`),
+  CONSTRAINT `FK_product_order_claim_product_order` FOREIGN KEY (`order_code`) REFERENCES `product_order` (`order_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_claim_product_order_item` FOREIGN KEY (`order_item_code`) REFERENCES `product_order_item` (`order_item_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_claim_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.product_order_claim:~0 rows (대략적) 내보내기
+
+-- 테이블 newone4.product_order_item 구조 내보내기
+CREATE TABLE IF NOT EXISTS `product_order_item` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_item_code` varchar(50) NOT NULL DEFAULT '0',
+  `order_code` varchar(50) NOT NULL DEFAULT '0',
+  `product_code` varchar(50) NOT NULL,
+  `product_option_code` varchar(50) DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `discount_type` enum('FIXED','PERCENT') NOT NULL DEFAULT 'FIXED',
+  `discount_value` double NOT NULL DEFAULT 1,
+  `price` double NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_item_code` (`order_item_code`),
+  KEY `FK_product_order_item_product_order` (`order_code`),
+  KEY `FK_product_order_item_product` (`product_code`),
+  KEY `FK_product_order_item_product_option` (`product_option_code`),
+  CONSTRAINT `FK_product_order_item_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_item_product_option` FOREIGN KEY (`product_option_code`) REFERENCES `product_option` (`product_option_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_item_product_order` FOREIGN KEY (`order_code`) REFERENCES `product_order` (`order_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.product_order_item:~0 rows (대략적) 내보내기
 
 -- 테이블 newone4.product_promotion 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_promotion` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '프로모션 ID',
   `name` varchar(255) NOT NULL COMMENT '프로모션명',
-  `product_promotion_code` varchar(50) DEFAULT NULL,
-  `code` varchar(50) DEFAULT NULL COMMENT '프로모션 코드',
+  `product_promotion_code` varchar(50) DEFAULT NULL COMMENT '프로모션 코드',
   `discount_type` enum('percentage','fixed') NOT NULL DEFAULT 'percentage' COMMENT '할인 유형 (비율/고정금액)',
   `discount_value` decimal(10,2) NOT NULL COMMENT '할인 값 (비율 또는 금액)',
   `start_date` datetime NOT NULL COMMENT '시작 일시',
@@ -199,32 +292,29 @@ CREATE TABLE IF NOT EXISTS `product_promotion` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '수정 일시',
   PRIMARY KEY (`id`),
   KEY `product_promotion_code` (`product_promotion_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_promotion:~2 rows (대략적) 내보내기
-INSERT INTO `product_promotion` (`id`, `name`, `product_promotion_code`, `code`, `discount_type`, `discount_value`, `start_date`, `end_date`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
-	(1, '테스트', NULL, '', 'percentage', 10.00, '2026-02-11 00:00:00', '2026-02-28 00:00:00', '', 1, '2026-02-11 16:05:20', '2026-02-19 10:46:19'),
-	(2, '테스트', NULL, '', 'percentage', 10.00, '2026-02-08 00:00:00', '2026-03-13 00:00:00', '', 1, '2026-03-05 10:54:17', '2026-03-05 11:46:57');
+-- 테이블 데이터 newone4.product_promotion:~1 rows (대략적) 내보내기
+INSERT INTO `product_promotion` (`id`, `name`, `product_promotion_code`, `discount_type`, `discount_value`, `start_date`, `end_date`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
+	(5, '테스트', '202605111029548025', 'fixed', 1000.00, '2026-05-11 00:00:00', '2026-05-19 00:00:00', '테스트', 1, '2026-05-11 10:29:54', '2026-05-11 10:29:54');
 
 -- 테이블 newone4.product_promotion_target 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_promotion_target` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '타겟 ID',
-  `promotion_id` int(11) NOT NULL COMMENT '프로모션 ID',
   `product_promotion_code` varchar(50) DEFAULT NULL,
   `target_type` enum('all','category','product') NOT NULL COMMENT '타겟 유형 (전체/카테고리/상품)',
   `target_code` varchar(50) DEFAULT NULL COMMENT '타겟 대상 ID (카테고리 ID 또는 상품 ID)',
   `created_at` datetime DEFAULT current_timestamp() COMMENT '생성 일시',
   PRIMARY KEY (`id`),
-  KEY `promotion_id` (`promotion_id`),
   KEY `FK_product_promotion_target_product_promotion` (`product_promotion_code`),
-  CONSTRAINT `FK_product_promotion_target_product_promotion` FOREIGN KEY (`product_promotion_code`) REFERENCES `product_promotion` (`product_promotion_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `product_promotion_target_ibfk_1` FOREIGN KEY (`promotion_id`) REFERENCES `product_promotion` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  CONSTRAINT `FK_product_promotion_target_product_promotion` FOREIGN KEY (`product_promotion_code`) REFERENCES `product_promotion` (`product_promotion_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_promotion_target:~2 rows (대략적) 내보내기
-INSERT INTO `product_promotion_target` (`id`, `promotion_id`, `product_promotion_code`, `target_type`, `target_code`, `created_at`) VALUES
-	(1, 1, NULL, 'product', '20260209165809589', '2026-02-11 16:05:20'),
-	(4, 2, NULL, 'product', '20260209165809589', '2026-03-05 11:46:57');
+-- 테이블 데이터 newone4.product_promotion_target:~3 rows (대략적) 내보내기
+INSERT INTO `product_promotion_target` (`id`, `product_promotion_code`, `target_type`, `target_code`, `created_at`) VALUES
+	(5, '202605111029548025', 'product', '20260209165809589', '2026-05-11 10:29:54'),
+	(6, NULL, 'product', '20260209165809589', '2026-05-11 10:48:29'),
+	(7, NULL, 'product', '20260506111049033', '2026-05-11 10:48:29');
 
 -- 테이블 newone4.product_review 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_review` (
@@ -264,7 +354,7 @@ CREATE TABLE IF NOT EXISTS `refresh_tokens` (
   CONSTRAINT `FK_refresh_tokens_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.refresh_tokens:~3 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.refresh_tokens:~5 rows (대략적) 내보내기
 INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdAt`) VALUES
 	(4, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsImVtYWlsIjoiamVvbmdrZXkzMzE3QG5hdmVyLmNvbSIsIm5hbWUiOiLrr7zsoJXquLAiLCJwYXNzd29yZCI6IiQyYiQxMCROcFhnMTZlMkdCVGdHRllyS1RoUHp1a1JnYXROeWVzUnFZVVROODJIVFJMNkJ4elJaLm9WcSIsIm1hcmtldGluZ0FncmVlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjpbMV19LCJwcm9maWxlIjpudWxsLCJyb2xlIjoiVVNFUiIsInN0YXR1cyI6IkFDVElWRSJ9LCJpYXQiOjE3Njk2NTk1NjIsImV4cCI6MTc3MDI2NDM2Mn0.X66tl8mDal9shwAnjwXDHq-K-c2Jqvtq4ZuVIxkVVqA', '2026-02-05 13:06:02', '2026-01-29 13:06:02'),
 	(31, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsInJvbGUiOiJVU0VSIiwicHJvZmlsZSI6bnVsbH0sImlhdCI6MTc3MjYwNjg1OSwiZXhwIjoxNzczMjExNjU5fQ.GB5v_jpXDuka80imLH-uBCRVFEz6vmn5xL6dZLVCV2E', '2026-03-11 15:47:39', '2026-03-04 15:47:39'),
@@ -282,7 +372,7 @@ CREATE TABLE IF NOT EXISTS `review_campaign` (
   `short_description` varchar(50) NOT NULL DEFAULT '0',
   `is_display` tinyint(4) NOT NULL DEFAULT 0,
   `user_code` varchar(50) NOT NULL COMMENT '관리자 계정',
-  `campaign_category_id` varchar(50) NOT NULL DEFAULT '0',
+  `campaign_category_code` varchar(50) NOT NULL DEFAULT '0',
   `campaign_type` enum('DELIVERY','VISIT','REPORTER','PURCHASE') NOT NULL DEFAULT 'DELIVERY',
   `state` enum('DRAFT','PENDING','SCHEDULED','RECRUITING','CLOSED','SELECTING','REVIEWING','COMPLETED') NOT NULL DEFAULT 'DRAFT' COMMENT 'draft=임시저장, pending=대기, scheduled=준비중, recruiting=모집중, closed=종료, selecting=선정중, reviewing=작성중, completed=완료',
   `max_applicants` int(11) NOT NULL DEFAULT 0,
@@ -297,16 +387,16 @@ CREATE TABLE IF NOT EXISTS `review_campaign` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `FK_review_campaign_review_campaign_category` (`campaign_category_id`),
   KEY `FK_review_campaign_user` (`user_code`),
   KEY `campaign_code` (`campaign_code`),
+  KEY `FK_review_campaign_review_campaign_category` (`campaign_category_code`) USING BTREE,
   CONSTRAINT `FK_review_campaign_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.review_campaign:~2 rows (대략적) 내보내기
-INSERT INTO `review_campaign` (`id`, `campaign_code`, `product_name`, `title`, `short_description`, `is_display`, `user_code`, `campaign_category_id`, `campaign_type`, `state`, `max_applicants`, `main_image`, `detail_images`, `content`, `start_application_date`, `end_application_date`, `reviewer_selection_date`, `start_write_date`, `end_write_date`, `created_at`, `updated_at`) VALUES
+INSERT INTO `review_campaign` (`id`, `campaign_code`, `product_name`, `title`, `short_description`, `is_display`, `user_code`, `campaign_category_code`, `campaign_type`, `state`, `max_applicants`, `main_image`, `detail_images`, `content`, `start_application_date`, `end_application_date`, `reviewer_selection_date`, `start_write_date`, `end_write_date`, `created_at`, `updated_at`) VALUES
 	(11, '202603251523561942', '와바미 파데', '와바미 뷰티', '와바미에서 만든 뷰티 브랜드!!', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'COMPLETED', 10, '/uploads/2026/03/25/review/20260325152356099/1774419836258-zxsqcl4be.webp', '["/uploads/2026/03/27/review/20260327144427556_d0/1774590267260-yniyp0wrg.webp","/uploads/2026/03/27/review/20260327143905099_d1/1774589945886-pqqagjgoe.webp","/uploads/2026/03/27/review/20260327143905099_d0/1774589945778-iuy4g4waf.webp","/uploads/2026/03/27/review/20260327143905099_d2/1774589946601-sw4g6bafx.webp"]', '이것 저것 그것 베이비', '2026-02-26 00:00:00', '2026-04-20 00:00:00', '2026-04-21 00:00:00', '2026-04-22 00:00:00', '2026-04-26 00:00:00', '2026-03-25 15:23:56', '2026-04-22 12:04:27'),
-	(12, '202604231037085673', '와바미 닥터버니 티모시 베이직', '와바미 토끼사료 닥터 버니', '캠페인 테스트', 1, 'jeo7334Wt202601', '20260402131737001', 'DELIVERY', 'RECRUITING', 5, '/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp', '["/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp","/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp","/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp"]', '이건 테스트임', '2026-04-23 00:00:00', '2026-05-10 00:00:00', '2026-05-11 00:00:00', '2026-05-11 00:00:00', '2026-05-24 00:00:00', '2026-04-23 10:37:11', '2026-04-23 10:37:48');
+	(12, '202604231037085673', '와바미 닥터버니 티모시 베이직', '와바미 토끼사료 닥터 버니', '캠페인 테스트', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'RECRUITING', 5, '/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp', '["/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp","/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp","/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp"]', '이건 테스트임', '2026-04-23 00:00:00', '2026-05-18 00:00:00', '2026-05-19 00:00:00', '2026-05-19 00:00:00', '2026-05-24 00:00:00', '2026-04-23 10:37:11', '2026-05-11 16:35:37');
 
 -- 테이블 newone4.review_campaign_application 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_application` (
@@ -436,12 +526,12 @@ CREATE TABLE IF NOT EXISTS `review_campaign_channel` (
   KEY `FK_review_campaign_channel_review_campaign_channel_view` (`channel_code`),
   CONSTRAINT `FK__review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_review_campaign_channel_review_campaign_channel_view` FOREIGN KEY (`channel_code`) REFERENCES `review_campaign_channel_view` (`channel_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.review_campaign_channel:~2 rows (대략적) 내보내기
 INSERT INTO `review_campaign_channel` (`id`, `campaign_code`, `channel_code`) VALUES
 	(52, '202603251523561942', '202603171602001'),
-	(54, '202604231037085673', '202603171603001');
+	(56, '202604231037085673', '202603171603001');
 
 -- 테이블 newone4.review_campaign_channel_view 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_channel_view` (
@@ -544,12 +634,12 @@ CREATE TABLE IF NOT EXISTS `review_campaign_reward` (
   KEY `FK_review_campaign_reward_review_campaign` (`campaign_code`),
   KEY `reward_code` (`reward_code`),
   CONSTRAINT `FK_review_campaign_reward_review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.review_campaign_reward:~1 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.review_campaign_reward:~2 rows (대략적) 내보내기
 INSERT INTO `review_campaign_reward` (`id`, `reward_code`, `campaign_code`, `reward_type`, `name`, `description`, `value`, `quantity`) VALUES
 	(45, '202604211322287549', '202603251523561942', 'PRODUCT', '와바미 파데 50g', '와바미 파데 21호, 23호 중 택 1', 0, 1),
-	(46, '202604231037112360', '202604231037085673', 'PRODUCT', '와바미 닥터버니 티모시 베이직 1kg', '티모시가 주 성분으로 만든 토끼 사료', 0, 1);
+	(48, '202605111635370766', '202604231037085673', 'PRODUCT', '와바미 닥터버니 티모시 베이직 1kg', '티모시가 주 성분으로 만든 토끼 사료', 0, 1);
 
 -- 테이블 newone4.review_campaign_reward_option 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_reward_option` (

@@ -390,13 +390,12 @@ function Detail() {
                     }
                 }
                 setProduct(data);
-                console.log(data.options);
 
                 if (data.options && Array.isArray(data.options) && data.options.length > 0) {
                     setOptions(data.options);
                 } else {
                     const singleOption = {
-                        optionId: `unique`,
+                        product_option_code: `unique`,
                         label: data.name,
                         value: data.name,
                         stock: data.is_unlimited_stock ? 9999999999 : data.stock,
@@ -495,15 +494,12 @@ function Detail() {
         const selectedItem = option.value.items.find(
             (item) => item.value === value
         );
-        console.log('value : ', value);
-        console.log('option : ', optionIndex);
 
         if (!selectedItem) return;
 
         setSelectedOptions((prev) => {
             const next = [...prev];
             next[optionIndex] = {
-                optionId: option.id,
                 label: selectedItem.label,
                 value: selectedItem.value,
                 stock: selectedItem.stock,
@@ -520,7 +516,6 @@ function Detail() {
 
                     if (exists) return prevList;
 
-                    // Calculate max quantity based on the minimum stock of selected options
                     const minStock = Math.min(...next.map(opt => opt.stock));
 
                     return [...prevList, { options: [...next], quantity: 1, stock: minStock }];
@@ -560,8 +555,33 @@ function Detail() {
     }));
 
     const submitOrder = () => {
-        const order = { ...optionValueList, product_code: product.product_code };
-        console.log(order);
+        const order = optionValueList.map(item => ({
+            product_option_code: item.options[0]?.product_option_code,
+            quantity: item.quantity,
+            product_code: product.product_code,
+        }));
+
+        navigate('/order', { state: { orderData: order, isDirectOrder: true } })
+    }
+
+    const addBasket = async () => {
+        const basket = optionValueList.map(item => ({
+            product_option_code: item.options[0]?.product_option_code,
+            quantity: item.quantity,
+            product_code: product.product_code,
+        }));
+
+        try {
+            const response = await axiosInstance.post('/shop/product/basket', basket);
+
+            if (response.data.code === '201') {
+                toaster.create({ title: '이미 장바구니에 담겨 있습니다.', type: 'warning' });
+            } else {
+                toaster.create({ title: '장바구니에 추가되었습니다.', type: 'success', action: { label: '장바구니 가기', onClick: () => navigate('/cart') } });
+            }
+        } catch (error) {
+            toaster.create({ title: '장바구니에 추가 실패했습니다.', type: 'error' });
+        }
     }
 
 
@@ -634,7 +654,6 @@ function Detail() {
 
                             <Stack>
                                 {optionList.map((option, index) => {
-                                    console.log('selectedOptions[index] : ', selectedOptions[index]);
                                     return (
                                         <Select.Root
                                             collection={option.value}
@@ -661,14 +680,13 @@ function Detail() {
                                             </Select.Positioner>
                                         </Select.Root>
                                     )
-
                                 })}
                             </Stack>
                             <PriceView selectedOptions={optionValueList} product={product} discount={discount} onRemove={removeOptionValueList} onChangeQuantity={updateOptionQuantity} />
                             {product.is_sale ? (
                                 <HStack>
-                                    <Button variant="outline" width="1/2">장바구니 담기</Button>
-                                    <Button width="1/2" onClick={() => submitOrder()}>바로 구매하기</Button>
+                                    <Button variant="outline" width="1/2" disabled={optionValueList.length === 0} onClick={() => addBasket()}>장바구니 담기</Button>
+                                    <Button width="1/2" disabled={optionValueList.length === 0} onClick={() => submitOrder()}>{optionValueList.length === 0 ? '옵션을 선택해주세요.' : '바로 구매하기'}</Button>
                                 </HStack>
                             ) : (
                                 <Button disabled={true}>구매 불가</Button>

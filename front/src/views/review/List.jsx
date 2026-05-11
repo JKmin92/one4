@@ -12,7 +12,7 @@ function List() {
     const menuActiveStyle = { borderBottomWidth: '2px', borderColor: 'main', fontWeight: 'medium' };
 
     const [categorys, setCategorys] = useState([]);
-    const [rootCategoryId, setRootCategoryId] = useState(null);
+    const [rootCategoryCode, setRootCategoryCode] = useState(null);
     const [reviewCampaignChannelView, setReviewCampaignChannelView] = useState([]);
 
     const metchTitle = (id) => {
@@ -33,12 +33,12 @@ function List() {
             const data = response.data;
             setCategorys(data);
 
-            const currentCategory = data.find(c => String(c.id) === String(id));
+            const currentCategory = data.find(c => String(c.category_code) === String(id));
             if (currentCategory) {
-                if (!currentCategory.parent_id) {
-                    setRootCategoryId(currentCategory.id);
+                if (!currentCategory.parent_code) {
+                    setRootCategoryCode(currentCategory.category_code);
                 } else {
-                    setRootCategoryId(currentCategory.parent_id);
+                    setRootCategoryCode(currentCategory.parent_code);
                 }
                 setTitle(metchTitle(currentCategory.type));
             }
@@ -69,9 +69,9 @@ function List() {
             <Heading>{title} 캠페인</Heading>
             <Stack direction="row" borderBottomWidth="1px">
                 <HStack gap="2">
-                    <Link href={`/review/categorys/${rootCategoryId}`} {...menuStyle} {...(rootCategoryId === id ? menuActiveStyle : {})}>전체</Link>
-                    {categorys.filter(c => c.parent_id == rootCategoryId).map((category) => (
-                        <Link href={`/review/categorys/${category.id}`} key={category.id} {...menuStyle} {...(category.id === id ? menuActiveStyle : {})}>{category.name}</Link>
+                    <Link href={`/review/categorys/${rootCategoryCode}`} {...menuStyle} {...(rootCategoryCode === id ? menuActiveStyle : {})}>전체</Link>
+                    {categorys.filter(c => c.parent_code == rootCategoryCode).map((category) => (
+                        <Link href={`/review/categorys/${category.category_code}`} key={category.category_code} {...menuStyle} {...(category.category_code === id ? menuActiveStyle : {})}>{category.name}</Link>
                     ))}
                 </HStack>
             </Stack>

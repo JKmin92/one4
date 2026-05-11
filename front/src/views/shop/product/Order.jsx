@@ -1,10 +1,12 @@
-import { Accordion, Box, Button, Checkbox, CloseButton, Collapsible, DataList, Dialog, Field, Flex, Heading, HStack, Icon, Input, InputGroup, RadioCard, RadioGroup, Separator, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Accordion, Box, Button, Checkbox, CloseButton, Collapsible, DataList, Dialog, Field, Flex, NativeSelect, Heading, HStack, Icon, Input, InputGroup, RadioCard, RadioGroup, Separator, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { formatNumber } from "../../../utils/simpleUtils";
 import { LuSearch } from "react-icons/lu";
 import { toaster } from "../../../components/ui/toaster";
+import { useLocation } from "react-router-dom";
+import axiosInstance from "../../../utils/api";
 
-function ProductList({ productList, optionList, productQuantity }) {
+function ProductList({ orderProducts = [] }) {
 
     return (
         <Box borderWidth="1px" rounded="md">
@@ -12,26 +14,41 @@ function ProductList({ productList, optionList, productQuantity }) {
                 <Heading>상품</Heading>
             </Flex>
             <Stack separator={<StackSeparator />} p="10px 0">
-                {productList.map((product, index) => {
-                    const options = optionList.filter((option) => option.id === product.id);
-                    const quantity = productQuantity.filter((quantity) => quantity.id === product.id);
+                {orderProducts.map((product, index) => {
+                    const optionText = product.options ? `${product.options.name}: ${product.options.value}` : null;
+                    const quantity = product.quantity;
+
+                    let productPrice = product.product_price * quantity;
+                    if (product.active_promotion) {
+                        if (product.active_promotion.discount_type === 'fixed') {
+                            productPrice = (product.product_price - product.active_promotion.discount_value) * quantity;
+                        } else if (product.active_promotion.discount_type === 'percentage') {
+                            productPrice = (product.product_price * (1 - product.active_promotion.discount_value / 100)) * quantity;
+                        }
+                    }
 
                     return (
                         <Flex key={index} p="0 10px" justifyContent="space-between" alignItems="center">
                             <Stack gap="0">
-                                <Text fontSize="md">{product.name}</Text>
+                                <Text fontSize="md">{product.product_name}</Text>
                                 <HStack fontSize="xs">
-                                    {options.length > 0 && (
-                                        <HStack>
-                                            {options.map((option, index) => (
-                                                <Text key={index}>{option.label}</Text>
-                                            ))}
-                                        </HStack>
+                                    {optionText != null && (
+                                        <Text>{optionText}</Text>
                                     )}
-                                    <Text>수량 {quantity[0]?.quantity}개</Text>
+                                    <Text>수량 {quantity}개</Text>
                                 </HStack>
                             </Stack>
-                            <Text>{formatNumber(product.price)}</Text>
+                            <HStack>
+                                {product.active_promotion && (
+                                    <HStack>
+                                        <Text fontSize="xs" >
+                                            {product.active_promotion.discount_type === 'fixed' ? `-${Math.round((product.active_promotion.discount_value / product.product_price) * 100)}%` : `-${product.active_promotion.discount_value}%`}
+                                        </Text>
+                                        <Text fontSize="xs" textDecorationLine="line-through">{formatNumber(product.product_price * quantity)}</Text>
+                                    </HStack>
+                                )}
+                                <Text fontSize="lg" fontWeight="medium">{formatNumber(productPrice)}</Text>
+                            </HStack>
                         </Flex>
                     )
                 })}
@@ -141,27 +158,27 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus }) {
     )
 }
 
-function Delivery({ deliveryList, setDeliveryList }) {
+function Delivery({ deliveryList, setDeliveryList, setSelectedAddress }) {
     const [addDeliveryStatus, setAddDeliveryStatus] = useState(false);
     const [delivery, setDelivery] = useState(null);
-    const [selectedId, setSelectedId] = useState(0);
+    const [selectedCode, setSelectedCode] = useState(null);
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
         if (!deliveryList) return;
 
-        const selected = deliveryList.find(d => d.selected === true);
+        const selected = deliveryList.find(d => d.isDefault === 1 || d.isDefault === true);
         if (selected) {
+            setSelectedAddress(selected);
             setDelivery(selected);
-            setSelectedId(selected.id);
+            setSelectedCode(selected.address_code);
         }
-
-
     }, [deliveryList]);
 
     const selectAddress = () => {
-        const selected = deliveryList.find(d => d.id === selectedId);
+        const selected = deliveryList.find(d => d.address_code === selectedCode);
         if (selected) {
+            setSelectedAddress(selected);
             setDelivery(selected);
             setOpen(false);
         }
@@ -182,10 +199,10 @@ function Delivery({ deliveryList, setDeliveryList }) {
                                     <AddDelivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} setAddDeliveryStatus={setAddDeliveryStatus} />
                                 ) : (
                                     deliveryList.length > 0 ? (
-                                        <RadioCard.Root value={selectedId} onValueChange={(e) => setSelectedId(e.value)}>
+                                        <RadioCard.Root value={selectedCode} onValueChange={(e) => setSelectedCode(e.value)}>
                                             <Stack gap="4">
                                                 {deliveryList.map((del) => (
-                                                    <RadioCard.Item key={del.id} value={del.id}>
+                                                    <RadioCard.Item key={del.address_code} value={del.address_code}>
                                                         <RadioCard.ItemHiddenInput />
                                                         <RadioCard.ItemControl>
                                                             <RadioCard.ItemIndicator />
@@ -234,14 +251,15 @@ function Delivery({ deliveryList, setDeliveryList }) {
             ) : (
                 <Button>배송지 추가</Button>
             )}
-
         </Box>
     )
 }
 
-function Payment() {
+function Payment({ setSelectedPayment }) {
 
     const [paymentType, setPaymentType] = useState('card');
+    const [selectedBank, setSelectedBank] = useState('');
+    const [depositName, setDepositName] = useState('');
 
     const paymentKinds = [
         {
@@ -252,7 +270,17 @@ function Payment() {
         {
             value: 'bank',
             label: '무통장 결제',
-            content: '무통장 결제 관련 내용 들어갈 예정'
+            content: (
+                <Stack>
+                    <NativeSelect.Root value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)}>
+                        <NativeSelect.Field placeholder="계좌를 선택해주세요">
+                            <option value="ibk">기업은행 123-45871-27156(예금주 : 에이민)</option>
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                    <Input value={depositName} onChange={(e) => setDepositName(e.target.value)} placeholder="입금자명을 입력해주세요." />
+                </Stack>
+            )
         },
         {
             value: 'escrow',
@@ -260,6 +288,18 @@ function Payment() {
             content: '에스크로 결제 관련 내용 들어갈 예정'
         },
     ]
+
+    useEffect(() => {
+        setSelectedPayment(prev => ({ ...prev, payment_type: paymentType }));
+    }, [paymentType]);
+
+    useEffect(() => {
+        setSelectedPayment(prev => ({ ...prev, bank_code: selectedBank }));
+    }, [selectedBank]);
+
+    useEffect(() => {
+        setSelectedPayment(prev => ({ ...prev, deposit_name: depositName }));
+    }, [depositName]);
 
     return (
         <Box borderWidth="1px" rounded="md">
@@ -295,41 +335,113 @@ function Payment() {
 
 function Order() {
 
-    const [productList, setProductList] = useState([]);
-    const [optionList, setOptionList] = useState([]);
-    const [productQuantity, setProductQuantity] = useState([]);
+    const location = useLocation();
+    const [orderProducts, setOrderProducts] = useState([]);
     const [deliveryList, setDeliveryList] = useState([]);
+    const [totalProductPrice, setTotalProductPrice] = useState(0);
+    const [deliveryPrice, setDeliveryPrice] = useState(0);
+
+    const [selectedAddress, setSelectedAddress] = useState(null);
+    const [selectedPayment, setSelectedPayment] = useState(null);
+
+    useEffect(() => {
+        if (location.state && location.state.orderData) {
+            const orderItems = location.state.orderData;
+
+            const getProductList = async () => {
+                try {
+                    const response = await axiosInstance.post(`/shop/product/order/product`, { orderItems })
+                    if (response.data) {
+                        let total = 0;
+                        response.data.forEach(product => {
+                            let productPrice = product.product_price * product.quantity;
+                            if (product.active_promotion) {
+                                if (product.active_promotion.discount_type === 'fixed') {
+                                    productPrice = (product.product_price - product.active_promotion.discount_value) * product.quantity;
+                                } else if (product.active_promotion.discount_type === 'percentage') {
+                                    productPrice = (product.product_price * (1 - product.active_promotion.discount_value / 100)) * product.quantity;
+                                }
+                            }
+                            total += productPrice;
+                        });
+                        setTotalProductPrice(total);
+                        setOrderProducts(response.data);
+                    } else {
+                        toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+                }
+            }
+            getProductList();
+        } else if (location.state && location.state.basketData) {
+            const basketItems = location.state.basketData;
+
+            const getBasketProductList = async () => {
+                try {
+                    const response = await axiosInstance.post(`/shop/product/order/basket`, { basketItems });
+                    if (response.data) {
+                        let total = 0;
+                        response.data.forEach(product => {
+                            let productPrice = product.product_price * product.quantity;
+                            if (product.active_promotion) {
+                                if (product.active_promotion.discount_type === 'fixed') {
+                                    productPrice = (product.product_price - product.active_promotion.discount_value) * product.quantity;
+                                } else if (product.active_promotion.discount_type === 'percentage') {
+                                    productPrice = (product.product_price * (1 - product.active_promotion.discount_value / 100)) * product.quantity;
+                                }
+                            }
+                            total += productPrice;
+                        });
+                        setTotalProductPrice(total);
+                        setOrderProducts(response.data);
+                    } else {
+                        toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+                }
+            }
+            getBasketProductList();
+        }
+    }, [location]);
+
+    useEffect(() => {
+        setDeliveryPrice(totalProductPrice > 50000 ? 0 : 3500);
+    }, [totalProductPrice]);
+
 
     useEffect(() => {
 
-        const products = [
-            { id: 1, name: '상품 1', price: 10000 },
-            { id: 2, name: '상품 2', price: 10000 },
-            { id: 3, name: '상품 3', price: 10000 }
-        ]
+        const getDeliveryList = async () => {
+            try {
+                const response = await axiosInstance.get(`/user/address`);
+                if (response.data) {
+                    setDeliveryList(response.data);
+                } else {
+                    toaster.create({ title: '배송지를 불러올 수 없습니다.', type: 'error' });
+                }
+            } catch (e) {
+                console.error(e);
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+            }
+        }
 
-        const options = [
-            { id: 1, label: '블루', value: 'blue' },
-            { id: 1, label: 'M(medium)', value: 'medium' },
-            { id: 2, label: '블루', value: 'blug' }
-        ]
-
-        const quantitys = [
-            { id: 1, quantity: 1 },
-            { id: 2, quantity: 2 },
-            { id: 3, quantity: 1 },
-        ]
-
-        const deliverys = [
-            { id: 1, name: '에이민', postcode: '21069', address: '인천광역시 계양구 오조산로 57번길 15, 명동빌딩', detailAddress: '721호', phone: '070-5147-1560', selected: true },
-            { id: 2, name: '에이민2', postcode: '21069', address: '인천광역시 계양구 오조산로 57번길 15, 명동빌딩', detailAddress: '721호', phone: '070-5147-1560', selected: false }
-        ]
-
-        setProductList(products);
-        setOptionList(options);
-        setProductQuantity(quantitys);
-        setDeliveryList(deliverys);
+        getDeliveryList();
     }, []);
+
+    const onOrderSubmit = async () => {
+        try {
+            console.log('orderProducts : ', orderProducts);
+            console.log('selectedAddress : ', selectedAddress);
+            console.log('selectedPayment : ', selectedPayment);
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
 
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} width={{ base: 'full', md: "6xl" }} margin="auto" gap="6">
@@ -337,9 +449,9 @@ function Order() {
             <Stack direction={{ base: 'column', md: "row" }}>
                 <Box width={{ base: 'full', md: "3/4" }}>
                     <Stack gap="6">
-                        <ProductList productList={productList} optionList={optionList} productQuantity={productQuantity} />
-                        <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
-                        <Payment />
+                        <ProductList orderProducts={orderProducts} />
+                        <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} setSelectedAddress={setSelectedAddress} />
+                        <Payment setSelectedPayment={setSelectedPayment} />
                     </Stack>
                 </Box>
                 <Box width={{ base: 'full', md: "1/4" }} position="relative">
@@ -348,21 +460,21 @@ function Order() {
                         <DataList.Root orientation="horizontal">
                             <DataList.Item>
                                 <DataList.ItemLabel>총 상품 가격</DataList.ItemLabel>
-                                <DataList.ItemValue justifyContent="end">{formatNumber(10000)}</DataList.ItemValue>
+                                <DataList.ItemValue justifyContent="end">{formatNumber(totalProductPrice)}</DataList.ItemValue>
                             </DataList.Item>
                             <DataList.Item>
                                 <DataList.ItemLabel>배송비</DataList.ItemLabel>
-                                <DataList.ItemValue justifyContent="end">{formatNumber(3500)}</DataList.ItemValue>
+                                <DataList.ItemValue justifyContent="end">{formatNumber(deliveryPrice)}</DataList.ItemValue>
                             </DataList.Item>
                         </DataList.Root>
                         <Separator />
                         <DataList.Root orientation="horizontal">
                             <DataList.Item fontWeight="medium">
                                 <DataList.ItemLabel>총 결제 금액</DataList.ItemLabel>
-                                <DataList.ItemValue justifyContent="end" fontSize="xl">{formatNumber(13500)}</DataList.ItemValue>
+                                <DataList.ItemValue justifyContent="end" fontSize="xl">{formatNumber(totalProductPrice + deliveryPrice)}</DataList.ItemValue>
                             </DataList.Item>
                         </DataList.Root>
-                        <Button>결제하기</Button>
+                        <Button onClick={onOrderSubmit}>결제하기</Button>
                     </Stack>
                 </Box>
             </Stack>

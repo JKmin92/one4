@@ -44,7 +44,7 @@ function List() {
                         {promotions.map((promotion) => (
                             <Table.Row key={promotion.id}>
                                 <Table.Cell fontWeight="medium">
-                                    <Link href={`/admin/shop/promotion/update/${promotion.id}`}>{promotion.name}</Link>
+                                    <Link href={`/admin/shop/promotion/update/${promotion.product_promotion_code}`}>{promotion.name}</Link>
                                 </Table.Cell>
                                 <Table.Cell>
                                     {promotion.discount_type === 'percentage'

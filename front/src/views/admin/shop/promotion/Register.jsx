@@ -17,7 +17,7 @@ function Register() {
         startDate: "",
         endDate: "",
         description: "",
-        isActive: true,
+        isActive: false,
         targetType: "all", // all, category, product
     });
 
@@ -72,7 +72,7 @@ function Register() {
                             setSelectedCategories(initialCategories);
                         } else if (targetType === 'product') {
                             const initialProducts = data.targets.map(t => ({
-                                id: t.target_id,
+                                product_code: t.product_code,
                                 name: t.product_name,
                                 price: t.product_price,
                                 images: t.product_images
@@ -117,13 +117,13 @@ function Register() {
     };
 
     const handleAddProduct = (product) => {
-        if (!selectedProducts.find(p => p.id === product.id)) {
+        if (!selectedProducts.find(p => p.product_code === product.product_code)) {
             setSelectedProducts([...selectedProducts, product]);
         }
     };
 
-    const handleRemoveProduct = (productId) => {
-        setSelectedProducts(selectedProducts.filter(p => p.id !== productId));
+    const handleRemoveProduct = (product_code) => {
+        setSelectedProducts(selectedProducts.filter(p => p.product_code !== product_code));
     };
 
     const handleSubmit = async (e) => {
@@ -158,9 +158,9 @@ function Register() {
         const payload = {
             ...promotion,
             targets: promotion.targetType === 'category'
-                ? selectedCategories.map(c => c.id)
+                ? selectedCategories.map(c => c.category_code)
                 : promotion.targetType === 'product'
-                    ? selectedProducts.map(p => p.id)
+                    ? selectedProducts.map(p => p.product_code)
                     : []
         };
 
@@ -282,7 +282,7 @@ function Register() {
                                                 const mainImage = product.images && product.images.find(img => img.is_main === 1);
                                                 return (
                                                     <List.Item
-                                                        key={product.id}
+                                                        key={product.product_code}
                                                         p="2"
                                                         _hover={{ bg: "gray.100", cursor: "pointer" }}
                                                         onClick={() => handleAddProduct(product)}
@@ -315,7 +315,7 @@ function Register() {
                                         {selectedProducts.map(product => {
                                             const mainImage = product.images && product.images.find(img => img.is_main === 1);
                                             return (
-                                                <HStack key={product.id} p="2" borderWidth="1px" rounded="md" bg="gray.50" justifyContent="space-between">
+                                                <HStack key={product.product_code} p="2" borderWidth="1px" rounded="md" bg="gray.50" justifyContent="space-between">
                                                     <HStack gap="3">
                                                         <Box w="10" h="10" rounded="md" overflow="hidden" bg="white" flexShrink={0} borderWidth="1px">
                                                             {mainImage ? (

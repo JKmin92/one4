@@ -1,28 +1,30 @@
 import * as model from '../../../models/admin/shop/promotionModel.js';
+import { generateUniqueId } from '../../../utils/customUtils.js';
 
 export const createPromotion = async (promotionData) => {
-    const promotionId = await model.insertPromotion(promotionData);
+    const product_promotion_code = generateUniqueId();
+    await model.insertPromotion({ ...promotionData, product_promotion_code });
 
     if (promotionData.targetType !== 'all') {
         const targets = promotionData.targets || [];
-        for (const targetId of targets) {
+        for (const target_code of targets) {
             await model.insertPromotionTarget({
-                promotionId,
-                targetType: promotionData.targetType,
-                targetId
+                product_promotion_code,
+                target_type: promotionData.targetType,
+                target_code
             });
         }
     }
 
-    return { success: true, id: promotionId };
+    return { success: true, id: product_promotion_code };
 };
 
 export const getPromotions = async () => {
     return await model.selectPromotions();
 };
 
-export const getPromotionById = async (id) => {
-    const promotion = await model.selectPromotionById(id);
+export const getPromotion = async (product_promotion_code) => {
+    const promotion = await model.selectPromotion(product_promotion_code);
     if (!promotion) return null;
 
     if (promotion.targets) {
@@ -45,14 +47,14 @@ export const getPromotionById = async (id) => {
 export const updatePromotion = async (promotionData) => {
     await model.updatePromotion(promotionData);
 
-    await model.deletePromotionTarget(promotionData.id);
+    await model.deletePromotionTarget(promotionData.product_promotion_code);
     if (promotionData.targetType !== 'all') {
         const targets = promotionData.targets || [];
-        for (const targetId of targets) {
+        for (const target_code of targets) {
             await model.insertPromotionTarget({
-                promotionId: promotionData.id,
-                targetType: promotionData.targetType,
-                targetId
+                product_promotion_code: promotionData.product_promotion_code,
+                target_type: promotionData.targetType,
+                target_code
             });
         }
     }

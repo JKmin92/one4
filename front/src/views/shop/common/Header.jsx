@@ -1,12 +1,14 @@
 import { Avatar, Button, Circle, CloseButton, Flex, Float, Group, HStack, Icon, Image, Input, InputGroup, Link, Menu, Stack, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LuAlignJustify, LuBell, LuSearch, LuShoppingCart, LuUserRound } from "react-icons/lu";
 import { useAuth } from "../../../utils/useAuth";
+import axiosInstance from "../../../utils/api";
 
 function Header() {
 
     const [keyword, setKeyword] = useState('');
     const headerLineStyle = { p: '15px', px: { base: '5px', md: 'layoutX' }, width: '100%', borderBottom: '1px solid #e5e5e5' };
+
 
     const keywordClearElement = keyword ? (
         <CloseButton size="xs" onClick={() => setKeyword('')} rounded="full" />
@@ -20,6 +22,8 @@ function Header() {
     const { user, logout } = useAuth();
 
     const handleLogout = async () => await logout();
+
+
 
     return (
         <Stack gap="0">
@@ -56,12 +60,7 @@ function Header() {
                             <Input rounded="full" width={{ base: '5', md: "auto" }} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
                         </InputGroup>
                     </form>
-                    <Group>
-                        <Link href="/cart">
-                            <Icon size="md"><LuShoppingCart /></Icon>
-                            <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
-                        </Link>
-                    </Group>
+
 
                     {!user ? (
                         <HStack gap={{ base: '2', md: "6" }}>
@@ -70,6 +69,12 @@ function Header() {
                         </HStack>
                     ) : (
                         <>
+                            <Group>
+                                <Link href="/cart">
+                                    <Icon size="md"><LuShoppingCart /></Icon>
+                                    <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
+                                </Link>
+                            </Group>
                             <Icon size="md"><LuBell /></Icon>
                             <Menu.Root>
                                 <Menu.Trigger rounded="full">

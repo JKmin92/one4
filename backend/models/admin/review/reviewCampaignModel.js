@@ -6,11 +6,11 @@ import db from '../../../config/db.js';
  */
 export const insertReviewCampaign = async (data) => {
     const sql = `
-    INSERT INTO review_campaign (campaign_code, title, short_description, product_name, user_code, campaign_category_id, campaign_type, max_applicants, 
+    INSERT INTO review_campaign (campaign_code, title, short_description, product_name, user_code, campaign_category_code, campaign_type, max_applicants, 
     main_image, detail_images, content, start_application_date, end_application_date, reviewer_selection_date, start_write_date, end_write_date, is_display, state) 
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     const [rows] = await db.query(sql,
-        [data.campaign_code, data.title, data.short_description, data.product_name, data.user_code, data.campaign_category_id, data.campaign_type, data.max_applicants,
+        [data.campaign_code, data.title, data.short_description, data.product_name, data.user_code, data.campaign_category_code, data.campaign_type, data.max_applicants,
         data.main_image, data.detail_images, data.content, data.start_application_date, data.end_application_date, data.reviewer_selection_date, data.start_write_date,
         data.end_write_date, data.is_display, data.state || 'PENDING']
     );
@@ -78,17 +78,17 @@ export const updateReviewCampaign = async (data) => {
     if (data.main_image) {
         sql = `
         UPDATE review_campaign SET 
-            title = ?, short_description = ?, product_name = ?, campaign_category_id = ?, campaign_type = ?, max_applicants = ?, 
+            title = ?, short_description = ?, product_name = ?, campaign_category_code = ?, campaign_type = ?, max_applicants = ?, 
             main_image = ?, detail_images = ?, content = ?, start_application_date = ?, end_application_date = ?, reviewer_selection_date = ?, start_write_date = ?, end_write_date = ?, is_display = ?, state = ?
         WHERE campaign_code = ?`;
-        params = [data.title, data.short_description, data.product_name, data.campaign_category_id, data.campaign_type, data.max_applicants, data.main_image, data.detail_images, data.content, data.start_application_date, data.end_application_date, data.reviewer_selection_date, data.start_write_date, data.end_write_date, data.is_display, data.state || 'PENDING', data.campaign_code];
+        params = [data.title, data.short_description, data.product_name, data.campaign_category_code, data.campaign_type, data.max_applicants, data.main_image, data.detail_images, data.content, data.start_application_date, data.end_application_date, data.reviewer_selection_date, data.start_write_date, data.end_write_date, data.is_display, data.state || 'PENDING', data.campaign_code];
     } else {
         sql = `
         UPDATE review_campaign SET 
-            title = ?, short_description = ?, product_name = ?, campaign_category_id = ?, campaign_type = ?, max_applicants = ?, 
+            title = ?, short_description = ?, product_name = ?, campaign_category_code = ?, campaign_type = ?, max_applicants = ?, 
             detail_images = ?, content = ?, start_application_date = ?, end_application_date = ?, reviewer_selection_date = ?, start_write_date = ?, end_write_date = ?, is_display = ?, state = ?
         WHERE campaign_code = ?`;
-        params = [data.title, data.short_description, data.product_name, data.campaign_category_id, data.campaign_type, data.max_applicants, data.detail_images, data.content, data.start_application_date, data.end_application_date, data.reviewer_selection_date, data.start_write_date, data.end_write_date, data.is_display, data.state || 'PENDING', data.campaign_code];
+        params = [data.title, data.short_description, data.product_name, data.campaign_category_code, data.campaign_type, data.max_applicants, data.detail_images, data.content, data.start_application_date, data.end_application_date, data.reviewer_selection_date, data.start_write_date, data.end_write_date, data.is_display, data.state || 'PENDING', data.campaign_code];
     }
     const [rows] = await db.query(sql, params);
     return rows;

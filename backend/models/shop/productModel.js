@@ -65,7 +65,7 @@ export const getActivePromotions = async (product_codes) => {
     return rows;
 };
 
-export const getProductById = async (product_code) => {
+export const getProduct = async (product_code) => {
     const sql = `
         SELECT p.*, 
                (
@@ -107,4 +107,187 @@ export const getProductById = async (product_code) => {
     `;
     const [rows] = await db.query(sql, [product_code]);
     return rows[0];
+};
+
+export const createProductOrderBasket = async (data) => {
+    const sql = `INSERT INTO product_order_basket (order_basket_code, user_code, product_code, product_option_code, quantity) 
+    VALUES (?, ?, ?, ?, ?)
+    `;
+    await db.query(sql, [data.order_basket_code, data.user_code, data.product_code, data.product_option_code, data.quantity]);
+};
+
+export const getProductOrderBasket = async (user_code) => {
+    const sql = `
+        SELECT 
+            pob.*,
+            p.name as product_name,
+            p.price as product_price,
+            p.stock as product_stock,
+            p.is_unlimited_stock,
+            p.is_sale,
+            p.is_display,
+            (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'i_num', pi.i_num, 
+                        'url', pi.url, 
+                        'is_main', pi.is_main, 
+                        'sort_order', pi.sort_order
+                    )
+                )
+                FROM product_image pi
+                WHERE pi.product_code = pob.product_code
+            ) as images,
+            (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'product_promotion_code', pp.product_promotion_code,
+                        'name', pp.name,
+                        'discount_type', pp.discount_type,
+                        'discount_value', pp.discount_value,
+                        'start_date', pp.start_date,
+                        'end_date', pp.end_date
+                    )
+                )
+                FROM product_promotion_target ppt
+                JOIN product_promotion pp ON ppt.product_promotion_code = pp.product_promotion_code
+                WHERE (
+                    (ppt.target_type = 'product' AND ppt.target_code = pob.product_code)
+                    OR ppt.target_type = 'all'
+                )
+                AND pp.is_active = 1
+                AND NOW() BETWEEN pp.start_date AND pp.end_date
+            ) as promotions,
+            (
+                SELECT JSON_OBJECT(
+                    'option_num', po.option_num,
+                    'product_option_code', po.product_option_code,
+                    'name', po.name,
+                    'value', po.value,
+                    'stock', po.stock
+                )
+                FROM product_option po
+                WHERE po.product_option_code = pob.product_option_code
+            ) as options
+        FROM product_order_basket pob
+        JOIN product p ON pob.product_code = p.product_code
+        WHERE pob.user_code = ?
+    `;
+    const [rows] = await db.query(sql, [user_code]);
+    return rows;
+};
+
+export const changeProductOrderBasketQuantity = async (data) => {
+    const sql = `UPDATE product_order_basket SET quantity = ? WHERE order_basket_code = ? AND user_code = ?`;
+    await db.query(sql, [data.quantity, data.order_basket_code, data.user_code]);
+}
+
+export const deleteProductOrderBasket = async (order_basket_code, user_code) => {
+    const sql = `DELETE FROM product_order_basket WHERE order_basket_code = ? AND user_code = ?`;
+    await db.query(sql, [order_basket_code, user_code]);
+}
+
+export const checkProductOrderBasket = async (data) => {
+    const sql = `SELECT COUNT(*) AS count FROM product_order_basket WHERE product_code = ? AND product_option_code = ? AND user_code = ?`;
+    const [rows] = await db.query(sql, [data.product_code, data.product_option_code, data.user_code]);
+    return rows[0].count;
+}
+
+export const getProductOrderBasketCount = async (user_code) => {
+    const sql = `SELECT COUNT(*) AS count FROM product_order_basket WHERE user_code = ?`;
+    const [rows] = await db.query(sql, [user_code]);
+    return rows[0].count;
+}
+
+export const getBasketProductInfo = async (basketCodes) => {
+    if (!basketCodes || basketCodes.length === 0) return [];
+
+    const results = await Promise.all(basketCodes.map(async (basketCode) => {
+        const sql = `SELECT * FROM product_order_basket WHERE order_basket_code = ?`;
+        const [rows] = await db.query(sql, [basketCode.order_basket_code]);
+        if (rows.length > 0) {
+            return {
+                ...basketCode,
+                ...rows[0]
+            };
+        }
+        return null;
+    }));
+
+    return results.filter(r => r !== null);
+}
+
+export const getOrderProductInfo = async (orderItems) => {
+    if (!orderItems || orderItems.length === 0) return [];
+
+    const results = await Promise.all(orderItems.map(async (item) => {
+        const optionCode = item.product_option_code === 'unique' ? null : item.product_option_code;
+        const sql = `
+            SELECT 
+                p.product_code,
+                p.name as product_name,
+                p.price as product_price,
+                p.stock as product_stock,
+                p.is_unlimited_stock,
+                p.is_sale,
+                p.is_display,
+                (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'i_num', pi.i_num, 
+                            'url', pi.url, 
+                            'is_main', pi.is_main, 
+                            'sort_order', pi.sort_order
+                        )
+                    )
+                    FROM product_image pi
+                    WHERE pi.product_code = p.product_code
+                ) as images,
+                (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'product_promotion_code', pp.product_promotion_code,
+                            'name', pp.name,
+                            'discount_type', pp.discount_type,
+                            'discount_value', pp.discount_value,
+                            'start_date', pp.start_date,
+                            'end_date', pp.end_date
+                        )
+                    )
+                    FROM product_promotion_target ppt
+                    JOIN product_promotion pp ON ppt.product_promotion_code = pp.product_promotion_code
+                    LEFT JOIN product_category_connect pcc ON ppt.target_type = 'category' AND ppt.target_code = pcc.category_code
+                    WHERE (
+                        ppt.target_type = 'all'
+                        OR (ppt.target_type = 'product' AND ppt.target_code = p.product_code)
+                        OR (ppt.target_type = 'category' AND pcc.product_code = p.product_code)
+                    )
+                    AND pp.is_active = 1
+                    AND NOW() >= pp.start_date AND NOW() <= pp.end_date
+                ) as promotions,
+                (
+                    SELECT JSON_OBJECT(
+                        'option_num', po.option_num,
+                        'product_option_code', po.product_option_code,
+                        'name', po.name,
+                        'value', po.value,
+                        'stock', po.stock
+                    )
+                    FROM product_option po
+                    WHERE po.product_option_code = ?
+                ) as options
+            FROM product p
+            WHERE p.product_code = ?
+        `;
+        const [rows] = await db.query(sql, [optionCode, item.product_code]);
+        if (rows.length > 0) {
+            return {
+                ...item,
+                ...rows[0]
+            };
+        }
+        return null;
+    }));
+
+    return results.filter(r => r !== null);
 };

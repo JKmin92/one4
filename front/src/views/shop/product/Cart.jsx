@@ -1,44 +1,43 @@
-import { Box, Button, Checkbox, CloseButton, DataList, EmptyState, Flex, Heading, HStack, Icon, IconButton, Link, NumberInput, Separator, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, CloseButton, DataList, EmptyState, Flex, Heading, HStack, Icon, IconButton, Image, Link, NumberInput, Separator, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { calcDiscountPercent, formatNumber } from "../../../utils/simpleUtils";
 import { LuMinus, LuPlus, LuShoppingCart } from "react-icons/lu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiX } from "react-icons/hi";
+import axiosInstance from "../../../utils/api";
+import { useNavigate } from "react-router-dom";
 
-function CartProduct({product, discountPrice, selectedOptions, removeProduct, checked, changeSelectProduct, quantity, changeQuantity}) {
 
-    const price = product.price * quantity
-    const discount = discountPrice.length > 0 ? discountPrice[0].price * quantity : 0;
+function OrderBasketProduct({ orderBasket, checked, changeSelectBasket, removeBasket, changeQuantity }) {
+
+    const price = orderBasket.product_price * orderBasket.quantity
+    const discount = orderBasket.promotions?.length > 0 ? orderBasket.promotions[0].discount_value * orderBasket.quantity : 0;
     const totalPrice = price - discount;
+    const mainImage = orderBasket.images.filter(image => image.is_main)[0].url;
 
-    
+
     return (
         <Flex justifyContent="space-between" alignItems="start">
             <Stack direction="row" gap="6" alignItems="center">
-                <Checkbox.Root checked={checked} onCheckedChange={({checked}) => changeSelectProduct(product.id, checked===true)}>
-                    <Checkbox.HiddenInput value={product.id} />
+                <Checkbox.Root checked={checked} onCheckedChange={({ checked }) => changeSelectBasket(orderBasket.order_basket_code, checked === true)}>
+                    <Checkbox.HiddenInput value={orderBasket.order_basket_code} />
                     <Checkbox.Control />
                 </Checkbox.Root>
-                
-                <Box bg="bg.emphasized" aspectRatio="square" rounded="md" width="32"></Box>
+
+                <Image src={mainImage} aspectRatio="square" rounded="md" width={{ base: '28', md: "32" }} />
                 <Stack gap="6">
-                    <Stack gap="4">
+                    <Stack gap="2">
                         <Stack gap="0">
-                            <Text fontSize="lg" fontWeight="medium">{product.name}</Text>
-                            {selectedOptions.length > 0 && (
-                                <HStack fontSize="sm">
-                                    <Text>옵션 : </Text>
-                                    {selectedOptions.map((option) => (
-                                        <Text key={option.id}>{option.label}</Text>
-                                    ))}
-                                </HStack>
+                            <Link fontSize="lg" fontWeight="medium" href={`/products/${orderBasket.product_code}`}>{orderBasket.product_name}</Link>
+                            {orderBasket.options && (
+                                <Text fontSize="sm" color="fg.muted">[{orderBasket.options.name}] {orderBasket.options.value}</Text>
                             )}
                         </Stack>
-                                                
-                        {discountPrice.length > 0 ? (
+
+                        {orderBasket.promotions?.length > 0 ? (
                             <Stack gap="0">
                                 <Text fontSize="xs" textDecoration="line-through">{formatNumber(price)}</Text>
                                 <HStack alignItems="end">
-                                    <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(price, discount)}%</Text>
+                                    <Text fontSize="sm" fontWeight="medium">{calcDiscountPercent(price, totalPrice)}%</Text>
                                     <Text fontWeight="medium">{formatNumber(totalPrice)}</Text>
                                 </HStack>
                             </Stack>
@@ -47,7 +46,7 @@ function CartProduct({product, discountPrice, selectedOptions, removeProduct, ch
                         )}
                     </Stack>
 
-                    <NumberInput.Root min="1" unstyled spinOnPress={false} value={quantity} onValueChange={(e) => changeQuantity(product.id, Number(e.value))}>
+                    <NumberInput.Root min="1" unstyled spinOnPress={false} value={orderBasket.quantity} onValueChange={(e) => changeQuantity(orderBasket.order_basket_code, Number(e.value))}>
                         <HStack gap="2">
                             <NumberInput.DecrementTrigger asChild>
                                 <IconButton variant="outline" size="5" rounded="full" p="1">
@@ -64,141 +63,119 @@ function CartProduct({product, discountPrice, selectedOptions, removeProduct, ch
                     </NumberInput.Root>
                 </Stack>
             </Stack>
-            <CloseButton size="0" rounded="full" variant="solid" bg="gray.focusRing" onClick={() => removeProduct(product.id)}><Icon size="sm"><HiX /></Icon></CloseButton>
+            <CloseButton size="0" rounded="full" variant="solid" bg="gray.focusRing" onClick={() => removeBasket(orderBasket.order_basket_code)}><Icon size="sm"><HiX /></Icon></CloseButton>
         </Flex>
     )
 }
 
 function Cart() {
 
-    const [productList, setProductList] = useState([
-        {id:1, name:'상품명 1', price:10000},
-        {id:2, name:'상품명 2', price:15000},
-        {id:3, name:'상품명 3', price:20000},
-        {id:4, name:'상품명 4', price:20000},
-        {id:5, name:'상품명 5', price:20000},
-        {id:6, name:'상품명 6', price:20000},
-        {id:7, name:'상품명 7', price:20000},
-        {id:8, name:'상품명 8', price:20000},
-        {id:9, name:'상품명 9', price:20000},
-    ]);
-
+    const [productList, setProductList] = useState([]);
     const [allChecked, setAllChecked] = useState(false);
+    const [orderBasketList, setOrderBasketList] = useState([]);
+    const [selectedBasketList, setSelectedBasketList] = useState([]);
+    const navigate = useNavigate();
 
-    const selectOptions = [
-        {id:1, matchId:1, label:'블루', value:'blue'},
-        {id:2, matchId:1, label:'M(medium)', value:'medium'},
-        {id:3, matchId:2, label:'블루', value:'blue'}
-    ]
+    useEffect(() => {
+        const getProductList = async () => {
+            const response = await axiosInstance.get('/shop/product/basket');
 
-    const discountPrices = [
-        {id:1, matchId:1, price:5000}
-    ]
+            setOrderBasketList(response.data);
+        }
+        getProductList();
+    }, []);
 
-    const [selectedProducts, setSelectedProducts] = useState([{id:1}, {id:2}]);
-    const [productQuantitys, setProductQuantitys] = useState([
-        {id:1, quantity:1},
-        {id:2, quantity:1},
-        {id:3, quantity:1},
-        {id:4, quantity:1},
-        {id:5, quantity:1},
-        {id:6, quantity:1},
-        {id:7, quantity:1},
-        {id:8, quantity:1},
-        {id:9, quantity:1}
-    ]);
 
-    const removeProduct = (id) => {
-        setProductList(prev => prev.filter((product) => product.id !== id));
-        setSelectedProducts(prev => prev.filter((product) => product.id !== id));
+    const removeBasket = async (order_basket_code) => {
+        await axiosInstance.delete(`/shop/product/basket/${order_basket_code}`);
+        setOrderBasketList(prev => prev.filter((basket) => basket.order_basket_code !== order_basket_code));
     }
 
-    const changeSelectProduct = (id, status) => {
-        
-        if(status) {
-            setSelectedProducts(prev => {
-                const product = productList.find((pro) => pro.id === id);
-                if(!product) return prev;
-                if(prev.some(p => p.id === id)) return prev;
-                return [...prev, {id:id}];
+    const changeSelectBasket = (order_basket_code, status) => {
+
+        if (status) {
+            setSelectedBasketList(prev => {
+                const basket = orderBasketList.find((pro) => pro.order_basket_code === order_basket_code);
+                if (!basket) return prev;
+                if (prev.some(p => p.order_basket_code === order_basket_code)) return prev;
+                return [...prev, { order_basket_code: order_basket_code }];
             });
         } else {
-            setSelectedProducts(prev => prev.filter((product) => product.id !== id));
+            setSelectedBasketList(prev => prev.filter((basket) => basket.order_basket_code !== order_basket_code));
         }
-        const allCheck = selectedProducts.length + 1 == productList.length ? true : false;
+        const allCheck = selectedBasketList.length + 1 == orderBasketList.length ? true : false;
         setAllChecked(allCheck);
     }
 
-    const onChangeQuantity = (id, quantity) => {
-        setProductQuantitys(prev =>
-            prev.map(p => p.id === id ? {...p, quantity} : p)
+    const onChangeQuantity = async (order_basket_code, quantity) => {
+        const data = { order_basket_code: order_basket_code, quantity: quantity };
+        await axiosInstance.put(`/shop/product/basket`, data);
+        setOrderBasketList(prev =>
+            prev.map(p => p.order_basket_code === order_basket_code ? { ...p, quantity } : p)
         )
     }
 
-    const totalProductPrice = selectedProducts.reduce((sum, selected) => {
-        const product = productList.find(p => p.id === selected.id);
-        if(!product) return sum;
+    const totalProductPrice = selectedBasketList.reduce((sum, selected) => {
+        const basket = orderBasketList.find(p => p.order_basket_code === selected.order_basket_code);
+        if (!basket) return sum;
 
-        const discount = discountPrices.find(d => d.matchId === product.id);
-        const unitPrice = product.price - (discount?.price || 0);
-        const quantity = productQuantitys.find(q => q.id === product.id)?.quantity;
-        return sum + unitPrice * quantity;
+        const discount = { price: 0 };
+        const unitPrice = basket.product_price - (discount?.price || 0);
+        const quantity = orderBasketList.find(q => q.order_basket_code === basket.order_basket_code)?.quantity;
+        return (unitPrice + sum) * quantity;
     }, 0);
 
     const deliveryCost = totalProductPrice >= 50000 ? 0 : 3500;
-    const selectedProductCount = selectedProducts.length;
+    const selectedProductCount = selectedBasketList.length;
 
-    
+
     const handleAllChekced = (allCheck) => {
-        if(allCheck) {
+        if (allCheck) {
             setAllChecked(true);
-            productList.map((product) => {
-                const id = product.id;
-                setSelectedProducts(prev => {
-                    if(prev.some(p => p.id === id)) return prev;
-                    return [...prev, {id}]
+            orderBasketList.map((basket) => {
+                const order_basket_code = basket.order_basket_code;
+                setSelectedBasketList(prev => {
+                    if (prev.some(p => p.order_basket_code === order_basket_code)) return prev;
+                    return [...prev, { order_basket_code: order_basket_code }]
                 })
             })
         } else {
             setAllChecked(false);
-            setSelectedProducts([]);
+            setSelectedBasketList([]);
         }
     }
 
-    const removeSelectedProduct = () => {
-        selectedProducts.map((selectProduct) => {
-            setProductList(prev => prev.filter((product) => product.id !== selectProduct.id));
-            setSelectedProducts(prev => prev.filter((product) => product.id !== selectProduct.id));
+    const removeSelectedBasket = async () => {
+        selectedBasketList.map(async (selectedBasket) => {
+            await axiosInstance.delete(`/shop/product/basket/${selectedBasket.order_basket_code}`);
+            setOrderBasketList(prev => prev.filter((basket) => basket.order_basket_code !== selectedBasket.order_basket_code));
+            setSelectedBasketList(prev => prev.filter((basket) => basket.order_basket_code !== selectedBasket.order_basket_code));
         });
     }
 
-    return (
-        <Stack p={{base:'40px 0', md:"80px 0"}} px={{base:'15px', md:"layoutX"}} width={{base:'full', md:"6xl"}} margin="auto" gap="6">
-            <Heading size="2xl">장바구니</Heading>
-            <Stack direction={{base:'column', md:"row"}}>
-                <Box borderWidth="1px" rounded="md" p="10px" width={{base:'full', md:"3/4"}}>
-                    {productList.length > 0 ? (
-                        <Stack gap="4" separator={<StackSeparator />}>
-                            {productList.map((product) => {
-                                
-                                const discountPrice = discountPrices.filter((option) => option.matchId === product.id);
-                                const selectedOptions = selectOptions.filter((option) => option.matchId === product.id);
-                                const checked = selectedProducts.some(p => p.id == product.id);
-                                const productQuantity = productQuantitys.filter(p => p.id === product.id);
-                                const quantity = productQuantity[0] ? productQuantity[0]?.quantity : 1;
+    const onOrder = () => {
+        navigate('/order', { state: { basketData: selectedBasketList, isDirectOrder: true } })
+    }
 
-                                
-                                return(
-                                    <CartProduct 
-                                        key={product.id} 
-                                        product={product} 
-                                        discountPrice={discountPrice} 
-                                        selectedOptions={selectedOptions} 
-                                        removeProduct={removeProduct} 
-                                        checked={checked} 
-                                        changeSelectProduct={changeSelectProduct}
-                                        quantity={quantity}
-                                        changeQuantity={onChangeQuantity} />
+    return (
+        <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} width={{ base: 'full', md: "6xl" }} margin="auto" gap="6">
+            <Heading size="2xl">장바구니</Heading>
+            <Stack direction={{ base: 'column', md: "row" }}>
+                <Box borderWidth="1px" rounded="md" p="10px" width={{ base: 'full', md: "3/4" }}>
+                    {orderBasketList.length > 0 ? (
+                        <Stack gap="4" separator={<StackSeparator />}>
+                            {orderBasketList.map((orderBasket) => {
+                                const checked = selectedBasketList.some(selectedBasket => selectedBasket.order_basket_code === orderBasket.order_basket_code);
+
+                                return (
+                                    <OrderBasketProduct
+                                        key={orderBasket.order_basket_code}
+                                        orderBasket={orderBasket}
+                                        checked={checked}
+                                        changeSelectBasket={changeSelectBasket}
+                                        removeBasket={removeBasket}
+                                        changeQuantity={onChangeQuantity}
+                                    />
                                 )
                             })}
                         </Stack>
@@ -213,8 +190,8 @@ function Cart() {
                         </EmptyState.Root>
                     )}
                 </Box>
-                <Box width={{base:'full', md:"1/4"}} position={{base:'fixed', md:"relative"}} left="0" bg="white" bottom="0" zIndex="2">
-                    <Stack gap="4" position="sticky" top="10px" borderWidth="1px" rounded="md" p={{base:'15px', md:"10px"}}>
+                <Box width={{ base: 'full', md: "1/4" }} position={{ base: 'fixed', md: "relative" }} left="0" bg="white" bottom="0" zIndex="2">
+                    <Stack gap="4" position="sticky" top="10px" borderWidth="1px" rounded="md" p={{ base: '15px', md: "10px" }}>
                         <Heading>주문 금액</Heading>
                         <DataList.Root orientation="horizontal" >
                             <DataList.Item>
@@ -228,10 +205,8 @@ function Cart() {
                         </DataList.Root>
                         <Separator />
                         <Text fontWeight="medium" textAlign="right">{formatNumber(totalProductPrice + deliveryCost)}원</Text>
-                        <Button disabled={selectedProductCount > 0 ? false : true} asChild>
-                            <Link href="/order" onClick={(e) => selectedProductCount <= 0 && e.preventDefault()}>
-                            {selectedProductCount > 0 ? `총 ${formatNumber(selectedProducts.length)}개 구매하기` : `구매할 제품을 선택해주세요.`}
-                            </Link>
+                        <Button disabled={selectedProductCount > 0 ? false : true} onClick={onOrder}>
+                            {selectedProductCount > 0 ? `총 ${formatNumber(selectedBasketList.length)}개 구매하기` : `구매할 제품을 선택해주세요.`}
                         </Button>
                     </Stack>
                 </Box>
@@ -242,7 +217,7 @@ function Cart() {
                     <Checkbox.Control />
                     <Checkbox.Label>전체 선택</Checkbox.Label>
                 </Checkbox.Root>
-                <Button variant="outline" onClick={removeSelectedProduct}>선택 삭제</Button>
+                <Button variant="outline" onClick={removeSelectedBasket}>선택 삭제</Button>
             </HStack>
         </Stack>
     )

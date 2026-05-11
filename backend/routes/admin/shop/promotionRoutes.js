@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/', promotionController.createPromotion);
 router.get('/', promotionController.getPromotions);
-router.get('/:id', promotionController.getPromotionById);
-router.put('/:id', promotionController.updatePromotion);
+router.get('/:product_promotion_code', promotionController.getPromotion);
+router.put('/:product_promotion_code', promotionController.updatePromotion);
 
 export default router;

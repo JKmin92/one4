@@ -1,7 +1,7 @@
-import { Badge, Box, Button, Clipboard, Collapsible, DataList, Heading, HStack, IconButton, Image, Link, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Clipboard, Collapsible, DataList, Heading, HStack, Icon, IconButton, Image, Link, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { PiHeartFill, PiShareNetwork } from "react-icons/pi";
 import { formatDateToMonthDay, formatNumber, getDDay } from "../../utils/simpleUtils";
-import { LuChevronDown } from "react-icons/lu";
+import { LuChevronDown, LuImage, LuLetterText } from "react-icons/lu";
 import { useRef, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../utils/useAuth";
@@ -46,7 +46,6 @@ function Detail() {
         };
         const fetchReviewCampaignApplication = async () => {
             const resource = await axiosInstance.get(`/review/campaign/application/${campaign_code}`);
-            console.log(resource.data);
             setReviewCampaignApplicationCode(resource.data);
         };
         fetchCampaign();
@@ -187,11 +186,14 @@ function Detail() {
                         </Box>
                     </Stack>
                     <Stack {...campaignInfoStack} ref={keywordRef}>
-                        <Heading {...campaignInfoTitle}>키워드</Heading>
+                        <Heading {...campaignInfoTitle}>{campaign.mission.mandatory_keyword ? '키워드' : '제품명(매장명)'}</Heading>
                         <Box {...campaignInfoText}>
                             <Stack>
                                 <Stack gap="0">
-                                    <Text>제목 키워드 : {campaign.mission.mandatory_keyword ? campaign.mission.mandatory_keyword.split(',').map(tag => `${tag.trim()}`).join(', ') : ''}</Text>
+                                    {campaign.mission.mandatory_keyword && (
+                                        <Text>제목 키워드 : {campaign.mission.mandatory_keyword ? campaign.mission.mandatory_keyword.split(',').map(tag => `${tag.trim()}`).join(', ') : ''}</Text>
+                                    )}
+
                                     <Text>{campaign.campaign_type === 'DELIVERY' ? '제품명' : '매장명'} : {campaign.product_name}</Text>
                                 </Stack>
                             </Stack>
@@ -214,9 +216,24 @@ function Detail() {
                     </Stack>
                     <Stack {...campaignInfoStack} ref={missionRef}>
                         <Heading {...campaignInfoTitle}>캠페인 미션</Heading>
-                        <Text {...campaignInfoText}>
-                            {campaign.mission.content_guide}
-                        </Text>
+                        <Stack {...campaignInfoText}>
+                            <HStack gap="4" >
+                                {campaign.mission.min_photo_count > 0 && (
+                                    <Stack fontSize="xs">
+                                        <Box textAlign="center"><Icon size="lg"><LuImage /></Icon></Box>
+                                        <Text>이미지 {campaign.mission.min_photo_count}장 이상</Text>
+                                    </Stack>
+                                )}
+
+                                {campaign.mission.min_text_length > 0 && (
+                                    <Stack fontSize="xs">
+                                        <Box textAlign="center"><Icon size="lg"><LuLetterText /></Icon></Box>
+                                        <Text> {campaign.mission.min_text_length}자 이상</Text>
+                                    </Stack>
+                                )}
+                            </HStack>
+                            <Text>{campaign.mission.content_guide}</Text>
+                        </Stack>
                     </Stack>
                     <Stack {...campaignInfoStack} ref={cautionRef}>
                         <Heading {...campaignInfoTitle}>주의사항</Heading>

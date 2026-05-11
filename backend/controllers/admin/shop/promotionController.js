@@ -19,10 +19,10 @@ export const getPromotions = async (req, res, next) => {
     }
 };
 
-export const getPromotionById = async (req, res, next) => {
+export const getPromotion = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const result = await promotionService.getPromotionById(id);
+        const { product_promotion_code } = req.params;
+        const result = await promotionService.getPromotion(product_promotion_code);
         if (!result) {
             return res.status(404).json({ message: "Promotion not found" });
         }

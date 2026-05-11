@@ -47,3 +47,88 @@ export const getProductById = async (req, res, next) => {
         next(error);
     }
 };
+
+export const createProductOrderBasket = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const items = req.body.map(item => ({ ...item, user_code: user.user_code }));
+        const result = await ProductService.createProductOrderBasket(items);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getProductOrderBasket = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const product_order_basket = await ProductService.getProductOrderBasket(user.user_code);
+        res.status(200).json(product_order_basket);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const changeProductOrderBasketQuantity = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const product_order_basket = await ProductService.changeProductOrderBasketQuantity({ ...req.body, user_code: user.user_code });
+        res.status(200).json(product_order_basket);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteProductOrderBasket = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const product = await ProductService.deleteProductOrderBasket(req.params.id, user.user_code);
+        res.status(200).json(product);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getProductOrderBasketCount = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const count = await ProductService.getProductOrderBasketCount(user.user_code);
+        res.status(200).json(count);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getOrderProduct = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const orderProductItems = await ProductService.getOrderProduct(req.body.orderItems);
+        res.status(200).json(orderProductItems);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getBasketProductInfo = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+
+        const basketProductInfo = await ProductService.getBasketProduct(req.body.basketItems);
+        res.status(200).json(basketProductInfo);
+    } catch (error) {
+        next(error);
+    }
+};

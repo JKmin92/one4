@@ -13,6 +13,7 @@ function Header() {
     const [categories, setCategories] = useState([]);
     const location = useLocation();
     const [categoryLocation, setCategoryLocation] = useState('');
+    const [basketCount, setBasketCount] = useState(0);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -33,6 +34,15 @@ function Header() {
         e.preventDefault();
         console.log(keyword);
     }
+
+    useEffect(() => {
+        const getBasketCount = async () => {
+            if (!user) return;
+            const response = await axiosInstance.get('/shop/product/basket/count');
+            setBasketCount(response.data);
+        }
+        getBasketCount();
+    }, [user]);
 
     return (
         <Stack gap="0">
@@ -69,17 +79,7 @@ function Header() {
                             <Input rounded="full" width={{ base: "5", md: 'auto' }} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
                         </InputGroup>
                     </form>
-                    <Group>
-                        {location.pathname.includes('/review') ? (
-                            <Link href="/review/viewed">
-                                <Icon size="md"><LuEye /></Icon>
-                                <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
-                            </Link>
-                        ) : <Link href="/cart">
-                            <Icon size="md"><LuShoppingCart /></Icon>
-                            <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
-                        </Link>}
-                    </Group>
+
 
                     {!user ? (
                         <HStack gap={{ base: 2, md: 6 }}>
@@ -88,6 +88,17 @@ function Header() {
                         </HStack>
                     ) : (
                         <>
+                            <Group>
+                                {location.pathname.includes('/review') ? (
+                                    <Link href="/review/viewed">
+                                        <Icon size="md"><LuEye /></Icon>
+                                        <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
+                                    </Link>
+                                ) : <Link href="/cart">
+                                    <Icon size="md"><LuShoppingCart /></Icon>
+                                    <Float><Circle size="4" bg="red" color="white" fontSize="xs">{basketCount}</Circle></Float>
+                                </Link>}
+                            </Group>
                             <Icon size="md"><LuBell /></Icon>
                             <Menu.Root>
                                 <Menu.Trigger>

@@ -74,7 +74,7 @@ function Register() {
         }
     };
 
-    const [categoryId, setCategoryId] = useState("");
+    const [categoryCode, setCategoryCode] = useState("");
     const [campaignType, setCampaignType] = useState("VISIT"); // 'VISIT' or 'DELIVERY'
     const [isDisplay, setIsDisplay] = useState(1); // 1: 노출, 0: 미노출
     const [content, setContent] = useState("");
@@ -154,7 +154,7 @@ function Register() {
                             }
                         } catch (e) { console.error('detail_images parse error:', e); }
                     }
-                    setCategoryId(data.campaign_category_id || "");
+                    setCategoryCode(data.campaign_category_code || "");
                     setCampaignType(data.campaign_type || "VISIT");
                     setIsDisplay(data.is_display !== undefined ? data.is_display : 1);
                     setMaxApplicants(data.max_applicants || 0);
@@ -351,7 +351,7 @@ function Register() {
         });
 
         formData.append("state", targetState);
-        formData.append("campaign_category_id", categoryId);
+        formData.append("campaign_category_code", categoryCode);
         formData.append("campaign_type", campaignType);
         formData.append("is_display", isDisplay);
         formData.append("max_applicants", maxApplicants);
@@ -456,7 +456,7 @@ function Register() {
                             value={campaignType}
                             onValueChange={(e) => {
                                 setCampaignType(e.value);
-                                setCategoryId("");
+                                setCategoryCode("");
                             }}
                         >
                             <HStack gap="6">
@@ -479,14 +479,14 @@ function Register() {
                             <Field.Label mb="2">카테고리 선택</Field.Label>
                             <Box
                                 as="select"
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
+                                value={categoryCode}
+                                onChange={(e) => setCategoryCode(e.target.value)}
                                 w="xs" borderWidth="1px"
                                 fontSize="sm" minH="9"
                                 borderRadius="md" px="3" bg="white" outline="none" borderColor="gray.300"
                             >
                                 <option value="">카테고리를 선택해주세요</option>
-                                {categories.filter(c => c.type === campaignType).map(c => (
+                                {categories.filter(c => c.type === campaignType && c.parent_code != null).map(c => (
                                     <option key={c.category_code} value={c.category_code}>{c.name}</option>
                                 ))}
                             </Box>

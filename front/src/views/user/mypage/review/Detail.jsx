@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
 import { getDDay, getReviewCampaignApplicationStatus } from "../../../../utils/simpleUtils";
 import { toaster } from "../../../../components/ui/toaster";
+import { LuImage } from "react-icons/lu";
 
 function Detail() {
 
@@ -65,7 +66,6 @@ function Detail() {
         const getReviewCampaignApplicationChannel = async (campaign_application_code) => {
             const resource = await axiosInstance.get(`/review/campaign/user/application/channel/${campaign_application_code}`);
             if (resource.status === 200) {
-                console.log(resource.data);
                 setReviewCampaignApplicationChannelList(resource.data);
             }
         }
@@ -170,9 +170,24 @@ function Detail() {
                     </Stack>
                     <Stack {...campaignInfoStack}>
                         <Heading {...campaignInfoTitle}>캠페인 미션</Heading>
-                        <Text {...campaignInfoText}>
-                            {campaign.mission.content_guide}
-                        </Text>
+                        <Stack {...campaignInfoText}>
+                            <HStack>
+                                {campaign.mission.min_photo_count > 0 && (
+                                    <Stack>
+                                        <LuImage />
+                                        이미지 {campaign.mission.min_photo_count}장 이상
+                                    </Stack>
+                                )}
+
+                                {campaign.mission.min_text_length > 0 && (
+                                    <Stack>
+                                        <LuImage />
+                                        {campaign.mission.min_text_length}자 이상
+                                    </Stack>
+                                )}
+                            </HStack>
+                            <Text>{campaign.mission.content_guide}</Text>
+                        </Stack>
                     </Stack>
                     <Stack {...campaignInfoStack}>
                         <Heading {...campaignInfoTitle}>주의사항</Heading>
