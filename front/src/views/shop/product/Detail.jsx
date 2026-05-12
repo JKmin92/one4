@@ -31,8 +31,8 @@ function ReviewView({ reviewList = [] }) {
 
     const visibleReviewItems = reviewList.slice(startRange, endRange);
 
-    const deleteReview = async (id) => {
-        await axiosInstance.delete(`/shop/board/product/review/${id}`)
+    const deleteReview = async (review_code) => {
+        await axiosInstance.delete(`/shop/board/product/review/${review_code}`)
             .then(() => {
                 toaster.create({ title: '삭제되었습니다.', type: 'success' });
                 navigate(0, { replace: true }); //새로고침
@@ -49,9 +49,9 @@ function ReviewView({ reviewList = [] }) {
                     const firstImage = review.content.find((item) => item.type === 'image');
                     return (
                         <Stack
-                            key={review.id} cursor="pointer"
-                            onClick={() => reviewClick(review.id)}
-                            bg={reviewActive === review.id ? 'bg.muted' : 'bg'}
+                            key={review.review_code} cursor="pointer"
+                            onClick={() => reviewClick(review.review_code)}
+                            bg={reviewActive === review.review_code ? 'bg.muted' : 'bg'}
                             p="5px 10px"
                         >
                             <Flex justifyContent="space-between">
@@ -153,23 +153,23 @@ function ProuctAsk({ productAskList = [] }) {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const askClick = (id, is_secret, status, user_code) => {
+    const askClick = (product_inquiry_code, is_secret, status, user_code) => {
         if (is_secret && user.user_code !== user_code) {
             setSecretDialogOpen(true);
             return;
         }
 
         if (status != 'pending') {
-            if (askActive === id) setAskActive(null);
-            else setAskActive(id);
+            if (askActive === product_inquiry_code) setAskActive(null);
+            else setAskActive(product_inquiry_code);
         }
 
     }
 
     const visibleAskItems = productAskList.slice(startRange, endRange);
 
-    const deleteInquiry = async (id) => {
-        await axiosInstance.delete(`/shop/board/product/inquiry/${id}`)
+    const deleteInquiry = async (product_inquiry_code) => {
+        await axiosInstance.delete(`/shop/board/product/inquiry/${product_inquiry_code}`)
             .then(() => {
                 toaster.create({ title: '삭제되었습니다.', type: 'success' });
                 navigate(0, { replace: true }); //새로고침
@@ -184,10 +184,10 @@ function ProuctAsk({ productAskList = [] }) {
             <Stack separator={<StackSeparator />}>
                 {visibleAskItems.map((ask) => (
                     <Stack
-                        key={ask.id}
+                        key={ask.product_inquiry_code}
                         cursor="pointer"
-                        onClick={() => askClick(ask.id, ask.is_secret, ask.status, ask.user_code)}
-                        bg={askActive === ask.id ? 'bg.muted' : 'bg'}
+                        onClick={() => askClick(ask.product_inquiry_code, ask.is_secret, ask.status, ask.user_code)}
+                        bg={askActive === ask.product_inquiry_code ? 'bg.muted' : 'bg'}
                         p="5px 10px"
                     >
                         <Flex justifyContent="space-between">
@@ -195,7 +195,7 @@ function ProuctAsk({ productAskList = [] }) {
                             <HStack>
                                 {user != null && user.user_code === ask.user_code && (
                                     <HStack gap="0">
-                                        <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/${ask.id}?ch=qna`)}>
+                                        <IconButton size="xs" variant="ghost" rounded="full" onClick={() => navigate(`/board/update/qna/${ask.product_inquiry_code}`)}>
                                             <LuPencil />
                                         </IconButton>
                                         <Dialog.Root>
@@ -215,7 +215,7 @@ function ProuctAsk({ productAskList = [] }) {
                                                         <Dialog.ActionTrigger asChild>
                                                             <Button variant="outline">취소</Button>
                                                         </Dialog.ActionTrigger>
-                                                        <Button colorPalette="red" onClick={() => deleteInquiry(ask.id)}>삭제</Button>
+                                                        <Button colorPalette="red" onClick={() => deleteInquiry(ask.product_inquiry_code)}>삭제</Button>
                                                     </Dialog.Footer>
                                                 </Dialog.Content>
                                             </Dialog.Positioner>
@@ -236,15 +236,15 @@ function ProuctAsk({ productAskList = [] }) {
                                                 textOverflow={askActive === ask.id ? 'clip' : 'ellipsis'}
                                                 fontSize="sm"
                                                 dangerouslySetInnerHTML={{ __html: item.content }}
-                                                css={askActive !== ask.id ? { "& *": { display: "inline", margin: 0, padding: 0 } } : {}}
+                                                css={askActive !== ask.product_inquiry_code ? { "& *": { display: "inline", margin: 0, padding: 0 } } : {}}
                                             />
                                         ))
                                     }
-                                    <HStack display={askActive === ask.id ? 'block' : 'none'}>
+                                    <HStack display={askActive === ask.product_inquiry_code ? 'block' : 'none'}>
                                         {ask.content.filter((item) => item.type === 'image').map((item, index) => (
                                             <Image key={index}
                                                 src={item.content}
-                                                width={askActive === ask.id ? 'xs' : '12'}
+                                                width={askActive === ask.product_inquiry_code ? 'xs' : '12'}
                                                 rounded="md" />
                                         ))}
                                     </HStack>
@@ -254,7 +254,7 @@ function ProuctAsk({ productAskList = [] }) {
                                 </Badge>
                             </Flex>
                             {ask.status === 'accepted' && !ask.secret && (
-                                <Stack display={askActive === ask.id ? 'block' : 'none'}>
+                                <Stack display={askActive === ask.product_inquiry_code ? 'block' : 'none'}>
                                     <Separator marginBottom="4" />
                                     <Text fontSize="sm">{ask.answerText}</Text>
                                 </Stack>
@@ -461,7 +461,8 @@ function Detail() {
                         date: inquiry.created_at || new Date().toISOString().split('T')[0],
                         user_code: inquiry.user_code,
                         is_secret: inquiry.is_secret,
-                        content: contentItems
+                        content: contentItems,
+                        product_inquiry_code: inquiry.product_inquiry_code
                     }
                 })
 

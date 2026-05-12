@@ -75,7 +75,7 @@ function List() {
                                 </Table.Cell>
                             )}
                             <Table.Cell w="500px">
-                                <Link href={`/admin/shop/board/${id}/${board.id}`}>
+                                <Link href={`/admin/shop/board/${id}/${id === 'review' ? board.review_code : board.product_inquiry_code}`}>
                                     <Text fontSize="sm" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
                                         {board.content?.replace(/<[^>]+>/g, ' ').replace(/\&nbsp;/g, ' ')}
                                     </Text>

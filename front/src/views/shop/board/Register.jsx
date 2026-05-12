@@ -35,7 +35,7 @@ function Register() {
                 let getProductUrl = `/shop/product/${id}`;
                 if (location.pathname.includes('update') && type === 'review') {
                     const response = await axiosInstance.get(`/shop/board/product/review/edit/${id}`);
-                    getProductUrl = `/shop/product/${response.data.product_id}`;
+                    getProductUrl = `/shop/product/${response.data.product_code}`;
                     setRating(response.data.rating);
                     setContent(response.data.content);
 
@@ -59,7 +59,7 @@ function Register() {
                     }
                 } else if (location.pathname.includes('update') && type === 'qna') {
                     const response = await axiosInstance.get(`/shop/board/product/inquiry/edit/${id}`);
-                    getProductUrl = `/shop/product/${response.data.product_id}`;
+                    getProductUrl = `/shop/product/${response.data.product_code}`;
                     setContent(response.data.content);
                     setIsSecret(response.data.is_secret === 1 ? true : false);
                     setInquiryType([response.data.type]);

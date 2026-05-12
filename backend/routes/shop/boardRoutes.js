@@ -8,7 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/product/review/:product_code", authMiddleware, upload.array('images', 10), boardController.insertProductReview);
 router.get("/product/review/:product_code", boardController.getReviewsByProductCode);
-router.get("/product/review/edit/:product_code", authMiddleware, boardController.getReviewById);
+router.get("/product/review/edit/:review_code", authMiddleware, boardController.getReview);
 router.put("/product/review/:product_code", authMiddleware, upload.array('images', 10), boardController.updateProductReview);
 router.delete("/product/review/:product_code", authMiddleware, boardController.deleteProductReview);
 

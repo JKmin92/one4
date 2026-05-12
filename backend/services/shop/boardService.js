@@ -19,8 +19,8 @@ export const getReviewsByProductCode = async (product_code) => {
     });
 }
 
-export const getReviewById = async (id) => {
-    return await boardModel.getReviewById(id);
+export const getReview = async (review_code) => {
+    return await boardModel.getReview(review_code);
 }
 
 export const updateProductReview = async ({ id, rating, content, images }) => {
@@ -57,8 +57,8 @@ export const getProductInquiryByProductCode = async (product_code) => {
     });
 }
 
-export const getProductInquiryById = async (id) => {
-    return await boardModel.getProductInquiryById(id);
+export const getProductInquiryById = async (product_inquiry_code) => {
+    return await boardModel.getProductInquiryById(product_inquiry_code);
 }
 
 export const updateProductInquiry = async ({ id, type, content, images, is_secret }) => {

@@ -51,10 +51,11 @@ export const getReviewsByProductCode = async (req, res, next) => {
     }
 }
 
-export const getReviewById = async (req, res, next) => {
+export const getReview = async (req, res, next) => {
     try {
-        const id = req.params.id;
-        const review = await boardService.getReviewById(id);
+        const review_code = req.params.review_code;
+
+        const review = await boardService.getReview(review_code);
         return res.status(200).json(review);
     } catch (error) {
         next(error);

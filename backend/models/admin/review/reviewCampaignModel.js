@@ -160,7 +160,7 @@ export const getReviewCampaignList = async () => {
     const sql = `
         SELECT 
             rc.*,
-            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code) AS application_count,
+            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code AND rca.status IN ('APPLIED', 'SELECTED', 'SUBMITTED', 'RETURNED', 'COMPLETED')) AS application_count,
             (SELECT GROUP_CONCAT(rcc.channel_code) FROM review_campaign_channel rcc WHERE rcc.campaign_code = rc.campaign_code) AS channels
         FROM review_campaign rc
         ORDER BY rc.created_at DESC

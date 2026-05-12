@@ -42,13 +42,13 @@ function SideMenu() {
             path: 'promotion', label: '프로모션',
             children: [
                 { path: ['list'], label: '프로모션 리스트' },
-                { path: ['register'], label: '프로모션 추가' },
+                { path: ['register', 'update'], label: '프로모션 추가' },
             ]
         }, {
             path: 'board', label: '게시판',
             children: [
-                { path: ['list/review'], label: '리뷰' },
-                { path: ['list/product_qna'], label: '상품 문의' },
+                { path: ['list/review', 'review'], label: '리뷰' },
+                { path: ['list/product_qna', 'product_qna'], label: '상품 문의' },
                 { path: ['list/inquiry'], label: '1:1 문의' },
                 { path: ['list/notice'], label: '공지사항' },
                 { path: ['list/faq'], label: 'FAQ' },

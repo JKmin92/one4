@@ -3,7 +3,7 @@ import { generateUniqueId } from "../../utils/customUtils.js";
 
 export const getReviewCampaign = async (campaign_code) => {
     const sql = `SELECT rc.*,
-            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code) AS application_count
+            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code AND rca.status = 'APPLIED') AS application_count
             FROM review_campaign rc WHERE campaign_code = ?`;
     const [rows] = await db.query(sql, [campaign_code]);
     if (rows.length === 0) return null;
@@ -289,4 +289,10 @@ export const getReviewCampaignApplicationChannel = async (campaign_application_c
     `;
     const [rows] = await db.query(sql, [campaign_application_code, user_code]);
     return rows;
+}
+
+export const deleteReviewCampaignApplication = async (campaign_application_code, user_code) => {
+    const sql = `UPDATE review_campaign_application SET status = 'CANCELLED' WHERE campaign_application_code = ? AND user_code = ?`;
+    await db.query(sql, [campaign_application_code, user_code]);
+    return campaign_application_code;
 }

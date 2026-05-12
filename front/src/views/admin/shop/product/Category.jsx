@@ -8,20 +8,19 @@ import { toaster } from '../../../../components/ui/toaster';
 function Category() {
     const [categories, setCategories] = useState([]);
     const [selectedCategoryCode, setSelectedCategoryCode] = useState(null);
-    const [editingCategory, setEditingCategory] = useState(null); // Local state for editing
+    const [editingCategory, setEditingCategory] = useState(null);
 
-    // Helper: Build Tree from Flat List
     const buildCategoryTree = (flatList) => {
         const map = {};
         const tree = [];
         const list = flatList.map(item => ({ ...item, children: [] }));
 
         list.forEach((item) => {
-            map[item.id] = item;
+            map[item.category_code] = item;
         });
 
         list.forEach((item) => {
-            const pid = item.parent_id || item.parentId; // Check both camel and snake case
+            const pid = item.parent_code;
             if (pid && map[pid]) {
                 map[pid].children.push(item);
             } else {
@@ -69,7 +68,6 @@ function Category() {
         return null;
     };
 
-    // When selection changes, update editingCategory
     useEffect(() => {
         if (selectedCategoryCode) {
             const category = findCategory(categories, selectedCategoryCode);
@@ -79,10 +77,10 @@ function Category() {
         }
     }, [selectedCategoryCode, categories]);
 
-    const toggleOpen = (id) => {
+    const toggleOpen = (category_code) => {
         const toggleRecursive = (items) => {
             return items.map(item => {
-                if (item.id === id) {
+                if (item.category_code === category_code) {
                     return { ...item, isOpen: !item.isOpen };
                 }
                 if (item.children) {
@@ -94,11 +92,10 @@ function Category() {
         setCategories(toggleRecursive(categories));
     };
 
-    const addCategory = async (parentId = null) => {
-        // Calculate Sort Order
+    const addCategory = async (parent_code = null) => {
         let siblings = categories;
-        if (parentId) {
-            const parent = findCategory(categories, parentId);
+        if (parent_code) {
+            const parent = findCategory(categories, parent_code);
             siblings = parent ? (parent.children || []) : [];
         }
         const maxOrder = siblings.reduce((max, item) => Math.max(max, item.sort_order || 0), 0);
@@ -113,20 +110,19 @@ function Category() {
             imagePc: null,
             imageTablet: null,
             imageMobile: null,
-            parentId: parentId
+            parent_code: parent_code
         };
 
         try {
-            // Server generates ID
             const response = await axiosInstance.post('/admin/shop/product/category', newCategoryDef);
-            const createdCategory = { ...newCategoryDef, ...response.data }; // Ensure ID is included
+            const createdCategory = { ...newCategoryDef, ...response.data };
 
-            if (parentId === null) {
+            if (parent_code == null) {
                 setCategories(prev => [...prev, createdCategory]);
             } else {
                 const addRecursive = (items) => {
                     return items.map(item => {
-                        if (item.id === parentId) {
+                        if (item.category_code === parent_code) {
                             return { ...item, isOpen: true, children: [...(item.children || []), createdCategory] };
                         }
                         if (item.children) {
@@ -165,7 +161,7 @@ function Category() {
         }
     };
 
-    const moveCategory = (category_code, direction) => {
+    const moveCategory = async (category_code, direction) => {
         const moveRecursive = (items) => {
             const index = items.findIndex(item => item.category_code === category_code);
             if (index > -1) {
@@ -195,12 +191,19 @@ function Category() {
             });
         };
         const newCategories = moveRecursive(categories);
-        setCategories(newCategories);
-        // Note: Ordering changes are not currently saved to backend automatically. 
-        // Ideally should call an API to save new orders.
+
+        try {
+            await axiosInstance.put('/admin/shop/product/category/sort', newCategories);
+            toaster.create({ title: '순서가 변경되었습니다.', type: 'success' });
+            setCategories(newCategories);
+        } catch (error) {
+            console.error("Failed to update category sort : ", error);
+            toaster.create({ title: '순서 변경에 오류가 있습니다.', type: 'error' });
+        }
+
+
     };
 
-    // Update Local State Handler
     const handleEditChange = (updates) => {
         if (editingCategory) {
             setEditingCategory(prev => ({ ...prev, ...updates }));
@@ -231,8 +234,6 @@ function Category() {
         }
     };
 
-
-    // Tree Item Component
     const CategoryItem = ({ item, depth = 0 }) => {
         const isSelected = selectedCategoryCode === item.category_code;
         const hasChildren = item.children && item.children.length > 0;
@@ -257,9 +258,6 @@ function Category() {
                             onClick={(e) => { e.stopPropagation(); toggleOpen(item.category_code); }}>
                             {item.isOpen ? <LuChevronDown /> : <LuChevronRight />}
                         </IconButton>
-                        <Box color={isSelected ? "blue.500" : "gray.500"}>
-                            {hasChildren ? <LuFolder /> : <LuFile />}
-                        </Box>
                         <Text fontWeight={isSelected ? "bold" : "normal"}>{item.name}</Text>
                         {!item.is_visible && <Text fontSize="xs" color="red.500">(비노출)</Text>}
                     </HStack>

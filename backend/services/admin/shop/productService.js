@@ -22,7 +22,7 @@ export const deleteProductCategory = async (category_code) => {
 }
 
 export const updateProductCategorySortOrder = async (categories) => {
-    return await model.updateProductCategorySortOrder(categories);
+    return await Promise.all(categories.map(category => model.updateProductCategorySortOrder(category)));
 }
 
 export const insertProduct = async (productData, files) => {

@@ -1,10 +1,10 @@
-import { Badge, Box, Button, Clipboard, Dialog, Heading, HStack, Image, Input, Link, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Clipboard, Dialog, Heading, HStack, Icon, Image, Input, Link, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
 import { getDDay, getReviewCampaignApplicationStatus } from "../../../../utils/simpleUtils";
 import { toaster } from "../../../../components/ui/toaster";
-import { LuImage } from "react-icons/lu";
+import { LuImage, LuLetterText } from "react-icons/lu";
 
 function Detail() {
 
@@ -17,6 +17,10 @@ function Detail() {
     const [openDialog, setOpenDialog] = useState(false);
     const [reviewCampaignFeedbackList, setReviewCampaignFeedbackList] = useState([]);
     const [reviewCampaignApplicationChannelList, setReviewCampaignApplicationChannelList] = useState([]);
+
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [cancelDialogButtonLoading, setCancelDialogButtonLoading] = useState(false);
+    const navigate = useNavigate();
 
     const campaignInfoStack = { direction: { base: 'column', md: "row" }, alignItems: { base: 'start', md: "center" } };
     const campaignInfoTitle = { w: { base: 'full', md: "1/6" }, size: 'md' };
@@ -94,20 +98,61 @@ function Detail() {
         }
     }
 
+    const cancelCampaign = async (campaign_application_code) => {
+        setCancelDialogButtonLoading(true);
+        const resource = await axiosInstance.delete(`/review/campaign/application/${campaign_application_code}`);
+        if (resource.status === 200) {
+            toaster.create({ title: '캠페인이 취소되었습니다.', type: 'success' });
+            navigate(`/mypage/review`);
+        } else {
+            toaster.create({ title: '캠페인 취소에 오류가 발생했습니다.', type: 'error' });
+        }
+        setCancelDialogButtonLoading(false);
+    }
+
     if (!campaign) return null;
 
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left" position="relative">
-            <Stack gap="0">
-                <Status.Root colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>
-                    <Status.Indicator />
-                    <Text>{getReviewCampaignApplicationStatus(campaign.status, campaign).text}</Text>
-                </Status.Root>
-                <HStack>
-                    <Heading>{campaign.title}</Heading>
-                    {getReviewCampaignApplicationStatus(campaign.status, campaign).date && <Badge variant="outline" colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>{getReviewCampaignApplicationStatus(campaign.status, campaign).title} D-{getDDay(getReviewCampaignApplicationStatus(campaign.status, campaign).date)}</Badge>}
-                </HStack>
-            </Stack>
+            <HStack justifyContent="space-between">
+                <Stack gap="0">
+                    <Status.Root colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>
+                        <Status.Indicator />
+                        <Text>{getReviewCampaignApplicationStatus(campaign.status, campaign).text}</Text>
+                    </Status.Root>
+                    <HStack>
+                        <Heading>{campaign.title}</Heading>
+                        {getReviewCampaignApplicationStatus(campaign.status, campaign).date && <Badge variant="outline" colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>{getReviewCampaignApplicationStatus(campaign.status, campaign).title} D-{getDDay(getReviewCampaignApplicationStatus(campaign.status, campaign).date)}</Badge>}
+                    </HStack>
+                </Stack>
+                {campaign.status === 'APPLIED' && (
+                    <Dialog.Root open={cancelDialogOpen} onOpenChange={(e) => setCancelDialogOpen(e.open)}>
+                        <Dialog.Trigger asChild>
+                            <Button>캠페인 취소</Button>
+                        </Dialog.Trigger>
+                        <Dialog.Backdrop />
+                        <Dialog.Positioner>
+                            <Dialog.Content>
+                                <Dialog.Header>
+                                    <Dialog.Title>캠페인 취소하기</Dialog.Title>
+                                </Dialog.Header>
+                                <Dialog.Body>
+                                    <Text>{campaign.title} 캠페인을 취소하시겠습니까?</Text>
+                                </Dialog.Body>
+                                <Dialog.Footer>
+                                    <Dialog.ActionTrigger asChild>
+                                        <Button>취소</Button>
+                                    </Dialog.ActionTrigger>
+                                    <Dialog.ActionTrigger asChild>
+                                        <Button colorPalette="red" loading={cancelDialogButtonLoading} onClick={() => cancelCampaign(campaign_application_code)}>캠페인 취소</Button>
+                                    </Dialog.ActionTrigger>
+                                </Dialog.Footer>
+                            </Dialog.Content>
+                        </Dialog.Positioner>
+                    </Dialog.Root>
+                )}
+            </HStack>
+
 
             <Stack direction="row">
                 <Stack w="full" separator={<StackSeparator />} gap="4">
@@ -143,11 +188,13 @@ function Detail() {
                         </Box>
                     </Stack>
                     <Stack {...campaignInfoStack}>
-                        <Heading {...campaignInfoTitle}>키워드</Heading>
+                        <Heading {...campaignInfoTitle}>{campaign.mission.mandatory_keyword ? '키워드' : campaign.campaign_type === 'DELIVERY' ? '제품명' : '매장명'}</Heading>
                         <Box {...campaignInfoText}>
                             <Stack>
                                 <Stack gap="0">
-                                    <Text>제목 키워드 : {campaign.mission.mandatory_keyword ? campaign.mission.mandatory_keyword.split(',').map(tag => `${tag.trim()}`).join(', ') : ''}</Text>
+                                    {campaign.mission.mandatory_keyword && (
+                                        <Text>제목 키워드 : {campaign.mission.mandatory_keyword ? campaign.mission.mandatory_keyword.split(',').map(tag => `${tag.trim()}`).join(', ') : ''}</Text>
+                                    )}
                                     <Text>{campaign.campaign_type === 'DELIVERY' ? '제품명' : '매장명'} : {campaign.product_name}</Text>
                                 </Stack>
                             </Stack>
@@ -171,18 +218,17 @@ function Detail() {
                     <Stack {...campaignInfoStack}>
                         <Heading {...campaignInfoTitle}>캠페인 미션</Heading>
                         <Stack {...campaignInfoText}>
-                            <HStack>
+                            <HStack gap="4" >
                                 {campaign.mission.min_photo_count > 0 && (
-                                    <Stack>
-                                        <LuImage />
-                                        이미지 {campaign.mission.min_photo_count}장 이상
+                                    <Stack fontSize="xs">
+                                        <Box textAlign="center"><Icon size="lg"><LuImage /></Icon></Box>
+                                        <Text>이미지 {campaign.mission.min_photo_count}장 이상</Text>
                                     </Stack>
                                 )}
-
                                 {campaign.mission.min_text_length > 0 && (
-                                    <Stack>
-                                        <LuImage />
-                                        {campaign.mission.min_text_length}자 이상
+                                    <Stack fontSize="xs">
+                                        <Box textAlign="center"><Icon size="lg"><LuLetterText /></Icon></Box>
+                                        <Text> {campaign.mission.min_text_length}자 이상</Text>
                                     </Stack>
                                 )}
                             </HStack>

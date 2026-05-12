@@ -26,7 +26,6 @@ function Detail() {
 
             try {
                 const resources = await axiosInstance.get(url);
-                console.log(resources.data);
                 setBoard(resources.data);
             } catch (error) {
                 console.error(error);

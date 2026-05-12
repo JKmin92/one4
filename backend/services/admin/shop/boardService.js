@@ -8,10 +8,10 @@ export const getProductInquiryList = async () => {
     return await model.getProductInquiryList();
 }
 
-export const getProductReview = async (id) => {
-    return await model.getProductReview(id);
+export const getProductReview = async (review_code) => {
+    return await model.getProductReview(review_code);
 }
 
-export const getProductInquiry = async (id) => {
-    return await model.getProductInquiry(id);
+export const getProductInquiry = async (product_inquiry_code) => {
+    return await model.getProductInquiry(product_inquiry_code);
 }

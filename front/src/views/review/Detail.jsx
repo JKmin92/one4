@@ -186,7 +186,7 @@ function Detail() {
                         </Box>
                     </Stack>
                     <Stack {...campaignInfoStack} ref={keywordRef}>
-                        <Heading {...campaignInfoTitle}>{campaign.mission.mandatory_keyword ? '키워드' : '제품명(매장명)'}</Heading>
+                        <Heading {...campaignInfoTitle}>{campaign.mission.mandatory_keyword ? '키워드' : campaign.campaign_type === 'DELIVERY' ? '제품명' : '매장명'}</Heading>
                         <Box {...campaignInfoText}>
                             <Stack>
                                 <Stack gap="0">

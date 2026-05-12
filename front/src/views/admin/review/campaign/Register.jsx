@@ -1,5 +1,39 @@
 import { Box, Button, Checkbox, CloseButton, DatePicker, Field, Heading, HStack, Image, Input, LocaleProvider, RadioGroup, Stack, TagsInput, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+
+const LocalInput = ({ value, onChange, ...props }) => {
+    const [localValue, setLocalValue] = useState(value || "");
+    useEffect(() => {
+        setLocalValue(value || "");
+    }, [value]);
+    return (
+        <Input
+            value={localValue}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onBlur={(e) => {
+                if (onChange) onChange(e);
+            }}
+            {...props}
+        />
+    );
+};
+
+const LocalTextarea = ({ value, onChange, ...props }) => {
+    const [localValue, setLocalValue] = useState(value || "");
+    useEffect(() => {
+        setLocalValue(value || "");
+    }, [value]);
+    return (
+        <Textarea
+            value={localValue}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onBlur={(e) => {
+                if (onChange) onChange(e);
+            }}
+            {...props}
+        />
+    );
+};
 import { LuCalendar, LuImage, LuInfo, LuPlus, LuTrash } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
@@ -106,6 +140,9 @@ function Register() {
     const [optionalKeyword, setOptionalKeyword] = useState([]);
     const [minPhotoCount, setMinPhotoCount] = useState(10);
     const [minTextLength, setMinTextLength] = useState(1000);
+
+    const [submitButtonLoading, setSubmitButtonLoading] = useState(false);
+    const [draftButtonLoading, setDraftButtonLoading] = useState(false);
 
     // Reward (review_campaign_reward)
     const [rewards, setRewards] = useState([
@@ -242,22 +279,72 @@ function Register() {
 
     const handleMainImageChange = (e) => {
         const file = e.target.files[0];
+        const target = e.target;
         if (file) {
-            setMainImage(file);
-            setMainImagePreview(URL.createObjectURL(file));
+            const url = URL.createObjectURL(file);
+            const img = new window.Image();
+            img.onload = () => {
+                if (img.height >= 15000) {
+                    toaster.create({ title: '세로 길이가 15000px 이상인 이미지는 업로드할 수 없습니다.', type: 'error' });
+                    URL.revokeObjectURL(url);
+                } else {
+                    setMainImage(file);
+                    setMainImagePreview(url);
+                }
+                target.value = '';
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                target.value = '';
+            };
+            img.src = url;
         }
     };
 
-    const handleDetailImagesChange = (e) => {
+    const handleDetailImagesChange = async (e) => {
         const files = Array.from(e.target.files);
+        const target = e.target;
+
         if (files.length > 0) {
-            const newItems = files.map((file, idx) => ({
-                id: `img-new-${Date.now()}-${idx}`,
-                file,
-                url: URL.createObjectURL(file)
-            }));
-            setDetailImageItems(prev => [...prev, ...newItems]);
+            const validFiles = [];
+
+            for (const file of files) {
+                const url = URL.createObjectURL(file);
+                const isSizeValid = await new Promise((resolve) => {
+                    const img = new window.Image();
+                    img.onload = () => {
+                        if (img.height >= 15000) {
+                            toaster.create({ title: `${file.name}의 세로 길이가 15000px 이상입니다. 업로드할 수 없습니다.`, type: 'error' });
+                            resolve(false);
+                        } else {
+                            resolve(true);
+                        }
+                    };
+                    img.onerror = () => {
+                        toaster.create({ title: `${file.name} 이미지를 읽을 수 없습니다.`, type: 'error' });
+                        resolve(false);
+                    };
+                    img.src = url;
+                });
+
+                if (isSizeValid) {
+                    validFiles.push({ file, url });
+                } else {
+                    URL.revokeObjectURL(url);
+                }
+            }
+
+            if (validFiles.length > 0) {
+                const newItems = validFiles.map((item, idx) => ({
+                    id: `img-new-${Date.now()}-${idx}`,
+                    file: item.file,
+                    url: item.url
+                }));
+                setDetailImageItems(prev => [...prev, ...newItems]);
+            }
         }
+
+        target.value = '';
     };
 
     const handleRemoveDetailImage = (indexToRemove) => {
@@ -325,8 +412,15 @@ function Register() {
     };
 
     const handleSubmit = async (targetState = 'PENDING') => {
+        if (targetState === 'PENDING') {
+            setDraftButtonLoading(true);
+        } else {
+            setSubmitButtonLoading(true);
+        }
         if (!title) {
             toaster.create({ title: '캠페인 명을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
             return;
         }
 
@@ -334,6 +428,12 @@ function Register() {
         formData.append("title", title);
         formData.append("short_description", shortDescription);
         if (productName) formData.append("product_name", productName);
+        else {
+            toaster.create({ title: '제품명을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
+            return;
+        }
 
         const existingUrls = [];
         const newFiles = [];
@@ -349,6 +449,37 @@ function Register() {
         newFiles.forEach((file) => {
             formData.append("detailImages", file);
         });
+
+        if (!startApplicationDate) {
+            toaster.create({ title: '모집 시작일을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
+            return;
+        }
+        if (!endApplicationDate) {
+            toaster.create({ title: '모집 마감일을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
+            return;
+        }
+        if (!reviewerSelectionDate) {
+            toaster.create({ title: '선정자 발표일을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
+            return;
+        }
+        if (!startWriteDate) {
+            toaster.create({ title: '리뷰 작성 시작일을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
+            return;
+        }
+        if (!endWriteDate) {
+            toaster.create({ title: '리뷰 작성 마감일을 입력해주세요.', type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
+            return;
+        }
 
         formData.append("state", targetState);
         formData.append("campaign_category_code", categoryCode);
@@ -423,9 +554,13 @@ function Register() {
                     navigate(`/admin/review/campaign/update/${response.data.campaign_code}`, { replace: true });
                 }
             }
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
         } catch (error) {
             console.error("Submit error details:", error);
             toaster.create({ title: `캠페인 ${id ? '수정' : '등록'}에 실패했습니다.`, type: 'error' });
+            setDraftButtonLoading(false);
+            setSubmitButtonLoading(false);
         }
     };
 
@@ -436,7 +571,7 @@ function Register() {
                 {campaignState === 'DRAFT' && (
                     <HStack>
                         <Button bg="bg" variant="surface" onClick={fetchDrafts}>임시저장 목록</Button>
-                        <Button bg="bg.info" variant="surface" onClick={() => handleSubmit('DRAFT')}>임시저장</Button>
+                        <Button bg="bg.info" loading={draftButtonLoading} variant="surface" onClick={() => handleSubmit('DRAFT')}>임시저장</Button>
                     </HStack>
                 )}
             </HStack>
@@ -513,18 +648,18 @@ function Register() {
 
                     <Field.Root w="150px">
                         <Field.Label mb="2">모집 인원</Field.Label>
-                        <Input type="number" placeholder="모집 인원 입력" value={maxApplicants} onChange={(e) => setMaxApplicants(Number(e.target.value))} />
+                        <LocalInput type="number" placeholder="모집 인원 입력" value={maxApplicants} onChange={(e) => setMaxApplicants(Number(e.target.value))} />
                     </Field.Root>
                 </HStack>
 
                 <Field.Root required>
                     <Field.Label mb="2">캠페인 명</Field.Label>
-                    <Input placeholder="캠페인 명을 입력해주세요" value={title} onChange={(e) => setTitle(e.target.value)} />
+                    <LocalInput placeholder="캠페인 명을 입력해주세요" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </Field.Root>
 
                 <Field.Root>
                     <Field.Label mb="2">간단 설명</Field.Label>
-                    <Input placeholder="캠페인에 대한 간단한 설명을 입력해주세요" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
+                    <LocalInput placeholder="캠페인에 대한 간단한 설명을 입력해주세요" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
                 </Field.Root>
 
                 <Field.Root>
@@ -592,7 +727,7 @@ function Register() {
 
                 <Field.Root>
                     <Field.Label mb="2">캠페인 상세 설명</Field.Label>
-                    <Textarea value={content} onChange={(e) => setContent(e.target.value)} minH="300px" />
+                    <LocalTextarea value={content} onChange={(e) => setContent(e.target.value)} minH="300px" />
                     {/* <RegisterEditor content={content} setContent={setContent} /> */}
                 </Field.Root>
             </Stack>
@@ -693,19 +828,19 @@ function Register() {
 
                 <Field.Root>
                     <Field.Label mb="2">제품명(또는 매장명)</Field.Label>
-                    <Input placeholder="제품명(또는 매장명)을 입력해주세요" value={productName} onChange={(e) => setProductName(e.target.value)} />
+                    <LocalInput placeholder="제품명(또는 매장명)을 입력해주세요" value={productName} onChange={(e) => setProductName(e.target.value)} />
                 </Field.Root>
 
                 {channels.includes('202603171602001') && (
                     <Field.Root>
                         <Field.Label mb="2">제목 가이드</Field.Label>
-                        <Textarea minH="100px" placeholder="제목 작성 가이드를 입력해주세요" value={titleGuide} onChange={(e) => setTitleGuide(e.target.value)} />
+                        <LocalTextarea minH="100px" placeholder="제목 작성 가이드를 입력해주세요" value={titleGuide} onChange={(e) => setTitleGuide(e.target.value)} />
                     </Field.Root>
                 )}
 
                 <Field.Root>
                     <Field.Label mb="2">본문 가이드</Field.Label>
-                    <Textarea
+                    <LocalTextarea
                         minH="100px"
                         placeholder="본문 작성 가이드를 입력해주세요"
                         value={contentGuide}
@@ -735,11 +870,11 @@ function Register() {
                 <HStack gap="6">
                     <Field.Root>
                         <Field.Label mb="2">최소 사진 개수</Field.Label>
-                        <Input type="number" placeholder="0" value={minPhotoCount} onChange={(e) => setMinPhotoCount(Number(e.target.value))} />
+                        <LocalInput type="number" placeholder="0" value={minPhotoCount} onChange={(e) => setMinPhotoCount(Number(e.target.value))} />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">최소 글자 수</Field.Label>
-                        <Input type="number" placeholder="0" value={minTextLength} onChange={(e) => setMinTextLength(Number(e.target.value))} />
+                        <LocalInput type="number" placeholder="0" value={minTextLength} onChange={(e) => setMinTextLength(Number(e.target.value))} />
                     </Field.Root>
                 </HStack>
             </Stack>
@@ -790,7 +925,7 @@ function Register() {
 
                                 <Field.Root w="70%" required>
                                     <Field.Label mb="2">리워드 이름</Field.Label>
-                                    <Input
+                                    <LocalInput
                                         bg="white"
                                         placeholder="리워드 이름을 입력해주세요"
                                         value={reward.name}
@@ -801,7 +936,7 @@ function Register() {
 
                             <Field.Root>
                                 <Field.Label mb="2">리워드 설명</Field.Label>
-                                <Textarea
+                                <LocalTextarea
                                     bg="white"
                                     placeholder="리워드 상세 설명"
                                     value={reward.description}
@@ -813,7 +948,7 @@ function Register() {
                                 {reward.reward_type === 'POINT' && (
                                     <Field.Root flex="1">
                                         <Field.Label mb="2">포인트 금액 (가치)</Field.Label>
-                                        <Input
+                                        <LocalInput
                                             bg="white"
                                             type="number"
                                             placeholder="지급할 포인트를 입력하세요"
@@ -831,7 +966,7 @@ function Register() {
                                                 <Button size="xs" variant="ghost"><LuInfo /></Button>
                                             </ToggleTip>
                                         </Field.Label>
-                                        <Input
+                                        <LocalInput
                                             bg="white"
                                             type="number"
                                             placeholder="제공할 수량을 입력하세요"
@@ -861,7 +996,7 @@ function Register() {
                                                 <HStack key={optIndex} alignItems="flex-end">
                                                     <Field.Root w="30%">
                                                         <Field.Label mb="2" fontSize="xs">옵션명</Field.Label>
-                                                        <Input
+                                                        <LocalInput
                                                             bg="white"
                                                             placeholder="예: 색상, 사이즈"
                                                             value={opt.option_name}
@@ -871,7 +1006,7 @@ function Register() {
                                                     <Field.Root w="70%">
                                                         <Field.Label mb="2" fontSize="xs">옵션값 (쉼표로 구분)</Field.Label>
                                                         <HStack w="full">
-                                                            <Input
+                                                            <LocalInput
                                                                 bg="white"
                                                                 placeholder="예: 빨강, 파랑, 검정"
                                                                 value={opt.option_value}
@@ -911,7 +1046,7 @@ function Register() {
 
             <HStack justifyContent="flex-end" pt="10">
                 <Button variant="outline" size="lg" onClick={() => navigate(-1)}>취소</Button>
-                <Button onClick={() => handleSubmit('PENDING')} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>캠페인 {id ? '수정' : '등록'}하기</Button>
+                <Button onClick={() => handleSubmit('PENDING')} loading={submitButtonLoading} size="lg" bg="black" color="white" _hover={{ bg: "gray.800" }}>캠페인 {id ? '수정' : '등록'}하기</Button>
             </HStack>
 
             {isDraftModalOpen && (

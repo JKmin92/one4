@@ -79,8 +79,13 @@ function Cart() {
     useEffect(() => {
         const getProductList = async () => {
             const response = await axiosInstance.get('/shop/product/basket');
-
             setOrderBasketList(response.data);
+            
+            // 모든 상품을 초기 선택 상태로 설정
+            if (response.data.length > 0) {
+                setSelectedBasketList(response.data.map(basket => ({ order_basket_code: basket.order_basket_code })));
+                setAllChecked(true);
+            }
         }
         getProductList();
     }, []);

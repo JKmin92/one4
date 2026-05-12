@@ -5,6 +5,7 @@ import axiosInstance from "../../utils/api";
 import { formatDateToMonthDay } from "../../utils/simpleUtils";
 import { useAuth } from "../../utils/useAuth";
 import { LuSearch } from "react-icons/lu";
+import { toaster } from "../../components/ui/toaster";
 
 function AddressSelectModal({ addressList, open, setOpen, setAddress, setDetailAddress, setPostcode }) {
 
@@ -68,6 +69,7 @@ function Application() {
     const [rewards, setRewards] = useState([]);
     const [checkedList, setCheckedList] = useState([]);
     const [allChecked, setAllChecked] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
@@ -392,6 +394,7 @@ function Application() {
     if (!campaign || !rewards) return null;
 
     const onSubmit = async () => {
+        setIsLoading(true);
         const payload = {
             user_code: user.user_code,
             options: Object.entries(selectedOptions).map(([id, value]) => ({ reward_option_code: id, reward_option_value: value })),
@@ -417,9 +420,14 @@ function Application() {
             const resource = await axiosInstance.post(`/review/campaign/application`, payload);
             if (resource.status === 200) {
                 navigate('/mypage/review');
+            } else {
+                setIsLoading(false);
+                toaster.create({ title: '캠페인 신청에 오류가 발생했습니다.', type: 'error' });
             }
         } catch (error) {
+            toaster.create({ title: '캠페인 신청에 오류가 발생했습니다.', type: 'error' });
             console.error(error);
+            setIsLoading(false);
         }
     }
 
@@ -494,7 +502,7 @@ function Application() {
                                 <DataList.ItemValue>{campaign.application_count}/{campaign.max_applicants}명</DataList.ItemValue>
                             </DataList.Item>
                         </DataList.Root>
-                        <Button w="full" rounded="md" disabled={!allChecked} onClick={onSubmit}>캠페인 신청하기</Button>
+                        <Button w="full" rounded="md" disabled={!allChecked} loading={isLoading} onClick={onSubmit}>캠페인 신청하기</Button>
                     </Stack>
                 </Box>
             </Stack>

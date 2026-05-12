@@ -30,20 +30,43 @@ export const uploadFile = async (file, type, id) => {
         fs.mkdirSync(absoluteDir, { recursive: true });
     }
 
-    // 파일명 생성: 랜덤 UUID 사용 (한글/특수문자 문제 방지)
-    const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
+    // 이미지 정보 확인
+    const image = sharp(file.buffer);
+    const metadata = await image.metadata();
+
+    // 1500px로 리사이즈될 때의 예상 높이 계산
+    let targetWidth = metadata.width;
+    let targetHeight = metadata.height;
+
+    if (metadata.width > 1500) {
+        targetWidth = 1500;
+        targetHeight = Math.round(metadata.height * (1500 / metadata.width));
+    }
+
+    // WebP의 최대 픽셀 제한은 16383x16383 입니다.
+    // 세로로 매우 긴 상세페이지 이미지의 경우 이를 초과할 수 있으므로,
+    // 이 경우 WebP 대신 제한이 더 여유로운 JPEG(최대 65535px)로 저장합니다.
+    const isTooLargeForWebp = targetWidth > 16383 || targetHeight > 16383;
+    const ext = isTooLargeForWebp ? 'jpg' : 'webp';
+
+    // 파일명 생성: 랜덤 UUID 사용
+    const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`;
     const filePath = path.join(absoluteDir, fileName);
 
     // 이미지 처리 (sharp)
     // 1. 가로 1500px 제한 (비율 유지)
-    // 2. WebP 변환
-    await sharp(file.buffer)
-        .resize({
-            width: 1500,
-            withoutEnlargement: true, // 1500보다 작으면 확대하지 않음
-        })
-        .webp({ quality: 80 }) // 품질 80 설정
-        .toFile(filePath);
+    let processor = image.resize({
+        width: 1500,
+        withoutEnlargement: true,
+    });
+
+    if (isTooLargeForWebp) {
+        // WebP 변환 시 에러가 나는 초장축 이미지는 JPEG로 변환
+        await processor.jpeg({ quality: 80 }).toFile(filePath);
+    } else {
+        // 일반적인 이미지는 압축률이 좋은 WebP로 변환
+        await processor.webp({ quality: 80 }).toFile(filePath);
+    }
 
     // DB에 저장할 경로 반환 (Windows 백슬래시를 슬래시로 변환)
     const dbPath = path.join('/uploads', relativeDir, fileName).replace(/\\/g, '/');

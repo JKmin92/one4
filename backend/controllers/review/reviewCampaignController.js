@@ -215,3 +215,16 @@ export const getReviewCampaignApplicationChannel = async (req, res, next) => {
         next(error);
     }
 }
+
+export const cancelReviewCampaignApplication = async (req, res, next) => {
+    try {
+        const { campaign_application_code } = req.params;
+        const user = req.user;
+
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        const application_code = await reviewCampaignService.cancelReviewCampaignApplication(campaign_application_code, user.user_code);
+        res.status(200).json(application_code);
+    } catch (error) {
+        next(error);
+    }
+}

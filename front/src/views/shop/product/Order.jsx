@@ -263,12 +263,12 @@ function Payment({ setSelectedPayment }) {
 
     const paymentKinds = [
         {
-            value: 'card',
+            value: 'CARD',
             label: '신용/체크카드',
             content: '신용/체크카드 결제 관련 내용 들어갈 예정'
         },
         {
-            value: 'bank',
+            value: 'BANK',
             label: '무통장 결제',
             content: (
                 <Stack>
@@ -283,7 +283,7 @@ function Payment({ setSelectedPayment }) {
             )
         },
         {
-            value: 'escrow',
+            value: 'ESCROW',
             label: '에스크로',
             content: '에스크로 결제 관련 내용 들어갈 예정'
         },

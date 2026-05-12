@@ -25,8 +25,8 @@ function ProductList() {
                 let subCategoryResponse = await axiosInstance.get(`/shop/product/subCategory/${id}`);
                 let subCategories = subCategoryResponse.data;
 
-                if (subCategories.length === 0 && categoryData.parent_id) {
-                    subCategoryResponse = await axiosInstance.get(`/shop/product/subCategory/${categoryData.parent_id}`);
+                if (subCategories.length === 0 && categoryData.parent_code) {
+                    subCategoryResponse = await axiosInstance.get(`/shop/product/subCategory/${categoryData.parent_code}`);
                     subCategories = subCategoryResponse.data;
                 }
                 setSubCategorys(subCategories);
@@ -52,7 +52,7 @@ function ProductList() {
                         <Stack direction={{ base: 'row', md: "column" }} marginTop="15px" gap="2" paddingTop="15px" borderTop="3px solid" borderTopColor="main" overflowX='auto'>
                             {subCategorys.map((subCategory) => (
                                 <Button variant="plain" key={subCategory.category_code} justifyContent="start" padding="0">
-                                    <Link href={`/categorys/${subCategory.category_code}`} width="full" fontWeight={subCategory.id == id ? 'bold' : 'normal'}>{subCategory.name}</Link>
+                                    <Link href={`/categorys/${subCategory.category_code}`} width="full" fontWeight={subCategory.category_code == id ? 'bold' : 'normal'}>{subCategory.name}</Link>
                                 </Button>
                             ))}
                         </Stack>

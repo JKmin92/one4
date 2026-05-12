@@ -99,3 +99,7 @@ export const getReviewCampaignFeedbackList = async (campaign_application_code, u
 export const getReviewCampaignApplicationChannel = async (campaign_application_code, user_code) => {
     return await reviewCampaignModel.getReviewCampaignApplicationChannel(campaign_application_code, user_code);
 }
+
+export const cancelReviewCampaignApplication = async (campaign_application_code, user_code) => {
+    return await reviewCampaignModel.deleteReviewCampaignApplication(campaign_application_code, user_code);
+}

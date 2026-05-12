@@ -21,6 +21,7 @@ router.get("/user/application/delivery/:campaign_application_code", authMiddlewa
 router.post("/application/post", authMiddleware, reviewCampaignController.insertReviewCampaignPost);
 router.put("/application/post", authMiddleware, reviewCampaignController.updateReviewCampaignPost);
 router.get("/application/post/:campaign_application_code", authMiddleware, reviewCampaignController.getReviewCampaignPost);
+router.delete("/application/:campaign_application_code", authMiddleware, reviewCampaignController.cancelReviewCampaignApplication);
 
 router.get("/application/feedback/:campaign_application_code", authMiddleware, reviewCampaignController.getReviewCampaignFeedbackList);
 

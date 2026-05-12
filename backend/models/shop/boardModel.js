@@ -21,9 +21,9 @@ export const getReviewsByProductCode = async (product_code) => {
     return rows;
 }
 
-export const getReviewById = async (id) => {
+export const getReview = async (review_code) => {
     const sql = `SELECT * FROM product_review WHERE review_code = ?`;
-    const [rows] = await db.query(sql, [id]);
+    const [rows] = await db.query(sql, [review_code]);
     return rows[0];
 }
 
@@ -57,9 +57,9 @@ export const getProductInquiriesByProductCode = async (product_code) => {
     return rows;
 }
 
-export const getProductInquiryById = async (id) => {
-    const sql = `SELECT * FROM product_inquiry WHERE inquiry_code = ?`;
-    const [rows] = await db.query(sql, [id]);
+export const getProductInquiryById = async (product_inquiry_code) => {
+    const sql = `SELECT * FROM product_inquiry WHERE product_inquiry_code = ?`;
+    const [rows] = await db.query(sql, [product_inquiry_code]);
     return rows[0];
 }
 

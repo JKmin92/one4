@@ -20,9 +20,9 @@ export const deleteProductCategory = async (category_code) => {
     return await db.query(sql, [category_code]);
 }
 
-export const updateProductCategorySortOrder = async (categories) => {
+export const updateProductCategorySortOrder = async (category) => {
     const sql = `UPDATE product_category SET sort_order = ? WHERE category_code = ?`;
-    return await db.query(sql, [categories.sort_order, categories.category_code]);
+    return await db.query(sql, [category.sort_order, category.category_code]);
 }
 
 export const insertProduct = async (product) => {
