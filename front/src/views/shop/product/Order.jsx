@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatNumber } from "../../../utils/simpleUtils";
 import { LuSearch } from "react-icons/lu";
 import { toaster } from "../../../components/ui/toaster";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../utils/api";
 
 function ProductList({ orderProducts = [] }) {
@@ -343,6 +343,7 @@ function Order() {
 
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [selectedPayment, setSelectedPayment] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (location.state && location.state.orderData) {
@@ -434,9 +435,16 @@ function Order() {
 
     const onOrderSubmit = async () => {
         try {
-            console.log('orderProducts : ', orderProducts);
-            console.log('selectedAddress : ', selectedAddress);
-            console.log('selectedPayment : ', selectedPayment);
+            const response = await axiosInstance.post(`/shop/product/order`, {
+                orderProducts,
+                selectedAddress,
+                selectedPayment
+            });
+
+            if (response.data.result == true) {
+                console.log('response.data : ', response.data);
+                navigate('/order/complete', { state: { orderCode: response.data.order_code } });
+            }
         } catch (e) {
             console.error(e);
             toaster.create({ title: '오류가 발생했습니다.', type: 'error' });

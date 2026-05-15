@@ -17,6 +17,7 @@ import ShopProductList from './views/shop/product/ProductList';
 import ShopProductDetail from './views/shop/product/Detail';
 import ShopCart from './views/shop/product/Cart';
 import ShopOrder from './views/shop/product/Order';
+import ShopOrderComplete from './views/shop/product/OrderComplete';
 import ShopBoardRegister from './views/shop/board/Register';
 
 import ReviewLayout from './views/review/common/Layout';
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
             { path: '/products/:id', element: <ShopProductDetail /> },
             { path: '/cart', element: <ShopCart /> },
             { path: '/order', element: <ShopOrder /> },
+            { path: '/order/complete', element: <ShopOrderComplete /> },
             { path: '/board/register/:type/:id', element: <ShopBoardRegister /> },
             { path: '/board/update/:type/:id', element: <ShopBoardRegister /> }
         ]
