@@ -51,7 +51,10 @@ export const insertProductOrder = async (data) => {
                 price: itemPrice * item.quantity
             }
         });
-        const product_order_payment = { ...data.selectedPayment, payment_code: generateUniqueId(), order_code: order_code };
+        const payment_deadline = new Date();
+        payment_deadline.setDate(payment_deadline.getDate() + 5);
+        payment_deadline.setHours(23, 59, 59, 0);
+        const product_order_payment = { ...data.selectedPayment, payment_code: generateUniqueId(), order_code: order_code, payment_deadline };
 
         await orderModel.insertProductOrder(product_order);
         for (let i = 0; i < product_order_items.length; i++) {
@@ -67,4 +70,8 @@ export const insertProductOrder = async (data) => {
 
 export const getProductOrder = async (order_code) => {
     return await orderModel.getProductOrder(order_code);
+}
+
+export const getUserProductOrder = async (user_code) => {
+    return await orderModel.getUserProductOrder(user_code);
 }

@@ -40,7 +40,7 @@ function Layout() {
                                 </Stack>
                             </Stack>
                             <Stack gap="4" separator={<StackSeparator />}>
-                                <Link href="#" fontSize="sm" px="20px">주문상품</Link>
+                                <Link href="/mypage/order" fontSize="sm" px="20px">주문내역</Link>
                                 <Link href="/mypage/review" fontSize="sm" px="20px">리뷰 캠페인</Link>
                                 <Link href="/mypage/info" fontSize="sm" px="20px">개인정보 수정</Link>
                             </Stack>

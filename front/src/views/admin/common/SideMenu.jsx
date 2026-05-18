@@ -21,9 +21,9 @@ function SideMenu() {
         }, {
             path: 'order', label: '주문',
             children: [
-                { path: ['list'], label: '주문 리스트' },
-                { path: ['payment_list'], label: '입금전 관리' },
-                { path: ['ready_list'], label: '상품 준비중 리스트' },
+                { path: ['total'], label: '주문 리스트' },
+                { path: ['unpaid'], label: '입금전 관리' },
+                { path: ['ready_list'], label: '결제 완료 리스트' },
                 { path: ['delivery_ready_list'], label: '배송 준비중 리스트' },
                 { path: ['delivery_list'], label: '배송중 리스트' },
                 { path: ['complate_list'], label: '배송 완료 리스트' },

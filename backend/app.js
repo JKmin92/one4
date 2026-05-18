@@ -12,6 +12,7 @@ import orderRoutes from './routes/shop/orderRoutes.js';
 import adminReviewCampaignRoutes from './routes/admin/review/reviewCampaignRoutes.js';
 import reviewRoutes from './routes/review/reviewRoutes.js';
 import utilRoutes from './routes/utilRoutes.js';
+import adminOrderRoutes from './routes/admin/shop/orderRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -36,5 +37,6 @@ app.use('/api/review/campaign', reviewRoutes);
 app.use('/api/admin/shop/board', adminShopBoardRoutes);
 app.use('/api/admin/review/campaign', adminReviewCampaignRoutes);
 app.use('/api/utils', utilRoutes);
+app.use('/api/admin/shop/order', adminOrderRoutes);
 
 export default app;

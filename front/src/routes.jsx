@@ -10,6 +10,8 @@ import MypageMain from './views/user/mypage/Main';
 import MypageInfo from './views/user/mypage/Info';
 import MypageReview from './views/user/mypage/review/List';
 import MypageReviewDetail from './views/user/mypage/review/Detail';
+import MypageOrderList from './views/user/mypage/shop/List';
+import MypageOrderDetail from './views/user/mypage/shop/Detail';
 
 import ShopLayout from './views/shop/common/Layout';
 import ShopMain from './views/shop/Main';
@@ -37,6 +39,10 @@ import AdminBoardDetail from './views/admin/shop/board/Detail';
 import AdminReviewCampaignList from './views/admin/review/campaign/List';
 import AdminReviewCampaignRegister from './views/admin/review/campaign/Register';
 import AdminReviewCampaignDetail from './views/admin/review/campaign/Detail';
+
+import AdminOrderTotalList from './views/admin/shop/order/TotalList';
+import AdminOrderUnpaidList from './views/admin/shop/order/UnpaidList';
+import AdminDeliveryReadyList from './views/admin/shop/order/DeliveryReadyList';
 
 const router = createBrowserRouter([
     {
@@ -66,7 +72,9 @@ const router = createBrowserRouter([
             { path: '', element: <MypageMain /> },
             { path: 'info', element: <MypageInfo /> },
             { path: 'review', element: <MypageReview /> },
-            { path: 'review/:campaign_application_code', element: <MypageReviewDetail /> }
+            { path: 'review/:campaign_application_code', element: <MypageReviewDetail /> },
+            { path: 'order', element: <MypageOrderList /> },
+            { path: 'order/:order_code', element: <MypageOrderDetail /> }
         ]
     }, {
         path: '/admin',
@@ -81,10 +89,14 @@ const router = createBrowserRouter([
             { path: 'shop/promotion/update/:id', element: <AdminPromotionRegister /> },
             { path: 'shop/board/list/:type', element: <AdminBoardList /> },
             { path: 'shop/board/:type/:id', element: <AdminBoardDetail /> },
+            { path: 'shop/order/total', element: <AdminOrderTotalList /> },
+            { path: 'shop/order/unpaid', element: <AdminOrderUnpaidList /> },
+            { path: 'shop/order/delivery_ready_list', element: <AdminDeliveryReadyList /> },
             { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> }
+
         ]
     }, {
         path: '/review',
