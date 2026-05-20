@@ -8,10 +8,10 @@ export const insertProductOrder = async (product_order) => {
 }
 
 export const insertProductOrderItem = async (product_order_item) => {
-    const sql = `INSERT INTO product_order_item (order_item_code, order_code, product_code, product_option_code, quantity, discount_type, discount_value, price) 
-        VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+    const sql = `INSERT INTO product_order_item (order_item_code, order_code, product_code, product_option_code, quantity, discount_type, discount_value, price, product_name, product_option_label, product_option_value) 
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    await db.query(sql, [product_order_item.order_item_code, product_order_item.order_code, product_order_item.product_code, product_order_item.product_option_code, product_order_item.quantity, product_order_item.discount_type, product_order_item.discount_value, product_order_item.price]);
+    await db.query(sql, [product_order_item.order_item_code, product_order_item.order_code, product_order_item.product_code, product_order_item.product_option_code, product_order_item.quantity, product_order_item.discount_type, product_order_item.discount_value, product_order_item.price, product_order_item.product_name, product_order_item.product_option_label, product_order_item.product_option_value]);
 }
 
 export const insertProductOrderPayment = async (product_order_payment) => {
@@ -92,4 +92,14 @@ export const getUserProductOrder = async (user_code) => {
             product_order_claims: claims.filter(claim => claim.order_code === order.order_code)
         };
     });
+}
+
+export const getProductNameByCode = async (product_code) => {
+    const [rows] = await db.query('SELECT name FROM product WHERE product_code = ?', [product_code]);
+    return rows[0]?.name || null;
+}
+
+export const getProductOptionByCode = async (product_option_code) => {
+    const [rows] = await db.query('SELECT name, value FROM product_option WHERE product_option_code = ?', [product_option_code]);
+    return rows[0] || null;
 }

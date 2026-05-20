@@ -42,7 +42,12 @@ import AdminReviewCampaignDetail from './views/admin/review/campaign/Detail';
 
 import AdminOrderTotalList from './views/admin/shop/order/TotalList';
 import AdminOrderUnpaidList from './views/admin/shop/order/UnpaidList';
+import AdminPaidList from './views/admin/shop/order/PaidList';
 import AdminDeliveryReadyList from './views/admin/shop/order/DeliveryReadyList';
+import AdminShippingList from './views/admin/shop/order/ShippingList';
+import AdminDeliveredList from './views/admin/shop/order/DeliveredList';
+import AdminCompletedList from './views/admin/shop/order/CompletedList';
+import AdminOrderDetail from './views/admin/shop/order/OrderDetail';
 
 const router = createBrowserRouter([
     {
@@ -91,7 +96,12 @@ const router = createBrowserRouter([
             { path: 'shop/board/:type/:id', element: <AdminBoardDetail /> },
             { path: 'shop/order/total', element: <AdminOrderTotalList /> },
             { path: 'shop/order/unpaid', element: <AdminOrderUnpaidList /> },
+            { path: 'shop/order/paid', element: <AdminPaidList /> },
             { path: 'shop/order/delivery_ready_list', element: <AdminDeliveryReadyList /> },
+            { path: 'shop/order/delivery_list', element: <AdminShippingList /> },
+            { path: 'shop/order/delivered_list', element: <AdminDeliveredList /> },
+            { path: 'shop/order/complete_list', element: <AdminCompletedList /> },
+            { path: 'shop/order/:order_code', element: <AdminOrderDetail /> },
             { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },

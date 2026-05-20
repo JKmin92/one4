@@ -10,7 +10,7 @@ function TotalList() {
     useEffect(() => {
         const loadOrderList = async () => {
             try {
-                const res = await axiosInstance.get(`/admin/shop/order/total`);
+                const res = await axiosInstance.get(`/admin/shop/order/list/total`);
                 console.log(res.data);
                 setOrderList(res.data);
             } catch (e) {
@@ -91,11 +91,9 @@ function TotalList() {
                                 <Table.Cell textAlign="center">{formatDate(order.created_at)}</Table.Cell>
                                 <Table.Cell textAlign="center">
                                     <HStack>
-                                        <Link href="#" color="fg.info">
+                                        <Link href={`/admin/shop/order/${order.order_code}`} target="_blank" color="fg.info">
                                             {order.order_code}
-                                            <Icon size="xs">
-                                                <LuExternalLink />
-                                            </Icon>
+                                            <Icon size="xs"><LuExternalLink /></Icon>
                                         </Link>
                                     </HStack>
                                 </Table.Cell>
@@ -103,9 +101,9 @@ function TotalList() {
                                 <Table.Cell>{order.order_name}</Table.Cell>
                                 <Table.Cell textAlign="center">{formatNumber(order.total_product_price)}</Table.Cell>
                                 <Table.Cell textAlign="center">{formatNumber(order.actual_payment_amount)}</Table.Cell>
-                                <Table.Cell textAlign="center">{getPaymentMethod(order.product_order_payment.payment_type)}</Table.Cell>
+                                <Table.Cell textAlign="center" fontSize="xs">{getPaymentMethod(order.product_order_payment.payment_type)}</Table.Cell>
                                 <Table.Cell textAlign="center">
-                                    <Box bg={order.status === 'PENDING' ? 'orange' : 'blue'} rounded="sm" p="1" color="fg.inverted">
+                                    <Box bg={order.status === 'PENDING' ? 'orange' : 'blue'} rounded="sm" p="1" fontSize="xs" color="fg.inverted">
                                         {order.status === 'PENDING' ? '결제대기' : '결제완료'}
                                     </Box>
                                 </Table.Cell>
@@ -120,7 +118,7 @@ function TotalList() {
                     })}
                 </Table.Body>
             </Table.Root>
-        </Stack>
+        </Stack >
     )
 }
 

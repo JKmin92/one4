@@ -28,7 +28,8 @@ export const insertProductOrder = async (data) => {
             actual_payment_amount: total_product_price + delivery_price,
             status: data.selectedPayment.payment_type === 'BANK' ? 'PENDING' : 'PAID'
         };
-        const product_order_items = data.orderProducts.map((item) => {
+        const product_order_items = [];
+        for (const item of data.orderProducts) {
             let itemPrice = item.product_price;
 
             if (item.promotions && item.promotions.length > 0) {
@@ -40,7 +41,19 @@ export const insertProductOrder = async (data) => {
                 }
             }
 
-            return {
+            const productName = await orderModel.getProductNameByCode(item.product_code);
+
+            let optionLabel = null;
+            let optionValue = null;
+            if (item.product_option_code && item.product_option_code !== 'unique') {
+                const option = await orderModel.getProductOptionByCode(item.product_option_code);
+                if (option) {
+                    optionLabel = option.name;
+                    optionValue = option.value;
+                }
+            }
+
+            product_order_items.push({
                 order_item_code: generateUniqueId(),
                 order_code,
                 product_code: item.product_code,
@@ -48,9 +61,12 @@ export const insertProductOrder = async (data) => {
                 quantity: item.quantity,
                 discount_type: item.promotions?.[0]?.discount_type || null,
                 discount_value: item.promotions?.[0]?.discount_value || null,
-                price: itemPrice * item.quantity
-            }
-        });
+                price: itemPrice * item.quantity,
+                product_name: productName,
+                product_option_label: optionLabel,
+                product_option_value: optionValue
+            });
+        }
         const payment_deadline = new Date();
         payment_deadline.setDate(payment_deadline.getDate() + 5);
         payment_deadline.setHours(23, 59, 59, 0);

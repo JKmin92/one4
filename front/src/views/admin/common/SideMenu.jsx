@@ -23,11 +23,11 @@ function SideMenu() {
             children: [
                 { path: ['total'], label: '주문 리스트' },
                 { path: ['unpaid'], label: '입금전 관리' },
-                { path: ['ready_list'], label: '결제 완료 리스트' },
+                { path: ['paid'], label: '결제 완료 리스트' },
                 { path: ['delivery_ready_list'], label: '배송 준비중 리스트' },
                 { path: ['delivery_list'], label: '배송중 리스트' },
-                { path: ['complate_list'], label: '배송 완료 리스트' },
-
+                { path: ['delivered_list'], label: '배송 완료 리스트' },
+                { path: ['complete_list'], label: '구매 확정 리스트' },
             ]
         }, {
             path: 'complain', label: '취소/교환/반품/환불',

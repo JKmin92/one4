@@ -38,7 +38,7 @@ function UnpaidList() {
     useEffect(() => {
         const loadOrderList = async () => {
             try {
-                const res = await axiosInstance.get(`/admin/shop/order/pending`);
+                const res = await axiosInstance.get(`/admin/shop/order/list/pending`);
                 setOrderList(res.data);
             } catch (e) {
                 console.error(e);
@@ -98,7 +98,7 @@ function UnpaidList() {
                                 <Table.Cell textAlign="center">{order.product_order_payment.deposit_name}</Table.Cell>
                                 <Table.Cell textAlign="center">{formatNumber(order.actual_payment_amount)}</Table.Cell>
                                 <Table.Cell textAlign="center">
-                                    <Box bg={order.status === 'PENDING' ? 'orange' : 'blue'} rounded="sm" p="1" color="fg.inverted">
+                                    <Box fontSize="xs" bg={order.status === 'PENDING' ? 'orange' : 'blue'} rounded="sm" p="1" color="fg.inverted">
                                         {order.status === 'PENDING' ? '결제대기' : '결제완료'}
                                     </Box>
                                 </Table.Cell>

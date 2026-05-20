@@ -3,6 +3,8 @@ import * as orderController from "../../../controllers/admin/shop/orderControlle
 
 const router = express.Router();
 
-router.get('/:status', orderController.getOrderList);
+router.post('/delivery', orderController.insertProductOrderDelivery);
+router.get('/list/:status', orderController.getOrderList);
+router.get('/:order_code', orderController.getOrder);
 
 export default router;
