@@ -29,3 +29,24 @@ export const getOrder = async (req, res, next) => {
         next(e);
     }
 }
+
+export const updateOrderStatus = async (req, res, next) => {
+    try {
+        const { order_codes, status, checkedItems } = req.body;
+        if (status === 'PAID') await orderService.updatePaidCheckTime(order_codes);
+        if (status === 'SHIPPING') {
+            const orderCodes = [];
+            for (const [order_code] of Object.entries(checkedItems)) {
+                orderCodes.push(order_code);
+            }
+
+            await orderService.insertProductOrderDelivery(checkedItems);
+            const result = await orderService.updateOrderStatus(orderCodes, status);
+            return res.status(200).json(result);
+        }
+        const result = await orderService.updateOrderStatus(order_codes, status);
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}

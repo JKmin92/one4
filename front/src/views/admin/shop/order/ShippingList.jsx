@@ -61,6 +61,8 @@ function ShippingList() {
         }
     }
 
+
+
     return (
         <Stack p="30px" px="layoutX" gap="6">
             <Heading>배송 준비중 리스트</Heading>

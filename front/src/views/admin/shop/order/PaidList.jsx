@@ -2,6 +2,7 @@ import { Box, Button, Checkbox, Heading, HStack, Image, Input, Stack, StackSepar
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
+import { toaster } from "../../../../components/ui/toaster";
 
 function PaidList() {
 
@@ -10,16 +11,18 @@ function PaidList() {
     const [checkedItems, setCheckedItems] = useState([]);
 
     useEffect(() => {
-        const loadOrderList = async () => {
-            try {
-                const res = await axiosInstance.get(`/admin/shop/order/list/paid`);
-                setOrderList(res.data);
-            } catch (e) {
-                console.error(e);
-            }
-        }
+
         loadOrderList();
     }, []);
+
+    const loadOrderList = async () => {
+        try {
+            const res = await axiosInstance.get(`/admin/shop/order/list/paid`);
+            setOrderList(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     const handleAllCheck = (e) => {
         const isChecked = !!e.checked;
@@ -61,6 +64,44 @@ function PaidList() {
         }
     }
 
+    const submitProcessing = async () => {
+        try {
+            if (checkedItems.length === 0) {
+                toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
+                return;
+            }
+            const body = { order_codes: checkedItems, status: 'PROCESSING' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                loadOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '배송 준비로 이동되었습니다.', type: 'success' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
+    const submitPending = async () => {
+        try {
+            if (checkedItems.length === 0) {
+                toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
+                return;
+            }
+            const body = { order_codes: checkedItems, status: 'PENDING' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                loadOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '입금전으로 이동되었습니다.', type: 'success' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
     return (
         <Stack p="30px" px="layoutX" gap="6">
             <Heading>결제 완료 주문 리스트</Heading>
@@ -73,8 +114,8 @@ function PaidList() {
             </form>
 
             <HStack>
-                <Button size="xs">선택 상품 배송준비로 이동</Button>
-                <Button size="xs" variant="outline">선택 상품 입금전으로 이동</Button>
+                <Button size="xs" onClick={submitProcessing}>선택 상품 배송준비로 이동</Button>
+                <Button size="xs" variant="outline" onClick={submitPending}>선택 상품 입금전으로 이동</Button>
             </HStack>
 
             <Table.Root>
@@ -131,6 +172,12 @@ function PaidList() {
                             </Table.Row>
                         )
                     })}
+
+                    {orderList.length === 0 && (
+                        <Table.Row>
+                            <Table.Cell textAlign="center" colSpan={9} py="10">검색되는 주문이 없습니다.</Table.Cell>
+                        </Table.Row>
+                    )}
                 </Table.Body>
             </Table.Root>
         </Stack>

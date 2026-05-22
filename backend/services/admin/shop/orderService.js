@@ -21,10 +21,23 @@ export const insertProductOrderDelivery = async (dataList) => {
             await orderModel.insertProductOrderDelivery(product_order_delivery);
         }
     }
-
     return { success: true, message: "배송 정보가 저장되었습니다." };
 }
 
 export const getOrder = async (order_code) => {
     return await orderModel.getOrder(order_code);
+}
+
+export const updateOrderStatus = async (order_codes, status) => {
+    const orderItemList = await orderModel.getProductOrderItems(order_codes);
+    const orderItemCodes = orderItemList.map(orderItem => orderItem.order_item_code);
+
+    await orderModel.updateOrderStatus(order_codes, status);
+    await orderModel.updateOrderItemStatus(orderItemCodes, status);
+    return { success: true };
+}
+
+export const updatePaidCheckTime = async (order_codes) => {
+    await orderModel.updatePaidCheckTime(order_codes);
+    return { success: true };
 }

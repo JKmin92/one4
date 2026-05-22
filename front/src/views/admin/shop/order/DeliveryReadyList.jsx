@@ -4,11 +4,12 @@ import axiosInstance from "../../../../utils/api";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
 import { ToggleTip } from "../../../../components/ui/toggle-tip";
 import { LuInfo } from "react-icons/lu";
+import { toaster } from "../../../../components/ui/toaster";
 
 function DeliveryCompanySelectList({ value, onChange }) {
 
     return (
-        <NativeSelect.Root size="sm" rounded="md">
+        <NativeSelect.Root size="xs" rounded="md">
             <NativeSelect.Field placeholder="택배사를 선택해주세요." value={value || ''} onChange={onChange}>
                 <option value="한진택배">한진택배</option>
                 <option value="CJ 대한통운">CJ 대한통운</option>
@@ -117,7 +118,7 @@ function DeliveryReadyList() {
      */
     const saveDeliveryInfo = async () => {
         if (checkedItems.length === 0) {
-            alert('저장할 주문을 선택해주세요.');
+            toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
             return;
         }
 
@@ -144,11 +145,71 @@ function DeliveryReadyList() {
         try {
             const res = await axiosInstance.post('/admin/shop/order/delivery', result);
             if (res.data) {
-                alert('배송 정보가 저장되었습니다.');
+                toaster.create({ title: '배송 정보가 저장되었습니다.', type: 'success' });
                 getOrderList();
             }
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    const submitShipping = async () => {
+        try {
+            if (checkedItems.length === 0) {
+                toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
+                return;
+            }
+
+            const result = {};
+
+            checkedItems.forEach(orderCode => {
+                const order = orderList.find(o => o.order_code === orderCode);
+                if (!order) return;
+
+                const orderInputs = deliveryInputs[orderCode] || {};
+                const firstItemCode = order.product_order_items[0]?.order_item_code;
+                const firstItemData = orderInputs[firstItemCode] || { post_company: '', post_number: '' };
+
+                result[orderCode] = order.product_order_items.map(item => {
+                    const inputData = orderInputs[item.order_item_code] || {};
+                    return {
+                        order_item_code: item.order_item_code,
+                        post_company: inputData.post_company || firstItemData.post_company,
+                        post_number: inputData.post_number || firstItemData.post_number
+                    };
+                });
+            });
+
+            const body = { checkedItems: result, status: 'SHIPPING' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                getOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '배송중으로 이동 되었습니다.', type: 'success' });
+            }
+
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' })
+        }
+    }
+
+    const submitPaid = async () => {
+        try {
+            if (checkedItems.length === 0) {
+                toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
+                return;
+            }
+            const body = { order_codes: checkedItems, status: 'PAID' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                getOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '결제완료로 이동 되었습니다.', type: 'success' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
         }
     }
 
@@ -164,8 +225,8 @@ function DeliveryReadyList() {
             </form>
 
             <HStack>
-                <Button size="xs">선택 상품 배송중으로 이동</Button>
-                <Button size="xs" variant="outline">선택 상품 결제완료로 이동</Button>
+                <Button size="xs" onClick={submitShipping}>선택 상품 배송중으로 이동</Button>
+                <Button size="xs" variant="outline" onClick={submitPaid}>선택 상품 결제완료로 이동</Button>
                 <Button size="xs" bg="bg.info" color="fg" onClick={saveDeliveryInfo}>택배사/송장번호 저장</Button>
             </HStack>
 
@@ -241,7 +302,7 @@ function DeliveryReadyList() {
                                                 />
                                                 <Input
                                                     placeholder="송장번호를 입력해주세요"
-                                                    fontSize="sm"
+                                                    fontSize="xs"
                                                     rounded="md"
                                                     value={deliveryInputs[order.order_code]?.[orderItem.order_item_code]?.post_number || ''}
                                                     onChange={(e) => handleDeliveryInputChange(order.order_code, orderItem.order_item_code, 'post_number', e.target.value)}

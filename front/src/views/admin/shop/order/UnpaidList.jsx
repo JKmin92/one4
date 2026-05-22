@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { Box, Button, Checkbox, Heading, HStack, Input, Stack, Table } from "@chakra-ui/react";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
+import { toaster } from "../../../../components/ui/toaster";
 
 function UnpaidList() {
     const [orderList, setOrderList] = useState([]);
@@ -36,16 +37,33 @@ function UnpaidList() {
     }, [checkedItems, orderList]);
 
     useEffect(() => {
-        const loadOrderList = async () => {
-            try {
-                const res = await axiosInstance.get(`/admin/shop/order/list/pending`);
-                setOrderList(res.data);
-            } catch (e) {
-                console.error(e);
-            }
-        }
+
         loadOrderList();
     }, []);
+
+    const loadOrderList = async () => {
+        try {
+            const res = await axiosInstance.get(`/admin/shop/order/list/pending`);
+            setOrderList(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const submitPaidCheck = async () => {
+        try {
+            const body = { order_codes: checkedItems, status: 'PAID' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                loadOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '결제가 확인되었습니다.', type: 'success' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
 
     return (
         <Stack p="30px" px="layoutX" gap="6">
@@ -59,7 +77,7 @@ function UnpaidList() {
             </form>
 
             <HStack>
-                <Button size="xs">선택 상품 결제 확인</Button>
+                <Button size="xs" onClick={submitPaidCheck}>선택 상품 결제 확인</Button>
                 <Button size="xs" variant="outline">선택 상품 주문 취소</Button>
             </HStack>
 
@@ -105,6 +123,12 @@ function UnpaidList() {
                             </Table.Row>
                         )
                     })}
+
+                    {orderList.length === 0 && (
+                        <Table.Row>
+                            <Table.Cell textAlign="center" colSpan={8} py="10">검색되는 주문이 없습니다.</Table.Cell>
+                        </Table.Row>
+                    )}
                 </Table.Body>
             </Table.Root>
         </Stack>

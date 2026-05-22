@@ -143,12 +143,38 @@ export const getOrder = async (order_code) => {
         return item;
     });
 
+    const userSql = `SELECT * FROM user WHERE user_code = ?`;
+    const [users] = await db.query(userSql, [order.user_code]);
+    const user = users[0] || null;
+
     return {
         product_order: order,
         product_order_items: mappedItems,
         product_order_payment: payment,
         product_order_claims: claims,
         product_order_deliveries: deliveries,
-        address: address
+        address: address,
+        orderUser: user
     };
+}
+
+export const getProductOrderItems = async (order_codes) => {
+    const sql = `SELECT * FROM product_order_item WHERE order_code IN (?)`;
+    const [items] = await db.query(sql, [order_codes]);
+    return items;
+}
+
+export const updateOrderStatus = async (order_codes, status) => {
+    const sql = `UPDATE product_order SET status = ? WHERE order_code IN (?)`;
+    return await db.query(sql, [status, order_codes]);
+}
+
+export const updateOrderItemStatus = async (order_item_codes, status) => {
+    const sql = `UPDATE product_order_item SET status = ? WHERE order_item_code IN (?)`;
+    return await db.query(sql, [status, order_item_codes]);
+}
+
+export const updatePaidCheckTime = async (order_codes) => {
+    const sql = `UPDATE product_order_payment SET paid_check_time = NOW() WHERE order_code IN (?)`;
+    return await db.query(sql, [order_codes]);
 }
