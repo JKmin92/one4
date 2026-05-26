@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, DataList, Heading, HStack, Image, Input, NativeSelect, Stack, StackSeparator, Table, Tabs, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, DataList, Dialog, Heading, HStack, Image, Input, NativeSelect, Stack, StackSeparator, Table, Tabs, Text } from "@chakra-ui/react";
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../utils/api";
@@ -10,7 +10,7 @@ function DeliveryCompanySelectList({ value, onChange }) {
 
     return (
         <NativeSelect.Root size="xs" rounded="md">
-            <NativeSelect.Field placeholder="택배사를 선택해주세요." value={value || ''} onChange={onChange}>
+            <NativeSelect.Field placeholder="택배사를 선택해주세요." value={value} onChange={(e) => onChange(e.currentTarget.value)}>
                 <option value="한진택배">한진택배</option>
                 <option value="CJ 대한통운">CJ 대한통운</option>
                 <option value="롯데택배">롯데택배</option>
@@ -23,9 +23,10 @@ function DeliveryCompanySelectList({ value, onChange }) {
 
 function ChangeOrderStatusSelectList({ value, onChange }) {
 
+
     return (
         <NativeSelect.Root size="xs" rounded="md">
-            <NativeSelect.Field placeholder="상태를 선택해주세요." value={value || ''} onChange={onChange}>
+            <NativeSelect.Field placeholder="상태를 선택해주세요." value={value} onChange={(e) => onChange(e.currentTarget.value)}>
                 <option value="PROCESSING">배송준비중</option>
                 <option value="SHIPPING">배송중</option>
                 <option value="DELIVERED">배송완료</option>
@@ -38,6 +39,8 @@ function ChangeOrderStatusSelectList({ value, onChange }) {
     )
 }
 
+
+
 function OrderDetail() {
     const { order_code } = useParams();
     const [productOrder, setProductOrder] = useState();
@@ -47,6 +50,24 @@ function OrderDetail() {
     const [productOrderItemList, setProductOrderItemList] = useState([]);
     const [productOrderClaimList, setProductOrderClaimList] = useState([]);
     const [orderUser, setOrderUser] = useState();
+
+    const [orderProductSelectList, setOrderProductSelectList] = useState([]);
+    const [allOrderProductSelect, setAllOrderProductSelect] = useState(false);
+    const [deliveryCompany, setDeliveryCompany] = useState('');
+    const [deliveryValue, setDeliveryValue] = useState('');
+    const [orderStatus, setOrderStatus] = useState('');
+    const [confirmState, setConfirmState] = useState({
+        open: false,
+        title: '',
+        descript: '',
+        resolve: null
+    });
+
+    const showConfirm = (title, descript) => {
+        return new Promise((resolve) => {
+            setConfirmState({ open: true, title, descript, resolve });
+        });
+    };
 
     const processedOrderItemList = useMemo(() => {
         if (!productOrderItemList) return [];
@@ -73,28 +94,32 @@ function OrderDetail() {
     }, [processedOrderItemList]);
 
     useEffect(() => {
-        const loadOrder = async () => {
-            try {
-                const response = await axiosInstance.get(`/admin/shop/order/${order_code}`);
-                setProductOrder(response.data.product_order);
-                setAddress(response.data.address);
-                setProductOrderDeliveryList(response.data.product_order_deliveries);
-                setProductOrderPayment(response.data.product_order_payment);
-                setProductOrderItemList(response.data.product_order_items);
-                setProductOrderClaimList(response.data.product_order_claims);
-                setOrderUser(response.data.orderUser);
-            } catch (e) {
-                console.error(e);
-                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
-            }
-        }
+
         loadOrder();
     }, []);
+
+    const loadOrder = async () => {
+        try {
+            const response = await axiosInstance.get(`/admin/shop/order/${order_code}`);
+            setProductOrder(response.data.product_order);
+            setAddress(response.data.address);
+            setProductOrderDeliveryList(response.data.product_order_deliveries);
+            setProductOrderPayment(response.data.product_order_payment);
+            setProductOrderItemList(response.data.product_order_items);
+            setProductOrderClaimList(response.data.product_order_claims);
+            setOrderUser(response.data.orderUser);
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
 
     const orderItemStatus = (status) => {
         switch (status) {
             case 'PENDING':
                 return (<Box bg="yellow.subtle" p="1" color="fg" rounded="sm">결제대기</Box>);
+            case 'PAID':
+                return (<Box bg="green.subtle" p="1" color="fg" rounded="sm">결제완료</Box>);
             case 'PROCESSING':
                 return (<Box bg="green.subtle" p="1" color="fg.subtle" rounded="sm">배송준비중</Box>);
             case 'SHIPPING':
@@ -127,6 +152,93 @@ function OrderDetail() {
         }
     }
 
+    const handleAllProductCheck = (e) => {
+        const isChecked = !!e.checked;
+        setAllOrderProductSelect(isChecked);
+        if (isChecked) {
+            setOrderProductSelectList(processedOrderItemList.map(item => item.order_item_code));
+        } else {
+            setOrderProductSelectList([]);
+        }
+    }
+
+    const handleSingleProductCheck = (e, order_item_code) => {
+        const isChecked = !!e.checked;
+        if (isChecked) {
+            setOrderProductSelectList(prev => [...prev, order_item_code]);
+        } else {
+            setOrderProductSelectList(prev => prev.filter(code => code !== order_item_code));
+        }
+    }
+
+    useEffect(() => {
+        if (orderProductSelectList.length > 0 && orderProductSelectList.length === processedOrderItemList.length) {
+            setAllOrderProductSelect(true);
+        } else {
+            setAllOrderProductSelect(false);
+        }
+    }, [orderProductSelectList, processedOrderItemList]);
+
+    const changeOrderProductStatus = async () => {
+        if (orderProductSelectList.length === 0) {
+            toaster.create({ title: '선택된 상품이 없습니다.', type: 'error' });
+            return;
+        }
+
+        let isConfirmed = true;
+
+        if (orderStatus === 'SHIPPING' || orderStatus === 'DELIVERED' || orderStatus === 'COMPLETED') {
+            if (productOrderDeliveryList.length === 0 &&
+                (deliveryCompany === '' || deliveryCompany === null || deliveryValue === '' || deliveryValue === null)) {
+                isConfirmed = await showConfirm(
+                    '택배사, 송장번호 미기입',
+                    '택배사 또는 송장번호가 미기입된 상태입니다.<br />택배사와 송장번호 미기입 상태로 저장하시겠습니까?'
+                );
+            }
+        }
+
+        if (!isConfirmed) {
+            return;
+        }
+
+        if (orderStatus != '' && orderStatus != null && orderStatus != undefined) {
+            try {
+                const body = { order_codes: [order_code], status: orderStatus };
+                const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+                if (response.data.success) {
+                    loadOrder();
+                    setOrderProductSelectList([]);
+                    toaster.create({ title: '상태가 변경되었습니다.', type: 'success' });
+                }
+            } catch (e) {
+                console.error(e);
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+            }
+        }
+
+        if (deliveryCompany != '' || deliveryValue != '') {
+
+            const result = {
+                [order_code]: orderProductSelectList.map((order_item_code) => ({
+                    order_item_code: order_item_code,
+                    post_company: deliveryCompany,
+                    post_number: deliveryValue
+                }))
+            };
+
+            try {
+                const res = await axiosInstance.post('/admin/shop/order/delivery', result);
+                if (res.data) {
+                    toaster.create({ title: '배송 정보가 저장되었습니다.', type: 'success' });
+                    loadOrder();
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+    };
+
     return (
         <Stack p="30px" px="layoutX" gap="12">
             <Heading>주문 상세정보</Heading>
@@ -158,7 +270,7 @@ function OrderDetail() {
                     <Table.Header >
                         <Table.Row bg="gray.subtle">
                             <Table.ColumnHeader textAlign="center">
-                                <Checkbox.Root>
+                                <Checkbox.Root checked={allOrderProductSelect} onCheckedChange={handleAllProductCheck}>
                                     <Checkbox.HiddenInput />
                                     <Checkbox.Control />
                                 </Checkbox.Root>
@@ -187,14 +299,14 @@ function OrderDetail() {
                             return (
                                 <Table.Row key={item.order_item_code}>
                                     <Table.Cell textAlign="center">
-                                        <Checkbox.Root>
+                                        <Checkbox.Root checked={orderProductSelectList.includes(item.order_item_code)} onCheckedChange={(e) => handleSingleProductCheck(e, item.order_item_code)}>
                                             <Checkbox.HiddenInput />
                                             <Checkbox.Control />
                                         </Checkbox.Root>
                                     </Table.Cell>
                                     <Table.Cell textAlign="center">{item.product_code}</Table.Cell>
                                     <Table.Cell textAlign="center">
-                                        <Image src={item.image_url || item.product_image_url} w="8" />
+                                        <Image margin="auto" src={item.image_url || item.product_image_url} w="8" />
                                     </Table.Cell>
                                     <Table.Cell textAlign="center">
                                         <Stack gap="1">
@@ -273,10 +385,10 @@ function OrderDetail() {
                                     <LuCheck />
                                     <Text>선택한 상품을</Text>
                                     <HStack>
-                                        <ChangeOrderStatusSelectList />
-                                        <DeliveryCompanySelectList />
-                                        <Input placeholder="송장번호" size="xs" />
-                                        <Button size="xs">일괄적용</Button>
+                                        <ChangeOrderStatusSelectList value={orderStatus} onChange={setOrderStatus} />
+                                        <DeliveryCompanySelectList value={deliveryCompany} onChange={setDeliveryCompany} />
+                                        <Input placeholder="송장번호" size="xs" value={deliveryValue} onChange={(e) => setDeliveryValue(e.target.value)} />
+                                        <Button size="xs" onClick={changeOrderProductStatus}>일괄적용</Button>
                                     </HStack>
                                 </HStack>
                             </Table.Cell>
@@ -487,6 +599,34 @@ function OrderDetail() {
                     </DataList.Root>
                 </Stack>
             </HStack>
+
+            {/* 공통 알림/확인 다이얼로그 */}
+            <Dialog.Root open={confirmState.open} onOpenChange={(open) => {
+                if (!open) {
+                    confirmState.resolve(false);
+                    setConfirmState(prev => ({ ...prev, open: false }));
+                }
+            }}>
+                <Dialog.Backdrop />
+                <Dialog.Positioner>
+                    <Dialog.Content>
+                        <Dialog.Header>
+                            <Dialog.Title>{confirmState.title}</Dialog.Title>
+                        </Dialog.Header>
+                        <Dialog.Body dangerouslySetInnerHTML={{ __html: confirmState.descript }} />
+                        <Dialog.Footer>
+                            <Button variant="outline" onClick={() => {
+                                confirmState.resolve(false);
+                                setConfirmState(prev => ({ ...prev, open: false }));
+                            }}>취소</Button>
+                            <Button onClick={() => {
+                                confirmState.resolve(true);
+                                setConfirmState(prev => ({ ...prev, open: false }));
+                            }}>확인</Button>
+                        </Dialog.Footer>
+                    </Dialog.Content>
+                </Dialog.Positioner>
+            </Dialog.Root>
 
         </Stack>
     )

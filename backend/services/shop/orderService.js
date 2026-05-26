@@ -92,3 +92,8 @@ export const getProductOrder = async (order_code) => {
 export const getUserProductOrder = async (user_code) => {
     return await orderModel.getUserProductOrder(user_code);
 }
+
+export const updateOrderCompleted = async (order_code, user_code) => {
+    await orderModel.updateOrderCompleted(order_code, user_code);
+    return { result: true };
+}

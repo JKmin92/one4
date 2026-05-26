@@ -9,5 +9,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/', authMiddleware, orderController.insertProductOrder);
 router.get('/list', authMiddleware, orderController.getUserProductOrder);
 router.get('/:order_code', authMiddleware, orderController.getProductOrder);
+router.patch('/:order_code/completed', authMiddleware, orderController.updateOrderCompleted);
 
 export default router;

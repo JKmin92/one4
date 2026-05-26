@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
-import { Box, Button, Checkbox, Heading, HStack, Image, Input, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Heading, HStack, Icon, Image, Input, Link, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
+import { LuExternalLink } from "react-icons/lu";
+import { toaster } from "../../../../components/ui/toaster";
 
 function DeliveredList() {
     const [orderList, setOrderList] = useState([]);
@@ -9,16 +11,18 @@ function DeliveredList() {
     const [checkedItems, setCheckedItems] = useState([]);
 
     useEffect(() => {
-        const loadOrderList = async () => {
-            try {
-                const res = await axiosInstance.get(`/admin/shop/order/list/delivered`);
-                setOrderList(res.data);
-            } catch (e) {
-                console.error(e);
-            }
-        }
+
         loadOrderList();
     }, []);
+
+    const loadOrderList = async () => {
+        try {
+            const res = await axiosInstance.get(`/admin/shop/order/list/delivered`);
+            setOrderList(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     const handleAllCheck = (e) => {
         const isChecked = !!e.checked;
@@ -60,6 +64,44 @@ function DeliveredList() {
         }
     }
 
+    const submitCompleted = async () => {
+        try {
+            if (checkedItems.length === 0) {
+                toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
+                return;
+            }
+            const body = { order_codes: checkedItems, status: 'COMPLETED' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                loadOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '구매확정 처리되었습니다.', type: 'success' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
+    const submitShipping = async () => {
+        try {
+            if (checkedItems.length === 0) {
+                toaster.create({ title: '선택된 주문이 없습니다.', type: 'error' });
+                return;
+            }
+            const body = { order_codes: checkedItems, status: 'SHIPPING' };
+            const response = await axiosInstance.put(`/admin/shop/order/status`, body);
+            if (response.data.success) {
+                loadOrderList();
+                setCheckedItems([]);
+                toaster.create({ title: '배송중으로 이동되었습니다.', type: 'success' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
     return (
         <Stack p="30px" px="layoutX" gap="6">
             <Heading>배송 완료 리스트</Heading>
@@ -72,8 +114,8 @@ function DeliveredList() {
             </form>
 
             <HStack>
-                <Button size="xs">선택 상품 구매확정 처리</Button>
-                <Button size="xs" variant="outline">선택 상품 배송중으로 이동</Button>
+                <Button size="xs" onClick={submitCompleted}>선택 상품 구매확정 처리</Button>
+                <Button size="xs" variant="outline" onClick={submitShipping}>선택 상품 배송중으로 이동</Button>
             </HStack>
 
             <Table.Root>
@@ -103,7 +145,14 @@ function DeliveredList() {
                                     <Checkbox.Root checked={checkedItems.includes(order.order_code)} onCheckedChange={(e) => handleSingleCheck(e, order.order_code)}><Checkbox.HiddenInput /><Checkbox.Control /></Checkbox.Root>
                                 </Table.Cell>
                                 <Table.Cell textAlign="center">{formatDate(order.created_at)}</Table.Cell>
-                                <Table.Cell textAlign="center">{order.order_code}</Table.Cell>
+                                <Table.Cell textAlign="center">
+                                    <HStack justifyContent="center">
+                                        <Link href={`/admin/shop/order/${order.order_code}`} target="_blank" color="fg.info">
+                                            {order.order_code}
+                                            <Icon size="xs"><LuExternalLink /></Icon>
+                                        </Link>
+                                    </HStack>
+                                </Table.Cell>
                                 <Table.Cell textAlign="center">{order.address.name}</Table.Cell>
                                 <Table.Cell pr="0">
                                     <Stack separator={<StackSeparator />} gap="2" >

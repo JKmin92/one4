@@ -1,10 +1,10 @@
-import { Alert, Button, DataList, Heading, HStack, Image, Link, Stack, Status, Table, Text } from "@chakra-ui/react";
+import { Alert, Button, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Table, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
 import { useParams } from "react-router-dom";
 import { formatDate, formatDateToMonthDay, formatDateYMD, formatNumber } from "../../../../utils/simpleUtils";
-import { LuBadgeAlert, LuDot } from "react-icons/lu";
+import { LuBadgeAlert, LuBox, LuDot } from "react-icons/lu";
 
 function Detail() {
 
@@ -13,25 +13,34 @@ function Detail() {
     const [productOrderItems, setProductOrderItems] = useState();
     const [productOrderPayment, setProductOrderPayment] = useState();
     const [address, setAddress] = useState();
+    const [productOrderDeliveries, setProductOrderDeliveries] = useState([]);
+    const [confirmState, setConfirmState] = useState({ open: false, title: '', descript: '', resolve: null });
+
+    const showConfirm = (title, descript) => {
+        return new Promise((resolve) => {
+            setConfirmState({ open: true, title, descript, resolve });
+        });
+    };
 
     useEffect(() => {
-        const getOrderData = async () => {
-            try {
-                const response = await axiosInstance.get(`/shop/product/order/${order_code}`);
-                if (response.data) {
-                    console.log(response.data);
-                    setProductOrder(response.data.product_order);
-                    setProductOrderItems(response.data.product_order_items);
-                    setProductOrderPayment(response.data.product_order_payment);
-                    setAddress(response.data.address);
-                }
-            } catch (e) {
-                console.error(e);
-                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
-            }
-        }
         getOrderData();
     }, [order_code]);
+
+    const getOrderData = async () => {
+        try {
+            const response = await axiosInstance.get(`/shop/product/order/${order_code}`);
+            if (response.data) {
+                setProductOrder(response.data.product_order);
+                setProductOrderItems(response.data.product_order_items);
+                setProductOrderPayment(response.data.product_order_payment);
+                setAddress(response.data.address);
+                setProductOrderDeliveries(response.data.product_order_deliveries);
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
 
     const getPaymentMethod = (payment_type) => {
         switch (payment_type) {
@@ -101,6 +110,29 @@ function Detail() {
         }
     }
 
+    const orderCompleted = async () => {
+        try {
+            let result = false;
+
+            result = await showConfirm(
+                '구매 확정',
+                '구매 확정 시 고객 단순 변심에 의한 교환/반품이 불가할 수 있습니다.<br />구매 확정하시겠습니까?'
+            );
+
+            if (result) {
+                const response = await axiosInstance.patch(`/shop/product/order/${order_code}/completed`);
+                if (response.data?.result) {
+                    getOrderData();
+                    toaster.create({ title: "구매 확정되었습니다.", type: "success" });
+                } else {
+                    toaster.create({ title: "오류가 발생했습니다.", type: "error" });
+                }
+            }
+        } catch (e) {
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
             <Heading fontSize="sm" textAlign="left">주문 상세</Heading>
@@ -129,28 +161,79 @@ function Detail() {
                     </Alert.Content>
                 </Alert.Root>
             )}
-            <Stack>
-                {productOrderItems?.map((item) => (
-                    <Stack key={item.order_item_code} direction="row" gap="5">
-                        <Image src={item.image_url} w="24" rounded="md" />
-                        <Stack>
-                            <Link target="_blank" href={`/products/${item.product_code}`}>
-                                <Text fontWeight="medium">{item.product_name}</Text>
-                            </Link>
 
-                            <HStack fontSize="sm" color="fg.muted" gap="0">
-                                {item.product_option_code && (
-                                    <>
-                                        <Text>{item.option_value}</Text>
-                                        <LuDot />
-                                    </>
+            {(productOrder?.status === 'SHIPPING' ||
+                productOrder?.status === 'DELIVERED' ||
+                productOrder?.status === 'COMPLETED' ||
+                productOrder?.status === 'CLAIM') &&
+                productOrderDeliveries != null &&
+                productOrderDeliveries.length > 0 && (
+                    productOrderDeliveries.map((delivery, index) => {
+                        const firstDelivery = productOrderDeliveries && productOrderDeliveries.length > 0 ? productOrderDeliveries[0] : null;
+                        const isAllSamePost = firstDelivery ? productOrderDeliveries.every(item =>
+                            item.post_company === firstDelivery.post_company &&
+                            item.post_number === firstDelivery.post_number
+                        ) : false;
+                        const itemDelivery = productOrderDeliveries?.find(d => d.order_item_code === delivery.order_item_code);
+
+                        if (isAllSamePost && index == 0) {
+                            return (
+                                <Alert.Root status="success" alignItems="center" key={index}>
+                                    <Alert.Indicator>
+                                        <LuBox />
+                                    </Alert.Indicator>
+                                    <Alert.Content>
+                                        <Alert.Title>{itemDelivery.post_company} · {itemDelivery.post_number}</Alert.Title>
+                                        <Alert.Description>
+                                            발송일 : {formatDateYMD(itemDelivery.created_at)}
+                                        </Alert.Description>
+                                    </Alert.Content>
+                                    <Button>배송조회</Button>
+                                </Alert.Root>
+                            )
+                        }
+                    })
+                )}
+            <Stack>
+                {productOrderItems?.map((item) => {
+                    const itemDelivery = productOrderDeliveries?.find(d => d.order_item_code === item.order_item_code);
+                    return (
+                        <Stack key={item.order_item_code} direction="row" justifyContent="space-between" alignItems="center">
+                            <Stack direction="row" gap="5">
+                                <Image src={item.image_url} w="24" rounded="md" />
+                                <Stack>
+                                    <Link target="_blank" href={`/products/${item.product_code}`}>
+                                        <Text fontWeight="medium">{item.product_name}</Text>
+                                    </Link>
+
+                                    <HStack fontSize="sm" color="fg.muted" gap="0">
+                                        {item.product_option_code && (
+                                            <>
+                                                <Text>{item.option_value}</Text>
+                                                <LuDot />
+                                            </>
+                                        )}
+                                        <Text>{item.quantity} 개</Text>
+                                    </HStack>
+                                    <Text>{formatNumber(item.price)} 원</Text>
+                                </Stack>
+                            </Stack>
+                            {(productOrder?.status === 'SHIPPING' ||
+                                productOrder?.status === 'DELIVERED' ||
+                                productOrder?.status === 'COMPLETED' ||
+                                productOrder?.status === 'CLAIM') &&
+                                itemDelivery != null && (
+                                    <Stack alignItems="end">
+                                        <HStack fontSize="sm">
+                                            <Text>{itemDelivery.post_company}</Text>
+                                            <Text>{itemDelivery.post_number}</Text>
+                                        </HStack>
+                                        <Button size="xs" variant="outline">배송조회</Button>
+                                    </Stack>
                                 )}
-                                <Text>{item.quantity} 개</Text>
-                            </HStack>
-                            <Text>{formatNumber(item.price)} 원</Text>
                         </Stack>
-                    </Stack>
-                ))}
+                    )
+                })}
             </Stack>
             <Table.Root>
                 <Table.Body>
@@ -209,6 +292,14 @@ function Detail() {
                                     )}
                                 </Stack>
                             )}
+
+                            {productOrder?.status !== 'PENDING' && productOrderPayment?.paid_check_time != null && (
+                                <Stack>
+                                    <Text>
+                                        결제확인일 : {formatDate(productOrderPayment?.paid_check_time)}
+                                    </Text>
+                                </Stack>
+                            )}
                         </Table.Cell>
                         <Table.Cell w="1/3">
                             <DataList.Root orientation="horizontal" fontWeight="medium">
@@ -230,7 +321,7 @@ function Detail() {
                 )}
                 {(productOrder?.status === 'SHIPPING' || productOrder?.status === 'PROCESSING' || productOrder?.status === 'DELIVERED') && (
                     <>
-                        <Button onClick={() => { }}>구매확정</Button>
+                        <Button onClick={orderCompleted}>구매확정</Button>
                         <Button variant="outline">교환/반품 신청</Button>
                     </>
                 )}
@@ -239,6 +330,33 @@ function Detail() {
                 )}
 
             </Stack>
+
+            <Dialog.Root open={confirmState.open} onOpenChange={(open) => {
+                if (!open) {
+                    confirmState.resolve(false);
+                    setConfirmState(prev => ({ ...prev, open: false }));
+                }
+            }}>
+                <Dialog.Backdrop />
+                <Dialog.Positioner>
+                    <Dialog.Content>
+                        <Dialog.Header>
+                            <Dialog.Title>{confirmState.title}</Dialog.Title>
+                        </Dialog.Header>
+                        <Dialog.Body dangerouslySetInnerHTML={{ __html: confirmState.descript }} />
+                        <Dialog.Footer>
+                            <Button variant="outline" onClick={() => {
+                                confirmState.resolve(false);
+                                setConfirmState(prev => ({ ...prev, open: false }));
+                            }}>취소</Button>
+                            <Button onClick={() => {
+                                confirmState.resolve(true);
+                                setConfirmState(prev => ({ ...prev, open: false }));
+                            }}>확인</Button>
+                        </Dialog.Footer>
+                    </Dialog.Content>
+                </Dialog.Positioner>
+            </Dialog.Root>
         </Stack>
     )
 }

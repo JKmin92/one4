@@ -1,8 +1,9 @@
-import { Box, Button, Checkbox, Heading, HStack, Image, Input, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Heading, HStack, Icon, Image, Input, Link, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
 import { toaster } from "../../../../components/ui/toaster";
+import { LuExternalLink } from "react-icons/lu";
 
 function PaidList() {
 
@@ -140,7 +141,14 @@ function PaidList() {
                                     <Checkbox.Root checked={checkedItems.includes(order.order_code)} onCheckedChange={(e) => handleSingleCheck(e, order.order_code)}><Checkbox.HiddenInput /><Checkbox.Control /></Checkbox.Root>
                                 </Table.Cell>
                                 <Table.Cell textAlign="center">{formatDate(order.created_at)}</Table.Cell>
-                                <Table.Cell textAlign="center">{order.order_code}</Table.Cell>
+                                <Table.Cell textAlign="center">
+                                    <HStack>
+                                        <Link href={`/admin/shop/order/${order.order_code}`} target="_blank" color="fg.info">
+                                            {order.order_code}
+                                            <Icon size="xs"><LuExternalLink /></Icon>
+                                        </Link>
+                                    </HStack>
+                                </Table.Cell>
                                 <Table.Cell textAlign="center">{order.address.name}</Table.Cell>
                                 <Table.Cell pr="0">
                                     <Stack separator={<StackSeparator />} gap="2" >

@@ -1,9 +1,9 @@
-import { Box, Button, Checkbox, Heading, HStack, Image, Input, NativeSelect, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Heading, HStack, Icon, Image, Input, Link, NativeSelect, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
 import { ToggleTip } from "../../../../components/ui/toggle-tip";
-import { LuInfo } from "react-icons/lu";
+import { LuExternalLink, LuInfo } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
 
 function DeliveryCompanySelectList({ value, onChange }) {
@@ -265,7 +265,14 @@ function DeliveryReadyList() {
                                     </Checkbox.Root>
                                 </Table.Cell>
                                 <Table.Cell textAlign="center">{formatDate(order.created_at)}</Table.Cell>
-                                <Table.Cell textAlign="center">{order.order_code}</Table.Cell>
+                                <Table.Cell textAlign="center">
+                                    <HStack justifyContent="center">
+                                        <Link href={`/admin/shop/order/${order.order_code}`} target="_blank" color="fg.info">
+                                            {order.order_code}
+                                            <Icon size="xs"><LuExternalLink /></Icon>
+                                        </Link>
+                                    </HStack>
+                                </Table.Cell>
                                 <Table.Cell textAlign="center">{order.address.name}</Table.Cell>
 
                                 <Table.Cell pr="0">

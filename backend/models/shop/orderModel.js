@@ -45,11 +45,15 @@ export const getProductOrder = async (order_code) => {
     const addressSql = `SELECT * FROM user_address WHERE address_code = ?`;
     const addressResult = await db.query(addressSql, [orderResult[0][0]?.address_code]);
 
+    const deliverySql = `SELECT * FROM product_order_delivery WHERE order_code = ?`;
+    const deliveryResult = await db.query(deliverySql, [order_code]);
+
     return {
         product_order: orderResult[0][0],
         product_order_items: itemResult[0],
         product_order_payment: paymentResult[0][0],
-        address: addressResult[0][0]
+        address: addressResult[0][0],
+        product_order_deliveries: deliveryResult[0]
     };
 }
 
@@ -102,4 +106,12 @@ export const getProductNameByCode = async (product_code) => {
 export const getProductOptionByCode = async (product_option_code) => {
     const [rows] = await db.query('SELECT name, value FROM product_option WHERE product_option_code = ?', [product_option_code]);
     return rows[0] || null;
+}
+
+export const updateOrderCompleted = async (order_code, user_code) => {
+    const sql = `UPDATE product_order SET status = 'COMPLETED' WHERE order_code = ? AND user_code = ?`;
+    await db.query(sql, [order_code, user_code]);
+
+    const itemSql = `UPDATE product_order_item SET status = 'COMPLETED' WHERE order_code = ?`;
+    await db.query(itemSql, [order_code]);
 }

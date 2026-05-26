@@ -79,9 +79,9 @@ function TotalList() {
                 </Table.Header>
                 <Table.Body>
                     {orderList.map((order) => {
-                        const notSendCount = order.product_order_items.filter((item) => item.status === 'PROCESSING').length;
+                        const notSendCount = order.product_order_items.filter((item) => item.status === 'PROCESSING' || item.status === 'PAID').length;
                         const deliveryCount = order.product_order_items.filter((item) => item.status === 'SHIPPING').length;
-                        const deliveredCount = order.product_order_items.filter((item) => item.status === 'DELIVERED').length;
+                        const deliveredCount = order.product_order_items.filter((item) => item.status === 'DELIVERED' || item.status === 'COMPLETED').length;
                         const canceledCount = order.product_order_items.filter((item) => item.status === 'CANCELED').length;
                         const exchangeCount = order.product_order_items.filter((item) => item.status === 'EXCHANGE').length;
                         const returnCount = order.product_order_items.filter((item) => item.status === 'RETURN').length;

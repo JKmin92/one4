@@ -32,3 +32,15 @@ export const getUserProductOrder = async (req, res, next) => {
         next(error);
     }
 }
+
+export const updateOrderCompleted = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+        const order_code = req.params.order_code;
+        const result = await orderService.updateOrderCompleted(order_code, user.user_code);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}

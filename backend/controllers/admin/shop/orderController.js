@@ -34,7 +34,7 @@ export const updateOrderStatus = async (req, res, next) => {
     try {
         const { order_codes, status, checkedItems } = req.body;
         if (status === 'PAID') await orderService.updatePaidCheckTime(order_codes);
-        if (status === 'SHIPPING') {
+        if (status === 'SHIPPING' && checkedItems && !Array.isArray(checkedItems)) {
             const orderCodes = [];
             for (const [order_code] of Object.entries(checkedItems)) {
                 orderCodes.push(order_code);
