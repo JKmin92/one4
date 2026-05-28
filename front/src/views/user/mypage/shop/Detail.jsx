@@ -1,10 +1,11 @@
-import { Alert, Button, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Table, Text } from "@chakra-ui/react";
+import { Alert, Button, CloseButton, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Table, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
 import { useParams } from "react-router-dom";
 import { formatDate, formatDateToMonthDay, formatDateYMD, formatNumber } from "../../../../utils/simpleUtils";
 import { LuBadgeAlert, LuBox, LuDot } from "react-icons/lu";
+import ExchangeDialog from "./ExchangeDialog";
 
 function Detail() {
 
@@ -15,6 +16,9 @@ function Detail() {
     const [address, setAddress] = useState();
     const [productOrderDeliveries, setProductOrderDeliveries] = useState([]);
     const [confirmState, setConfirmState] = useState({ open: false, title: '', descript: '', resolve: null });
+    const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false);
+    const [productOrderClaim, setProductOrderClaim] = useState();
+    const [productOrderClaimItemList, setProductOrderClaimItemList] = useState([]);
 
     const showConfirm = (title, descript) => {
         return new Promise((resolve) => {
@@ -35,6 +39,8 @@ function Detail() {
                 setProductOrderPayment(response.data.product_order_payment);
                 setAddress(response.data.address);
                 setProductOrderDeliveries(response.data.product_order_deliveries);
+                setProductOrderClaim(response.data.product_order_claim);
+                setProductOrderClaimItemList(response.data.product_order_claim_items || []);
             }
         } catch (e) {
             console.error(e);
@@ -102,7 +108,7 @@ function Detail() {
             case 'CLAIM':
                 return (
                     <Status.Root colorPalette="red">
-                        <Status.Indicator /> 클레임 접수
+                        <Status.Indicator /> {productOrderClaim?.claim_type === "EXCHANGE" ? "교환" : productOrderClaim?.claim_type === "REFUND" ? "반품" : "취소"} 접수
                     </Status.Root>
                 )
             default:
@@ -130,6 +136,41 @@ function Detail() {
             }
         } catch (e) {
             toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
+    const submitClaim = async ({ reason_type, reason_detail, product_order_items, claim_type }) => {
+        try {
+            const body = { order_code, reason_type, reason_detail, product_order_items, claim_type };
+            const response = await axiosInstance.post(`/shop/product/order/claim`, { ...body });
+
+            if (response.data?.result) {
+                getOrderData();
+                toaster.create({ title: "클레임이 접수되었습니다.", type: "success" });
+            } else {
+                toaster.create({ title: "오류가 발생했습니다.", type: "error" });
+            }
+        } catch (e) {
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
+    const claimCategory = (category) => {
+        switch (category) {
+            case 'MIND':
+                return '단순변심';
+            case 'DEFECTIVE':
+                return '상품 불량';
+            case 'WRONG':
+                return '주문한 상품과 상이';
+            case 'OPTION':
+                return '상품 옵션 변경';
+            case 'DELAYED':
+                return '배송 지연';
+            case 'OTHER':
+                return '기타';
+            default:
+                return '-';
         }
     }
 
@@ -162,10 +203,72 @@ function Detail() {
                 </Alert.Root>
             )}
 
+            {productOrder?.status === 'CLAIM' && (
+                <Stack borderColor="orange" borderWidth="1px" p="4" rounded="md">
+                    {productOrderClaimItemList?.map(claimItem => {
+                        const orderItem = productOrderItems.find(item => item.order_item_code === claimItem.order_item_code);
+                        return (
+                            <Stack key={claimItem.order_claim_item_code} direction="row" justifyContent="space-between" alignItems="center">
+                                <Stack direction="row" gap="5">
+                                    <Image src={orderItem.image_url} w="24" rounded="md" />
+                                    <Stack>
+                                        <Link target="_blank" href={`/products/${orderItem.product_code}`}>
+                                            <Text fontWeight="medium">{orderItem.product_name}</Text>
+                                        </Link>
+
+                                        <HStack fontSize="sm" color="fg.muted" gap="0">
+                                            {orderItem.product_option_code && (
+                                                <>
+                                                    <Text>{orderItem.option_value}</Text>
+                                                    <LuDot />
+                                                </>
+                                            )}
+                                            <Text>{orderItem.quantity} 개</Text>
+                                        </HStack>
+                                        <Text>{formatNumber(orderItem.price)} 원</Text>
+                                    </Stack>
+                                </Stack>
+                            </Stack>
+                        );
+                    })}
+                    <Dialog.Root>
+                        <Dialog.Trigger asChild>
+                            <Button size="sm" w="full">접수 내용 확인</Button>
+                        </Dialog.Trigger>
+                        <Dialog.Backdrop />
+                        <Dialog.Positioner>
+                            <Dialog.Content>
+                                <Dialog.Header>
+                                    <Dialog.Title>클레임 상세보기</Dialog.Title>
+                                </Dialog.Header>
+                                <Dialog.Body>
+                                    <Table.Root>
+                                        <Table.ColumnGroup>
+                                            <Table.Column minW="100px" w="20%" />
+                                            <Table.Column w="full" />
+                                        </Table.ColumnGroup>
+                                        <Table.Body>
+                                            <Table.Row>
+                                                <Table.ColumnHeader>사유</Table.ColumnHeader>
+                                                <Table.Cell>{claimCategory(productOrderClaim?.reason_category)}</Table.Cell>
+                                            </Table.Row>
+                                            <Table.Row>
+                                                <Table.ColumnHeader>상세내용</Table.ColumnHeader>
+                                                <Table.Cell>{productOrderClaim?.reason_detail}</Table.Cell>
+                                            </Table.Row>
+                                        </Table.Body>
+                                    </Table.Root>
+                                </Dialog.Body>
+                                <Dialog.CloseTrigger><CloseButton /></Dialog.CloseTrigger>
+                            </Dialog.Content>
+                        </Dialog.Positioner>
+                    </Dialog.Root>
+                </Stack>
+            )}
+
             {(productOrder?.status === 'SHIPPING' ||
                 productOrder?.status === 'DELIVERED' ||
-                productOrder?.status === 'COMPLETED' ||
-                productOrder?.status === 'CLAIM') &&
+                productOrder?.status === 'COMPLETED') &&
                 productOrderDeliveries != null &&
                 productOrderDeliveries.length > 0 && (
                     productOrderDeliveries.map((delivery, index) => {
@@ -195,7 +298,7 @@ function Detail() {
                     })
                 )}
             <Stack>
-                {productOrderItems?.map((item) => {
+                {productOrderItems?.filter(i => i.status != 'CANCEL' && i.status != 'RETURN' && i.status != 'EXCHANGE').map((item) => {
                     const itemDelivery = productOrderDeliveries?.find(d => d.order_item_code === item.order_item_code);
                     return (
                         <Stack key={item.order_item_code} direction="row" justifyContent="space-between" alignItems="center">
@@ -322,13 +425,12 @@ function Detail() {
                 {(productOrder?.status === 'SHIPPING' || productOrder?.status === 'PROCESSING' || productOrder?.status === 'DELIVERED') && (
                     <>
                         <Button onClick={orderCompleted}>구매확정</Button>
-                        <Button variant="outline">교환/반품 신청</Button>
+                        <Button variant="outline" onClick={() => setExchangeDialogOpen(true)}>교환/반품 신청</Button>
                     </>
                 )}
                 {productOrder?.status === 'COMPLETED' && (
-                    <Button variant="outline">교환/반품 신청</Button>
+                    <Button variant="outline" onClick={() => setExchangeDialogOpen(true)}>교환/반품 신청</Button>
                 )}
-
             </Stack>
 
             <Dialog.Root open={confirmState.open} onOpenChange={(open) => {
@@ -357,6 +459,9 @@ function Detail() {
                     </Dialog.Content>
                 </Dialog.Positioner>
             </Dialog.Root>
+
+            <ExchangeDialog open={exchangeDialogOpen} onOpenChange={(e) => setExchangeDialogOpen(e.open)} orderItemList={productOrderItems} submitClaim={submitClaim} />
+
         </Stack>
     )
 }

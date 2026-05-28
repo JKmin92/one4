@@ -44,3 +44,15 @@ export const updateOrderCompleted = async (req, res, next) => {
         next(error);
     }
 }
+
+export const insertProductOrderClaim = async (req, res, next) => {
+    try {
+        const data = req.body;
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+        const result = await orderService.insertProductOrderClaim({ ...data, user_code: user.user_code });
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}

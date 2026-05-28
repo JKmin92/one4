@@ -97,3 +97,52 @@ export const updateOrderCompleted = async (order_code, user_code) => {
     await orderModel.updateOrderCompleted(order_code, user_code);
     return { result: true };
 }
+
+export const insertProductOrderClaim = async (data) => {
+    const order_claim_code = generateUniqueId();
+    const delivery_price = await orderModel.getProductOrderDeliveryPriceForOrderCode(data.order_code, data.user_code);
+    let total_product_amount = 0;
+
+    data.product_order_items.map(async (item) => {
+        const product_order_item = await orderModel.getProductOrderItemForOrderItemCode(item.order_item_code);
+        const targetProductAmount = (product_order_item.final_price / product_order_item.quantity) * item.quantity;
+        total_product_amount += targetProductAmount;
+    });
+
+    if (delivery_price === null) {
+        return { result: false, message: '권한 없음' };
+    }
+
+    const order_cliam = {
+        order_claim_code: order_claim_code,
+        order_code: data.order_code,
+        user_code: data.user_code,
+        claim_type: data.claim_type,
+        reason_category: data.reason_type,
+        reason_detail: data.reason_detail,
+        total_product_amount: total_product_amount,
+        deducted_delivery_fee: delivery_price
+    };
+    await orderModel.insertProductOrderClaim(order_cliam);
+
+    data.product_order_items.map(async (item) => {
+        const order_claim_item_code = generateUniqueId();
+        const delivery_code = await orderModel.getProductOrderDeliveryCodeForItemCode(item.order_item_code, data.order_code);
+        const product_order_item = await orderModel.getProductOrderItemForOrderItemCode(item.order_item_code);
+        const targetProductAmount = (product_order_item.final_price / product_order_item.quantity) * item.quantity;
+
+        const product_order_item_claim = {
+            order_claim_item_code: order_claim_item_code,
+            order_claim_code: order_claim_code,
+            order_item_code: item.order_item_code,
+            delivery_code: delivery_code,
+            quantity: item.quantity,
+            product_amount: targetProductAmount
+        };
+        await orderModel.insertProductOrderClaimItem(product_order_item_claim, data.claim_type);
+    });
+
+
+
+    return { result: true };
+}

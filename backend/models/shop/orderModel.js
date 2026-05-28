@@ -48,12 +48,25 @@ export const getProductOrder = async (order_code) => {
     const deliverySql = `SELECT * FROM product_order_delivery WHERE order_code = ?`;
     const deliveryResult = await db.query(deliverySql, [order_code]);
 
+    const claimSql = `SELECT * FROM product_order_claim WHERE order_code = ?`;
+    const claimResult = await db.query(claimSql, [order_code]);
+    const claim = claimResult[0][0] || null;
+
+    let claimItems = [];
+    if (claim) {
+        const claimItemSql = `SELECT * FROM product_order_claim_item WHERE order_claim_code = ?`;
+        const claimItemResult = await db.query(claimItemSql, [claim.order_claim_code]);
+        claimItems = claimItemResult[0];
+    }
+
     return {
         product_order: orderResult[0][0],
         product_order_items: itemResult[0],
         product_order_payment: paymentResult[0][0],
         address: addressResult[0][0],
-        product_order_deliveries: deliveryResult[0]
+        product_order_deliveries: deliveryResult[0],
+        product_order_claim: claim,
+        product_order_claim_items: claimItems
     };
 }
 
@@ -114,4 +127,58 @@ export const updateOrderCompleted = async (order_code, user_code) => {
 
     const itemSql = `UPDATE product_order_item SET status = 'COMPLETED' WHERE order_code = ?`;
     await db.query(itemSql, [order_code]);
+}
+
+export const insertProductOrderClaim = async (product_order_claim) => {
+    const sql = `INSERT INTO product_order_claim (
+        order_claim_code, order_code, user_code, claim_type, reason_category, reason_detail, total_product_amount, deducted_delivery_fee
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    await db.query(sql, [
+        product_order_claim.order_claim_code,
+        product_order_claim.order_code,
+        product_order_claim.user_code,
+        product_order_claim.claim_type,
+        product_order_claim.reason_category,
+        product_order_claim.reason_detail,
+        product_order_claim.total_product_amount,
+        product_order_claim.deducted_delivery_fee
+    ]);
+
+    const updateStatusSql = `UPDATE product_order SET status = 'CLAIM' WHERE order_code = ?`;
+    await db.query(updateStatusSql, [product_order_claim.order_code]);
+}
+
+export const insertProductOrderClaimItem = async (product_order_claim_item, claim_type) => {
+    const sql = `INSERT INTO product_order_claim_item (
+        order_claim_item_code, order_claim_code, order_item_code, delivery_code, quantity, product_amount
+    ) VALUES (?, ?, ?, ?, ?, ? )`;
+    await db.query(sql, [
+        product_order_claim_item.order_claim_item_code,
+        product_order_claim_item.order_claim_code,
+        product_order_claim_item.order_item_code,
+        product_order_claim_item.delivery_code,
+        product_order_claim_item.quantity,
+        product_order_claim_item.product_amount
+    ]);
+
+    const updateStatusSql = `UPDATE product_order_item SET status = ? WHERE order_item_code = ?`;
+    await db.query(updateStatusSql, [claim_type, product_order_claim_item.order_item_code]);
+}
+
+export const getProductOrderDeliveryCodeForItemCode = async (order_item_code, order_code) => {
+    const sql = `SELECT delivery_code FROM product_order_delivery WHERE order_item_code = ? AND order_code = ?`;
+    const [rows] = await db.query(sql, [order_item_code, order_code]);
+    return rows[0]?.delivery_code || null;
+}
+
+export const getProductOrderDeliveryPriceForOrderCode = async (order_code, user_code) => {
+    const sql = `SELECT delivery_price FROM product_order WHERE order_code = ? AND user_code = ?`;
+    const [rows] = await db.query(sql, [order_code, user_code]);
+    return rows[0]?.delivery_price ?? null;
+}
+
+export const getProductOrderItemForOrderItemCode = async (order_item_code) => {
+    const sql = `SELECT * FROM product_order_item WHERE order_item_code = ?`;
+    const [rows] = await db.query(sql, [order_item_code]);
+    return rows[0] || null;
 }

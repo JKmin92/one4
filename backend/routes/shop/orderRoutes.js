@@ -10,5 +10,6 @@ router.post('/', authMiddleware, orderController.insertProductOrder);
 router.get('/list', authMiddleware, orderController.getUserProductOrder);
 router.get('/:order_code', authMiddleware, orderController.getProductOrder);
 router.patch('/:order_code/completed', authMiddleware, orderController.updateOrderCompleted);
+router.post('/claim', authMiddleware, orderController.insertProductOrderClaim);
 
 export default router;
