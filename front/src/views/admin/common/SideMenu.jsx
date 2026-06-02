@@ -30,13 +30,13 @@ function SideMenu() {
                 { path: ['complete_list'], label: '구매 확정 리스트' },
             ]
         }, {
-            path: 'complain', label: '취소/교환/반품/환불',
+            path: 'claim', label: '취소/교환/반품/환불',
             children: [
-                { path: ['auto_cancel_list'], label: '입금전 취소 리스트' },
-                { path: ['cancel_list'], label: '취소 리스트' },
-                { path: ['change_list'], label: '교환 리스트' },
-                { path: ['return_list'], label: '반품 리스트' },
-                { path: ['refund_list'], label: '환불 리스트' },
+                { path: ['auto_cancel'], label: '입금전 취소 리스트' },
+                { path: ['cancel'], label: '취소 리스트' },
+                { path: ['exchange'], label: '교환 리스트' },
+                { path: ['return'], label: '반품 리스트' },
+                { path: ['refund'], label: '환불 리스트' },
             ]
         }, {
             path: 'promotion', label: '프로모션',

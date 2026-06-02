@@ -48,7 +48,7 @@ function OrderDetail() {
     const [productOrderDeliveryList, setProductOrderDeliveryList] = useState([]);
     const [productOrderPayment, setProductOrderPayment] = useState();
     const [productOrderItemList, setProductOrderItemList] = useState([]);
-    const [productOrderClaimList, setProductOrderClaimList] = useState([]);
+    const [productOrderClaim, setProductOrderClaim] = useState([]);
     const [orderUser, setOrderUser] = useState();
 
     const [orderProductSelectList, setOrderProductSelectList] = useState([]);
@@ -71,7 +71,14 @@ function OrderDetail() {
 
     const processedOrderItemList = useMemo(() => {
         if (!productOrderItemList) return [];
-        return productOrderItemList.map(item => {
+        return productOrderItemList.filter((item) =>
+            item.status !== 'CANCEL' &&
+            item.status !== 'CANCELED' &&
+            item.status !== 'RETURN' &&
+            item.status !== 'EXCHANGE' &&
+            item.status !== 'REFOUND' &&
+            item.status !== 'REFUND'
+        ).map(item => {
             let discountPrice = 0;
             if (item.discount_value != null && item.discount_value > 0) {
                 const discountType = item.discount_type?.toUpperCase();
@@ -82,11 +89,32 @@ function OrderDetail() {
                     discountPrice = actualPrice * (item.discount_value / 100) * item.quantity;
                 }
             }
+
             return {
                 ...item,
                 discount_price: discountPrice
             };
         });
+    }, [productOrderItemList]);
+
+    const cancelOrderItemList = useMemo(() => {
+        if (!productOrderItemList) return [];
+        return productOrderItemList.filter((item) => item.status === 'CANCEL');
+    }, [productOrderItemList]);
+
+    const returnOrderItemList = useMemo(() => {
+        if (!productOrderItemList) return [];
+        return productOrderItemList.filter((item) => item.status === 'RETURN');
+    }, [productOrderItemList]);
+
+    const exchangeOrderItemList = useMemo(() => {
+        if (!productOrderItemList) return [];
+        return productOrderItemList.filter((item) => item.status === 'EXCHANGE');
+    }, [productOrderItemList]);
+
+    const refoundOrderItemList = useMemo(() => {
+        if (!productOrderItemList) return [];
+        return productOrderItemList.filter((item) => item.status === 'REFUND');
     }, [productOrderItemList]);
 
     const totalDiscountValue = useMemo(() => {
@@ -106,7 +134,7 @@ function OrderDetail() {
             setProductOrderDeliveryList(response.data.product_order_deliveries);
             setProductOrderPayment(response.data.product_order_payment);
             setProductOrderItemList(response.data.product_order_items);
-            setProductOrderClaimList(response.data.product_order_claims);
+            setProductOrderClaim(response.data.product_order_claim);
             setOrderUser(response.data.orderUser);
         } catch (e) {
             console.error(e);
@@ -149,6 +177,41 @@ function OrderDetail() {
                 return (<Box fontSize="xs" bg="orange" p="1" color="fg.inverted" rounded="sm">에스크로</Box>);
             default:
                 return (<Box fontSize="xs" bg="gray" p="1" color="fg.inverted" rounded="sm">알 수 없음</Box>);
+        }
+    }
+
+    const getClaimStatus = (status) => {
+        const statusStyle = { fontSize: 'xs', p: '1', color: 'fg.inverted', rounded: 'sm', textAlign: 'center' }
+        switch (status) {
+            case 'REQUESTED':
+                return (<Box {...statusStyle} bg="gray">접수</Box>);
+            case 'PROCESSING':
+                return (<Box {...statusStyle} bg="orange">처리중</Box>);
+            case 'COMPLETED':
+                return (<Box {...statusStyle} bg="green">완료</Box>);
+            case 'REJECTED':
+                return (<Box {...statusStyle} bg="red">거절</Box>);
+            default:
+                return (<Box {...statusStyle} bg="gray">알 수 없음</Box>);
+        }
+    }
+
+    const claimCategory = (category) => {
+        switch (category) {
+            case 'MIND':
+                return '단순변심';
+            case 'DEFECTIVE':
+                return '상품 불량';
+            case 'WRONG':
+                return '주문한 상품과 상이';
+            case 'OPTION':
+                return '상품 옵션 변경';
+            case 'DELAYED':
+                return '배송 지연';
+            case 'OTHER':
+                return '기타';
+            default:
+                return '-';
         }
     }
 
@@ -409,10 +472,10 @@ function OrderDetail() {
                 {/** 취소 관련 Table 생성 예정. */}
                 <Tabs.Root defaultValue="cancel" variant="subtle">
                     <Tabs.List>
-                        <Tabs.Trigger value="cancel">취소</Tabs.Trigger>
-                        <Tabs.Trigger value="exchange">교환</Tabs.Trigger>
-                        <Tabs.Trigger value="return">반품</Tabs.Trigger>
-                        <Tabs.Trigger value="refund">환불</Tabs.Trigger>
+                        <Tabs.Trigger value="cancel">취소({cancelOrderItemList.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="exchange">교환({exchangeOrderItemList.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="return">반품({returnOrderItemList.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="refund">환불({refoundOrderItemList.length})</Tabs.Trigger>
                     </Tabs.List>
                     <Tabs.Content value="cancel">
                         <Table.Root>
@@ -439,21 +502,49 @@ function OrderDetail() {
                         <Table.Root>
                             <Table.Header>
                                 <Table.Row bg="gray.subtle">
-                                    <Table.ColumnHeader>요청일시</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리상태</Table.ColumnHeader>
-                                    <Table.ColumnHeader>이미지</Table.ColumnHeader>
-                                    <Table.ColumnHeader>상품</Table.ColumnHeader>
-                                    <Table.ColumnHeader>교환수량</Table.ColumnHeader>
-                                    <Table.ColumnHeader>교환사유</Table.ColumnHeader>
-                                    <Table.ColumnHeader>교환사유(상세)</Table.ColumnHeader>
-                                    <Table.ColumnHeader>차액</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리일시</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">요청일시</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">처리상태</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">이미지</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">상품</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">교환수량</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">교환사유</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">교환사유(상세)</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">차액</Table.ColumnHeader>
+                                    <Table.ColumnHeader textAlign="center">처리일시</Table.ColumnHeader>
                                 </Table.Row>
                             </Table.Header>
                             <Table.Body>
-                                <Table.Row>
-                                    <Table.Cell colSpan="9" textAlign="center">교환정보가 없습니다.</Table.Cell>
-                                </Table.Row>
+                                {exchangeOrderItemList.length > 0 ? (
+                                    exchangeOrderItemList.map((item, index) => {
+                                        console.log(item);
+                                        return (
+                                            <Table.Row key={item.order_item_claim_id}>
+                                                <Table.Cell textAlign="center">{formatDate(productOrderClaim.created_at)}</Table.Cell>
+                                                <Table.Cell textAlign="center">{getClaimStatus(productOrderClaim.claim_status)}</Table.Cell>
+                                                <Table.Cell textAlign="center">
+                                                    <Image src={item.product_image_url} w="12" rounded="md" margin="auto" />
+                                                </Table.Cell>
+                                                <Table.Cell>{item.product_name}</Table.Cell>
+                                                <Table.Cell textAlign="center">{item.quantity}</Table.Cell>
+                                                {index === 0 && (
+                                                    <Table.Cell rowSpan={exchangeOrderItemList.length + 1} textAlign="center">{claimCategory(productOrderClaim.reason_category)}</Table.Cell>
+                                                )}
+                                                {index === 0 && (
+                                                    <Table.Cell rowSpan={exchangeOrderItemList.length + 1} textAlign="center"><Button size="xs">상세</Button></Table.Cell>
+                                                )}
+
+                                                <Table.Cell textAlign="center">0</Table.Cell>
+                                                <Table.Cell textAlign="center"></Table.Cell>
+                                            </Table.Row>
+                                        )
+
+                                    })
+                                ) : (
+                                    <Table.Row>
+                                        <Table.Cell colSpan="9" textAlign="center">교환정보가 없습니다.</Table.Cell>
+                                    </Table.Row>
+                                )}
+
                             </Table.Body>
                         </Table.Root>
                     </Tabs.Content>

@@ -62,6 +62,7 @@ export const insertProductOrder = async (data) => {
                 discount_type: item.promotions?.[0]?.discount_type || null,
                 discount_value: item.promotions?.[0]?.discount_value || null,
                 price: item.product_price * item.quantity,
+                each_price: itemPrice,
                 final_price: itemPrice * item.quantity,
                 product_name: productName,
                 product_option_label: optionLabel,

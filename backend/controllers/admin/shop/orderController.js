@@ -50,3 +50,13 @@ export const updateOrderStatus = async (req, res, next) => {
         next(e);
     }
 }
+
+export const getProductOrderClaimByType = async (req, res, next) => {
+    try {
+        const { type } = req.params;
+        const result = await orderService.getProductOrderClaimByType(type);
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}

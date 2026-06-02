@@ -41,3 +41,7 @@ export const updatePaidCheckTime = async (order_codes) => {
     await orderModel.updatePaidCheckTime(order_codes);
     return { success: true };
 }
+
+export const getProductOrderClaimByType = async (type) => {
+    return await orderModel.getProductOrderClaimByType(type);
+}

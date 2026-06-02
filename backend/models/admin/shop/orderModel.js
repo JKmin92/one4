@@ -151,7 +151,7 @@ export const getOrder = async (order_code) => {
         product_order: order,
         product_order_items: mappedItems,
         product_order_payment: payment,
-        product_order_claims: claims,
+        product_order_claim: claims[0],
         product_order_deliveries: deliveries,
         address: address,
         orderUser: user
@@ -177,4 +177,66 @@ export const updateOrderItemStatus = async (order_item_codes, status) => {
 export const updatePaidCheckTime = async (order_codes) => {
     const sql = `UPDATE product_order_payment SET paid_check_time = NOW() WHERE order_code IN (?)`;
     return await db.query(sql, [order_codes]);
+}
+
+export const getProductOrderClaimByType = async (type) => {
+    const sql = `
+        SELECT 
+            poc.*,
+            po.created_at AS order_created_at,
+            po.delivery_price,
+            pop.payment_type
+        FROM product_order_claim poc
+        LEFT JOIN product_order po ON poc.order_code = po.order_code
+        LEFT JOIN product_order_payment pop ON poc.order_code = pop.order_code
+        WHERE poc.claim_type = ?
+    `;
+    const [claims] = await db.query(sql, [type]);
+
+    if (!claims || claims.length === 0) {
+        return [];
+    }
+
+    const claimCodes = claims.map(c => c.order_claim_code);
+    const userCodes = [...new Set(claims.map(c => c.user_code).filter(Boolean))];
+
+    let users = [];
+    if (userCodes.length > 0) {
+        const userSql = `SELECT user_code, name, email FROM user WHERE user_code IN (?)`;
+        const [userRows] = await db.query(userSql, [userCodes]);
+        users = userRows;
+    }
+
+    let claimItems = [];
+    if (claimCodes.length > 0) {
+        const claimItemSql = `
+            SELECT 
+                poci.*,
+                poi.product_code,
+                pi.url AS product_image_url,
+                poi.product_name,
+                poi.product_option_label,
+                poi.product_option_value,
+                poi.each_price
+            FROM product_order_claim_item poci
+            LEFT JOIN product_order_item poi ON poci.order_item_code = poi.order_item_code
+            LEFT JOIN product_image pi ON poi.product_code = pi.product_code AND pi.is_main = 1
+            WHERE poci.order_claim_code IN (?)
+        `;
+        const [claimItemResult] = await db.query(claimItemSql, [claimCodes]);
+        claimItems = claimItemResult;
+    }
+
+    return claims.map(claim => {
+        const user = users.find(u => u.user_code === claim.user_code);
+        const items = claimItems.filter(item => item.order_claim_code === claim.order_claim_code);
+
+        return {
+            ...claim,
+            user_name: user?.name || null,
+            user_email: user?.email || null,
+            user: user ? { name: user.name, email: user.email } : null,
+            claim_items: items
+        };
+    });
 }

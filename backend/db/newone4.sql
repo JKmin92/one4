@@ -192,9 +192,9 @@ CREATE TABLE IF NOT EXISTS `product_order` (
 
 -- 테이블 데이터 newone4.product_order:~3 rows (대략적) 내보내기
 INSERT INTO `product_order` (`id`, `order_code`, `user_code`, `address_code`, `total_product_price`, `delivery_price`, `used_mileage`, `actual_payment_amount`, `status`, `created_at`) VALUES
-	(7, '202605151407488202', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'SHIPPING', '2026-05-15 05:07:48'),
+	(7, '202605151407488202', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'DELIVERED', '2026-05-15 05:07:48'),
 	(8, '202605180929164816', 'jeo7334Wt202601', '202604081121299155', 9000, 3500, 0, 12500, 'PROCESSING', '2026-05-18 00:29:16'),
-	(9, '202605181007243694', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'COMPLETED', '2026-05-18 01:07:24');
+	(9, '202605181007243694', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'CLAIM', '2026-05-18 01:07:24');
 
 -- 테이블 newone4.product_order_basket 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order_basket` (
@@ -228,15 +228,13 @@ CREATE TABLE IF NOT EXISTS `product_order_claim` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `order_claim_code` varchar(50) NOT NULL DEFAULT '0',
   `order_code` varchar(50) NOT NULL DEFAULT '0',
-  `order_item_code` varchar(50) NOT NULL DEFAULT '0',
   `user_code` varchar(50) NOT NULL DEFAULT '0',
-  `claim_type` enum('CANCEL','RETURN','EXCHANGE') NOT NULL DEFAULT 'CANCEL',
+  `claim_type` enum('CANCEL','RETURN','EXCHANGE','REFOUND') NOT NULL DEFAULT 'CANCEL',
   `claim_status` enum('REQUESTED','PROCESSING','COMPLETED','REJECTED') NOT NULL DEFAULT 'REQUESTED',
-  `claim_quantity` int(11) NOT NULL,
-  `fault_party` enum('BUYER','SELLER') NOT NULL DEFAULT 'BUYER',
-  `reason_category` enum('MIND','DEFECTIVE','WRONG','MISSING','DELAYED','OUT','OTHER') NOT NULL DEFAULT 'MIND',
+  `fault_party` enum('BUYER','SELLER') NOT NULL DEFAULT 'SELLER',
+  `reason_category` enum('MIND','DEFECTIVE','WRONG','OPTION','DELAYED','OUT','OTHER') NOT NULL DEFAULT 'MIND' COMMENT 'mind-단순변심, defective-상품불량, wrong-주문상품과다름, option-옵션변경, delayed-배송지연, other-기타',
   `reason_detail` text NOT NULL,
-  `target_product_amount` double NOT NULL DEFAULT 0,
+  `total_product_amount` double NOT NULL DEFAULT 0,
   `deducted_delivery_fee` double NOT NULL DEFAULT 0,
   `total_refund_amount` double NOT NULL DEFAULT 0,
   `refund_method` enum('ORIGINAL_PAYMENT','MILEAGE_ONLY') NOT NULL DEFAULT 'ORIGINAL_PAYMENT',
@@ -252,14 +250,37 @@ CREATE TABLE IF NOT EXISTS `product_order_claim` (
   PRIMARY KEY (`id`),
   KEY `order_claim_code` (`order_claim_code`),
   KEY `FK_product_order_claim_product_order` (`order_code`),
-  KEY `FK_product_order_claim_product_order_item` (`order_item_code`),
   KEY `FK_product_order_claim_user` (`user_code`),
   CONSTRAINT `FK_product_order_claim_product_order` FOREIGN KEY (`order_code`) REFERENCES `product_order` (`order_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `FK_product_order_claim_product_order_item` FOREIGN KEY (`order_item_code`) REFERENCES `product_order_item` (`order_item_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_product_order_claim_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.product_order_claim:~0 rows (대략적) 내보내기
+INSERT INTO `product_order_claim` (`id`, `order_claim_code`, `order_code`, `user_code`, `claim_type`, `claim_status`, `fault_party`, `reason_category`, `reason_detail`, `total_product_amount`, `deducted_delivery_fee`, `total_refund_amount`, `refund_method`, `refund_mileage`, `refund_cash`, `return_tracking_number`, `return_tacking_company`, `exchange_tracking_number`, `exchange_tacking_company`, `created_at`, `updated_at`, `completed_at`) VALUES
+	(1, '202605281542017916', '202605181007243694', 'jeo7334Wt202601', 'EXCHANGE', 'REQUESTED', 'SELLER', 'MIND', 'ㅅㄷㄴㅅ', 0, 0, 0, 'ORIGINAL_PAYMENT', 0, 0, '0', '0', '0', '0', '2026-05-28 06:42:01', '2026-05-28 06:42:01', NULL);
+
+-- 테이블 newone4.product_order_claim_item 구조 내보내기
+CREATE TABLE IF NOT EXISTS `product_order_claim_item` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_claim_item_code` varchar(50) NOT NULL DEFAULT '0',
+  `order_claim_code` varchar(50) NOT NULL DEFAULT '0',
+  `order_item_code` varchar(50) NOT NULL DEFAULT '0',
+  `delivery_code` varchar(50) DEFAULT NULL,
+  `quantity` int(11) DEFAULT NULL,
+  `product_amount` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_claim_item_code` (`order_claim_item_code`),
+  KEY `FK_product_order_claim_item_product_order_claim` (`order_claim_code`),
+  KEY `FK_product_order_claim_item_product_order_item` (`order_item_code`),
+  KEY `FK_product_order_claim_item_product_order_delivery` (`delivery_code`),
+  CONSTRAINT `FK_product_order_claim_item_product_order_claim` FOREIGN KEY (`order_claim_code`) REFERENCES `product_order_claim` (`order_claim_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_claim_item_product_order_delivery` FOREIGN KEY (`delivery_code`) REFERENCES `product_order_delivery` (`delivery_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_product_order_claim_item_product_order_item` FOREIGN KEY (`order_item_code`) REFERENCES `product_order_item` (`order_item_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.product_order_claim_item:~0 rows (대략적) 내보내기
+INSERT INTO `product_order_claim_item` (`id`, `order_claim_item_code`, `order_claim_code`, `order_item_code`, `delivery_code`, `quantity`, `product_amount`) VALUES
+	(1, '202605281542013541', '202605281542017916', '202605181007245917', '202605191728050302', 1, 12000);
 
 -- 테이블 newone4.product_order_delivery 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order_delivery` (
@@ -280,10 +301,10 @@ CREATE TABLE IF NOT EXISTS `product_order_delivery` (
 
 -- 테이블 데이터 newone4.product_order_delivery:~9 rows (대략적) 내보내기
 INSERT INTO `product_order_delivery` (`id`, `delivery_code`, `order_code`, `order_item_code`, `post_company`, `post_number`, `created_at`) VALUES
-	(11, '202605191728058504', '202605181007243694', '202605181007241781', '한진택배', '698033969812', '2026-05-20 11:54:54'),
-	(12, '202605191728050302', '202605181007243694', '202605181007245917', '한진택배', '698033969812', '2026-05-20 11:54:54'),
-	(13, '202605191728057591', '202605181007243694', '202605181007243203', '한진택배', '698033969812', '2026-05-20 11:54:54'),
-	(14, '202605191728056892', '202605181007243694', '202605181007244287', '한진택배', '698033969812', '2026-05-20 11:54:54'),
+	(11, '202605191728058504', '202605181007243694', '202605181007241781', 'CJ 대한통운', '132454891', '2026-05-20 11:54:54'),
+	(12, '202605191728050302', '202605181007243694', '202605181007245917', 'CJ 대한통운', '132454891', '2026-05-20 11:54:54'),
+	(13, '202605191728057591', '202605181007243694', '202605181007243203', 'CJ 대한통운', '132454891', '2026-05-20 11:54:54'),
+	(14, '202605191728056892', '202605181007243694', '202605181007244287', 'CJ 대한통운', '132454891', '2026-05-20 11:54:54'),
 	(15, '202605191728053650', '202605180929164816', '202605180929167660', 'CJ 대한통운', '153154314', '2026-05-20 11:54:54'),
 	(16, '202605211416553278', '202605151407488202', '202605151407483464', '한진택배', '12312312321312', '2026-05-21 14:16:55'),
 	(17, '202605211416558124', '202605151407488202', '202605151407485046', '한진택배', '12312312321312', '2026-05-21 14:16:55'),
@@ -300,9 +321,10 @@ CREATE TABLE IF NOT EXISTS `product_order_item` (
   `quantity` int(11) NOT NULL DEFAULT 1,
   `discount_type` enum('FIXED','PERCENT') DEFAULT 'FIXED',
   `discount_value` double DEFAULT 1,
+  `each_price` double NOT NULL DEFAULT 1,
   `price` double NOT NULL,
   `final_price` double NOT NULL,
-  `status` enum('PENDING','PAID','PROCESSING','SHIPPING','DELIVERED','COMPLETED','CANCELED','EXCHANGE','RETURN') NOT NULL DEFAULT 'PENDING',
+  `status` enum('PENDING','PAID','PROCESSING','SHIPPING','DELIVERED','COMPLETED','CANCEL','RETURN','EXCHANGE','REFOUND') NOT NULL DEFAULT 'PENDING',
   `product_name` varchar(255) DEFAULT NULL,
   `product_option_label` varchar(255) DEFAULT NULL,
   `product_option_value` varchar(255) DEFAULT NULL,
@@ -317,16 +339,16 @@ CREATE TABLE IF NOT EXISTS `product_order_item` (
 ) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.product_order_item:~9 rows (대략적) 내보내기
-INSERT INTO `product_order_item` (`id`, `order_item_code`, `order_code`, `product_code`, `product_option_code`, `quantity`, `discount_type`, `discount_value`, `price`, `final_price`, `status`, `product_name`, `product_option_label`, `product_option_value`) VALUES
-	(25, '202605151407483464', '202605151407488202', '20260209165809589', 'opt20260209165809589', 5, 'FIXED', 1000, 50000, 45000, 'SHIPPING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
-	(26, '202605151407485046', '202605151407488202', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 'SHIPPING', '다이나믹 듀오(dynamic dou) - 죽일놈', '컬러', NULL),
-	(27, '202605151407485943', '202605151407488202', '20260209165809589', 'opt20260209165809142', 1, 'FIXED', 1000, 10000, 9000, 'SHIPPING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블랙'),
-	(28, '202605151407488126', '202605151407488202', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 10000, 9000, 'SHIPPING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플'),
-	(29, '202605180929167660', '202605180929164816', '20260209165809589', 'opt20260209165809589', 1, 'FIXED', 1000, 10000, 9000, 'PENDING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
-	(30, '202605181007241781', '202605181007243694', '20260209165809589', 'opt20260209165809589', 5, 'FIXED', 1000, 50000, 45000, 'PENDING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
-	(31, '202605181007245917', '202605181007243694', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 'PENDING', '다이나믹 듀오(dynamic dou) - 죽일놈', '컬러', NULL),
-	(32, '202605181007243203', '202605181007243694', '20260209165809589', 'opt20260209165809142', 1, 'FIXED', 1000, 10000, 9000, 'PENDING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블랙'),
-	(33, '202605181007244287', '202605181007243694', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 10000, 9000, 'PENDING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플');
+INSERT INTO `product_order_item` (`id`, `order_item_code`, `order_code`, `product_code`, `product_option_code`, `quantity`, `discount_type`, `discount_value`, `each_price`, `price`, `final_price`, `status`, `product_name`, `product_option_label`, `product_option_value`) VALUES
+	(25, '202605151407483464', '202605151407488202', '20260209165809589', 'opt20260209165809589', 5, 'FIXED', 1000, 9000, 50000, 45000, 'DELIVERED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
+	(26, '202605151407485046', '202605151407488202', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 12000, 'DELIVERED', '다이나믹 듀오(dynamic dou) - 죽일놈', '컬러', NULL),
+	(27, '202605151407485943', '202605151407488202', '20260209165809589', 'opt20260209165809142', 1, 'FIXED', 1000, 9000, 10000, 9000, 'DELIVERED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블랙'),
+	(28, '202605151407488126', '202605151407488202', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 9000, 10000, 9000, 'DELIVERED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플'),
+	(29, '202605180929167660', '202605180929164816', '20260209165809589', 'opt20260209165809589', 1, 'FIXED', 1000, 9000, 10000, 9000, 'PENDING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
+	(30, '202605181007241781', '202605181007243694', '20260209165809589', 'opt20260209165809589', 5, 'FIXED', 1000, 9000, 50000, 45000, 'COMPLETED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
+	(31, '202605181007245917', '202605181007243694', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 12000, 'EXCHANGE', '다이나믹 듀오(dynamic dou) - 죽일놈', '컬러', NULL),
+	(32, '202605181007243203', '202605181007243694', '20260209165809589', 'opt20260209165809142', 1, 'FIXED', 1000, 9000, 10000, 9000, 'COMPLETED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블랙'),
+	(33, '202605181007244287', '202605181007243694', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 9000, 10000, 9000, 'COMPLETED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플');
 
 -- 테이블 newone4.product_order_payment 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order_payment` (
@@ -345,7 +367,7 @@ CREATE TABLE IF NOT EXISTS `product_order_payment` (
 INSERT INTO `product_order_payment` (`id`, `payment_code`, `order_code`, `payment_type`, `deposit_name`, `payment_deadline`, `paid_check_time`) VALUES
 	(7, '202605151407481535', '202605151407488202', 'BANK', 'asdf', '2026-05-20 23:59:59', '2026-05-21 14:06:16'),
 	(8, '202605180929164124', '202605180929164816', 'BANK', 'asdf', '2026-05-23 23:59:59', NULL),
-	(9, '202605181007249103', '202605181007243694', 'BANK', 'ㅁㄴㅇㅇㅁㄴㄹ', '2026-05-23 23:59:59', NULL);
+	(9, '202605181007249103', '202605181007243694', 'BANK', 'ㅁㄴㅇㅇㅁㄴㄹ', '2026-05-23 23:59:59', '2026-05-26 16:44:23');
 
 -- 테이블 newone4.product_promotion 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_promotion` (
@@ -422,7 +444,7 @@ CREATE TABLE IF NOT EXISTS `refresh_tokens` (
   PRIMARY KEY (`id`),
   KEY `user_code` (`user_code`),
   CONSTRAINT `FK_refresh_tokens_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.refresh_tokens:~5 rows (대략적) 내보내기
 INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdAt`) VALUES
@@ -433,7 +455,8 @@ INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdA
 	(38, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsInJvbGUiOiJVU0VSIiwic3RhdHVzIjoiQUNUSVZFIiwicHJvZmlsZSI6bnVsbCwibmFtZSI6IuuvvOygleq4sCIsImVtYWlsIjoiamVvbmdrZXkzMzE3QG5hdmVyLmNvbSJ9LCJpYXQiOjE3NzYzOTkwOTYsImV4cCI6MTc3NzAwMzg5Nn0.OJU9HJi3dfwtDEEU5Ba57TZOnhAFJ8EDJHutK7Hlj8k', '2026-04-24 13:11:36', '2026-04-17 13:11:36'),
 	(41, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc4MDM1NTE2LCJleHAiOjE3Nzg2NDAzMTZ9.ySEO2eJBDJXoidFJ9Ud2Q892xfMXRY7lng339fbjPww', '2026-05-13 11:45:16', '2026-05-06 11:45:16'),
 	(42, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc4NjUzNDY3LCJleHAiOjE3NzkyNTgyNjd9.aKfY84EPTFGZyndA7dWqhPmiSmo8HylOehjYfuzNdK8', '2026-05-20 15:24:27', '2026-05-13 15:24:27'),
-	(43, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5MzI1NjU0LCJleHAiOjE3Nzk5MzA0NTR9._rVkNE9HHpr5MbwmSgVKbWqba5LkrTrEn49lj2vd1n8', '2026-05-28 10:07:34', '2026-05-21 10:07:34');
+	(43, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5MzI1NjU0LCJleHAiOjE3Nzk5MzA0NTR9._rVkNE9HHpr5MbwmSgVKbWqba5LkrTrEn49lj2vd1n8', '2026-05-28 10:07:34', '2026-05-21 10:07:34'),
+	(44, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5OTQ5MDM5LCJleHAiOjE3ODA1NTM4Mzl9.k3UzgxmLN3CVPN-EW5f59h5A9EpnDx26lMe8yIWYgUk', '2026-06-04 15:17:19', '2026-05-28 15:17:19');
 
 -- 테이블 newone4.review_campaign 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign` (
@@ -763,7 +786,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 -- 테이블 데이터 newone4.user:~1 rows (대략적) 내보내기
 INSERT INTO `user` (`user_code`, `email`, `name`, `phone`, `profile`, `password`, `role`, `status`, `marketingAgree`, `created_at`, `deleted_at`, `last_login_at`) VALUES
-	('jeo7334Wt202601', 'jeongkey3317@naver.com', '민정기', '01065513317', NULL, '$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6', 'SUPER_ADMIN', 'ACTIVE', b'1', '2026-01-29 12:27:25', NULL, '2026-05-21 10:07:34');
+	('jeo7334Wt202601', 'jeongkey3317@naver.com', '민정기', '01065513317', NULL, '$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6', 'SUPER_ADMIN', 'ACTIVE', b'1', '2026-01-29 12:27:25', NULL, '2026-05-28 15:17:19');
 
 -- 테이블 newone4.user_address 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user_address` (
