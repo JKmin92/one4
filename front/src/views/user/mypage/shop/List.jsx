@@ -16,7 +16,6 @@ function OrderList() {
         try {
             const res = await axiosInstance.get('/shop/product/order/list');
             if (res.data) {
-                console.log(res.data);
                 setOrderList(res.data);
             }
         } catch (error) {
@@ -24,7 +23,10 @@ function OrderList() {
         }
     }
 
-    const orderStatus = (status) => {
+    const orderStatus = (status, product_order_claims) => {
+        const claim = product_order_claims ? product_order_claims[product_order_claims.length - 1] : null;
+        const claim_type = claim ? claim.claim_type === 'CANCEL' ? '취소' : claim.claim_type === 'EXCHANGE' ? '교환' : claim.claim_type === 'RETURN' ? '반품' : claim.claim_type === 'REFOUND' ? '환불' : '' : '';
+
         switch (status) {
             case 'PENDING':
                 return (
@@ -69,11 +71,37 @@ function OrderList() {
                     </Status.Root>
                 )
             case 'CLAIM':
-                return (
-                    <Status.Root colorPalette="red">
-                        <Status.Indicator /> 클레임 접수
-                    </Status.Root>
-                )
+                if (claim.claim_status === 'REQUEST') {
+                    return (
+                        <Status.Root colorPalette="orange">
+                            <Status.Indicator /> {claim_type} 요청
+                        </Status.Root>
+                    )
+                }
+
+                if (claim.claim_status === 'PROCESSING') {
+                    return (
+                        <Status.Root colorPalette="blue">
+                            <Status.Indicator /> {claim_type} 처리 중
+                        </Status.Root>
+                    )
+                }
+
+                if (claim.claim_status === 'COMPLETED') {
+                    return (
+                        <Status.Root colorPalette="green">
+                            <Status.Indicator /> {claim_type} 완료
+                        </Status.Root>
+                    )
+                }
+
+                if (claim.claim_status === 'REJECTED') {
+                    return (
+                        <Status.Root colorPalette="red">
+                            <Status.Indicator /> {claim_type} 거절
+                        </Status.Root>
+                    )
+                }
             default:
                 return '알 수 없음';
         }
@@ -130,7 +158,7 @@ function OrderList() {
 
                                 <Stack textAlign="end" justifyContent="end">
                                     <Box justifyContent="flex-end">
-                                        {orderStatus(order.status)}
+                                        {orderStatus(order.status, order.product_order_claims)}
                                     </Box>
                                     <Text>{formatNumber(order.total_product_price + order.delivery_price)} 원</Text>
                                     <Button size="xs" as={Link} href={`/mypage/order/${order.order_code}`}>주문 상세보기</Button>

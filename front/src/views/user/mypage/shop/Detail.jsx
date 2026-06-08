@@ -62,6 +62,8 @@ function Detail() {
     }
 
     const orderStatus = (status) => {
+        const claim_type = productOrderClaim?.claim_type === "EXCHANGE" ? "교환" : productOrderClaim?.claim_type === "RETURN" ? "반품" : productOrderClaim?.claim_type === 'REFUND' ? "환불" : "취소";
+
         switch (status) {
             case 'PENDING':
                 return (
@@ -106,11 +108,34 @@ function Detail() {
                     </Status.Root>
                 )
             case 'CLAIM':
-                return (
-                    <Status.Root colorPalette="red">
-                        <Status.Indicator /> {productOrderClaim?.claim_type === "EXCHANGE" ? "교환" : productOrderClaim?.claim_type === "REFUND" ? "반품" : "취소"} 접수
-                    </Status.Root>
-                )
+                if (productOrderClaim?.claim_status === 'REQUEST' || productOrderClaim?.claim_status === 'REQUESTED') {
+                    return (
+                        <Status.Root colorPalette="orange">
+                            <Status.Indicator /> {claim_type} 접수
+                        </Status.Root>
+                    )
+                }
+                if (productOrderClaim?.claim_status === 'PROCESSING') {
+                    return (
+                        <Status.Root colorPalette="blue">
+                            <Status.Indicator /> {claim_type} 승인
+                        </Status.Root>
+                    )
+                }
+                if (productOrderClaim?.claim_status === 'COMPLETED') {
+                    return (
+                        <Status.Root colorPalette="green">
+                            <Status.Indicator /> {claim_type} 완료
+                        </Status.Root>
+                    )
+                }
+                if (productOrderClaim?.claim_status === 'REJECTED') {
+                    return (
+                        <Status.Root colorPalette="red">
+                            <Status.Indicator /> {claim_type} 거절
+                        </Status.Root>
+                    )
+                }
             default:
                 return '알 수 없음';
         }
@@ -139,9 +164,9 @@ function Detail() {
         }
     }
 
-    const submitClaim = async ({ reason_type, reason_detail, product_order_items, claim_type }) => {
+    const submitClaim = async ({ reason_type, reason_detail, product_order_items, claim_type, ...extra }) => {
         try {
-            const body = { order_code, reason_type, reason_detail, product_order_items, claim_type };
+            const body = { order_code, reason_type, reason_detail, product_order_items, claim_type, ...extra };
             const response = await axiosInstance.post(`/shop/product/order/claim`, { ...body });
 
             if (response.data?.result) {
@@ -209,9 +234,9 @@ function Detail() {
                         const orderItem = productOrderItems.find(item => item.order_item_code === claimItem.order_item_code);
                         return (
                             <Stack key={claimItem.order_claim_item_code} direction="row" justifyContent="space-between" alignItems="center">
-                                <Stack direction="row" gap="5">
+                                <Stack direction="row" gap="5" alignItems="center">
                                     <Image src={orderItem.image_url} w="24" rounded="md" />
-                                    <Stack>
+                                    <Stack gap="0">
                                         <Link target="_blank" href={`/products/${orderItem.product_code}`}>
                                             <Text fontWeight="medium">{orderItem.product_name}</Text>
                                         </Link>
@@ -259,7 +284,9 @@ function Detail() {
                                         </Table.Body>
                                     </Table.Root>
                                 </Dialog.Body>
-                                <Dialog.CloseTrigger><CloseButton /></Dialog.CloseTrigger>
+                                <Dialog.CloseTrigger asChild>
+                                    <CloseButton />
+                                </Dialog.CloseTrigger>
                             </Dialog.Content>
                         </Dialog.Positioner>
                     </Dialog.Root>
@@ -460,7 +487,7 @@ function Detail() {
                 </Dialog.Positioner>
             </Dialog.Root>
 
-            <ExchangeDialog open={exchangeDialogOpen} onOpenChange={(e) => setExchangeDialogOpen(e.open)} orderItemList={productOrderItems} submitClaim={submitClaim} />
+            <ExchangeDialog open={exchangeDialogOpen} onOpenChange={(e) => setExchangeDialogOpen(e.open)} orderItemList={productOrderItems} submitClaim={submitClaim} productOrderPayment={productOrderPayment} />
 
         </Stack>
     )

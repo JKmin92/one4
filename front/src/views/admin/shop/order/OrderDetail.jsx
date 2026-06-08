@@ -5,6 +5,10 @@ import axiosInstance from "../../../../utils/api";
 import { toaster } from "../../../../components/ui/toaster";
 import { formatDate, formatNumber } from "../../../../utils/simpleUtils";
 import { LuCheck } from "react-icons/lu";
+import ExchangeOrder from "./detail/ExchangeOrder";
+import CancelOrder from "./detail/CancelOrder";
+import ReturnOrder from "./detail/ReturnOrder";
+import RefundOrder from "./detail/RefundOrder";
 
 function DeliveryCompanySelectList({ value, onChange }) {
 
@@ -48,7 +52,7 @@ function OrderDetail() {
     const [productOrderDeliveryList, setProductOrderDeliveryList] = useState([]);
     const [productOrderPayment, setProductOrderPayment] = useState();
     const [productOrderItemList, setProductOrderItemList] = useState([]);
-    const [productOrderClaim, setProductOrderClaim] = useState([]);
+    const [productOrderClaim, setProductOrderClaim] = useState();
     const [orderUser, setOrderUser] = useState();
 
     const [orderProductSelectList, setOrderProductSelectList] = useState([]);
@@ -112,7 +116,7 @@ function OrderDetail() {
         return productOrderItemList.filter((item) => item.status === 'EXCHANGE');
     }, [productOrderItemList]);
 
-    const refoundOrderItemList = useMemo(() => {
+    const refundOrderItemList = useMemo(() => {
         if (!productOrderItemList) return [];
         return productOrderItemList.filter((item) => item.status === 'REFUND');
     }, [productOrderItemList]);
@@ -180,40 +184,9 @@ function OrderDetail() {
         }
     }
 
-    const getClaimStatus = (status) => {
-        const statusStyle = { fontSize: 'xs', p: '1', color: 'fg.inverted', rounded: 'sm', textAlign: 'center' }
-        switch (status) {
-            case 'REQUESTED':
-                return (<Box {...statusStyle} bg="gray">접수</Box>);
-            case 'PROCESSING':
-                return (<Box {...statusStyle} bg="orange">처리중</Box>);
-            case 'COMPLETED':
-                return (<Box {...statusStyle} bg="green">완료</Box>);
-            case 'REJECTED':
-                return (<Box {...statusStyle} bg="red">거절</Box>);
-            default:
-                return (<Box {...statusStyle} bg="gray">알 수 없음</Box>);
-        }
-    }
 
-    const claimCategory = (category) => {
-        switch (category) {
-            case 'MIND':
-                return '단순변심';
-            case 'DEFECTIVE':
-                return '상품 불량';
-            case 'WRONG':
-                return '주문한 상품과 상이';
-            case 'OPTION':
-                return '상품 옵션 변경';
-            case 'DELAYED':
-                return '배송 지연';
-            case 'OTHER':
-                return '기타';
-            default:
-                return '-';
-        }
-    }
+
+
 
     const handleAllProductCheck = (e) => {
         const isChecked = !!e.checked;
@@ -469,130 +442,25 @@ function OrderDetail() {
             <Stack>
                 <Heading fontSize="md">취소/교환/반품/환불</Heading>
 
-                {/** 취소 관련 Table 생성 예정. */}
+                {/** TODO : 취소 관련 Table 생성 예정. */}
                 <Tabs.Root defaultValue="cancel" variant="subtle">
                     <Tabs.List>
                         <Tabs.Trigger value="cancel">취소({cancelOrderItemList.length})</Tabs.Trigger>
                         <Tabs.Trigger value="exchange">교환({exchangeOrderItemList.length})</Tabs.Trigger>
                         <Tabs.Trigger value="return">반품({returnOrderItemList.length})</Tabs.Trigger>
-                        <Tabs.Trigger value="refund">환불({refoundOrderItemList.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="refund">환불({refundOrderItemList.length})</Tabs.Trigger>
                     </Tabs.List>
                     <Tabs.Content value="cancel">
-                        <Table.Root>
-                            <Table.Header>
-                                <Table.Row bg="gray.subtle">
-                                    <Table.ColumnHeader>요청일시</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리상태</Table.ColumnHeader>
-                                    <Table.ColumnHeader>이미지</Table.ColumnHeader>
-                                    <Table.ColumnHeader>상품</Table.ColumnHeader>
-                                    <Table.ColumnHeader>취소수량</Table.ColumnHeader>
-                                    <Table.ColumnHeader>취소사유</Table.ColumnHeader>
-                                    <Table.ColumnHeader>취소사유(상세)</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리일시</Table.ColumnHeader>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                <Table.Row>
-                                    <Table.Cell colSpan="8" textAlign="center">취소정보가 없습니다.</Table.Cell>
-                                </Table.Row>
-                            </Table.Body>
-                        </Table.Root>
+                        <CancelOrder cancelOrderItemList={cancelOrderItemList} productOrderClaim={productOrderClaim} />
                     </Tabs.Content>
                     <Tabs.Content value="exchange">
-                        <Table.Root>
-                            <Table.Header>
-                                <Table.Row bg="gray.subtle">
-                                    <Table.ColumnHeader textAlign="center">요청일시</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">처리상태</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">이미지</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">상품</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">교환수량</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">교환사유</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">교환사유(상세)</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">차액</Table.ColumnHeader>
-                                    <Table.ColumnHeader textAlign="center">처리일시</Table.ColumnHeader>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                {exchangeOrderItemList.length > 0 ? (
-                                    exchangeOrderItemList.map((item, index) => {
-                                        console.log(item);
-                                        return (
-                                            <Table.Row key={item.order_item_claim_id}>
-                                                <Table.Cell textAlign="center">{formatDate(productOrderClaim.created_at)}</Table.Cell>
-                                                <Table.Cell textAlign="center">{getClaimStatus(productOrderClaim.claim_status)}</Table.Cell>
-                                                <Table.Cell textAlign="center">
-                                                    <Image src={item.product_image_url} w="12" rounded="md" margin="auto" />
-                                                </Table.Cell>
-                                                <Table.Cell>{item.product_name}</Table.Cell>
-                                                <Table.Cell textAlign="center">{item.quantity}</Table.Cell>
-                                                {index === 0 && (
-                                                    <Table.Cell rowSpan={exchangeOrderItemList.length + 1} textAlign="center">{claimCategory(productOrderClaim.reason_category)}</Table.Cell>
-                                                )}
-                                                {index === 0 && (
-                                                    <Table.Cell rowSpan={exchangeOrderItemList.length + 1} textAlign="center"><Button size="xs">상세</Button></Table.Cell>
-                                                )}
-
-                                                <Table.Cell textAlign="center">0</Table.Cell>
-                                                <Table.Cell textAlign="center"></Table.Cell>
-                                            </Table.Row>
-                                        )
-
-                                    })
-                                ) : (
-                                    <Table.Row>
-                                        <Table.Cell colSpan="9" textAlign="center">교환정보가 없습니다.</Table.Cell>
-                                    </Table.Row>
-                                )}
-
-                            </Table.Body>
-                        </Table.Root>
+                        <ExchangeOrder exchangeOrderItemList={exchangeOrderItemList} productOrderClaim={productOrderClaim} />
                     </Tabs.Content>
                     <Tabs.Content value="return">
-                        <Table.Root>
-                            <Table.Header>
-                                <Table.Row bg="gray.subtle">
-                                    <Table.ColumnHeader>요청일시</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리상태</Table.ColumnHeader>
-                                    <Table.ColumnHeader>이미지</Table.ColumnHeader>
-                                    <Table.ColumnHeader>상품</Table.ColumnHeader>
-                                    <Table.ColumnHeader>반품수량</Table.ColumnHeader>
-                                    <Table.ColumnHeader>반품사유</Table.ColumnHeader>
-                                    <Table.ColumnHeader>반품사유(상세)</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불수단</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불계좌</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리일시</Table.ColumnHeader>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                <Table.Row>
-                                    <Table.Cell colSpan="10" textAlign="center">반품정보가 없습니다.</Table.Cell>
-                                </Table.Row>
-                            </Table.Body>
-                        </Table.Root>
+                        <ReturnOrder returnOrderItemList={returnOrderItemList} productOrderClaim={productOrderClaim} />
                     </Tabs.Content>
                     <Tabs.Content value="refund">
-                        <Table.Root>
-                            <Table.Header>
-                                <Table.Row bg="gray.subtle">
-                                    <Table.ColumnHeader>요청일시</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리상태</Table.ColumnHeader>
-                                    <Table.ColumnHeader>이미지</Table.ColumnHeader>
-                                    <Table.ColumnHeader>상품</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불수량</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불사유</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불사유(상세)</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불수단</Table.ColumnHeader>
-                                    <Table.ColumnHeader>환불계좌</Table.ColumnHeader>
-                                    <Table.ColumnHeader>처리일시</Table.ColumnHeader>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                <Table.Row>
-                                    <Table.Cell colSpan="10" textAlign="center">환불정보가 없습니다.</Table.Cell>
-                                </Table.Row>
-                            </Table.Body>
-                        </Table.Root>
+                        <RefundOrder refundOrderItemList={refundOrderItemList} productOrderClaim={productOrderClaim} />
                     </Tabs.Content>
                 </Tabs.Root>
             </Stack>

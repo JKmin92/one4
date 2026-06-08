@@ -45,3 +45,41 @@ export const updatePaidCheckTime = async (order_codes) => {
 export const getProductOrderClaimByType = async (type) => {
     return await orderModel.getProductOrderClaimByType(type);
 }
+
+export const updateProductOrderClaimProcessing = async (order_claim_code) => {
+    const claim = await orderModel.getProductOrderClaim(order_claim_code);
+    if (claim && (claim.claim_type?.toUpperCase() === 'EXCHANGE' || claim.claim_type?.toUpperCase() === 'RETURN')) {
+        await orderModel.updateProductOrderClaimDetailStatus([order_claim_code], 'RETURN_REQUEST');
+    }
+    return await orderModel.updateProductOrderClaimProcessing(order_claim_code);
+}
+
+export const updateProductOrderClaimDetailStatus = async (order_claim_codes, status) => {
+    if (status === 'REFUND_ACTIVE') {
+        return await orderModel.updateProductOrderClaimRefoundActive(order_claim_codes);
+    }
+
+    const claims = await orderModel.getProductOrderClaims(order_claim_codes);
+
+    const claimsToUpdate = claims.filter(c =>
+        c.claim_status?.toUpperCase() === 'REQUEST' || c.claim_status?.toUpperCase() === 'REQUESTED'
+    );
+    if (claimsToUpdate.length > 0) {
+        const codesToUpdate = claimsToUpdate.map(c => c.order_claim_code);
+        await orderModel.updateProductOrderClaimsStatus(codesToUpdate, 'PROCESSING');
+    }
+
+    if (status === 'RESEND_COMPLETED') {
+        await orderModel.updateProductOrderClaimsCompleted(order_claim_codes);
+    }
+
+    return await orderModel.updateProductOrderClaimDetailStatus(order_claim_codes, status);
+}
+
+export const updateProductOrderClaimsRejected = async (order_claim_codes) => {
+    return await orderModel.updateProductOrderClaimsRejected(order_claim_codes);
+}
+
+export const updateProductOrderClaimRefund = async ({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code }) => {
+    return await orderModel.updateProductOrderClaimRefund({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code });
+}

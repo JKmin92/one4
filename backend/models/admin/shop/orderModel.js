@@ -185,6 +185,7 @@ export const getProductOrderClaimByType = async (type) => {
             poc.*,
             po.created_at AS order_created_at,
             po.delivery_price,
+            po.address_code,
             pop.payment_type
         FROM product_order_claim poc
         LEFT JOIN product_order po ON poc.order_code = po.order_code
@@ -193,18 +194,24 @@ export const getProductOrderClaimByType = async (type) => {
     `;
     const [claims] = await db.query(sql, [type]);
 
-    if (!claims || claims.length === 0) {
-        return [];
-    }
+    if (!claims || claims.length === 0) { return []; }
 
     const claimCodes = claims.map(c => c.order_claim_code);
     const userCodes = [...new Set(claims.map(c => c.user_code).filter(Boolean))];
+    const addressCodes = [...new Set(claims.map(c => c.address_code).filter(Boolean))];
 
     let users = [];
     if (userCodes.length > 0) {
-        const userSql = `SELECT user_code, name, email FROM user WHERE user_code IN (?)`;
+        const userSql = `SELECT user_code, name, email, phone FROM user WHERE user_code IN (?)`;
         const [userRows] = await db.query(userSql, [userCodes]);
         users = userRows;
+    }
+
+    let addresses = [];
+    if (addressCodes.length > 0) {
+        const addressSql = `SELECT * FROM user_address WHERE address_code IN (?)`;
+        const [addressRows] = await db.query(addressSql, [addressCodes]);
+        addresses = addressRows;
     }
 
     let claimItems = [];
@@ -230,13 +237,77 @@ export const getProductOrderClaimByType = async (type) => {
     return claims.map(claim => {
         const user = users.find(u => u.user_code === claim.user_code);
         const items = claimItems.filter(item => item.order_claim_code === claim.order_claim_code);
+        const address = addresses.find(a => a.address_code === claim.address_code) || null;
 
         return {
             ...claim,
             user_name: user?.name || null,
             user_email: user?.email || null,
-            user: user ? { name: user.name, email: user.email } : null,
-            claim_items: items
+            user: user ? { name: user.name, email: user.email, phone: user.phone } : null,
+            claim_items: items,
+            address: address
         };
     });
+}
+
+export const updateProductOrderClaimProcessing = async (order_claim_code) => {
+    const sql = `UPDATE product_order_claim SET claim_status = 'processing', processed_at = NOW() WHERE order_claim_code = ?`;
+    await db.query(sql, [order_claim_code]);
+    return { success: true };
+}
+
+export const updateProductOrderClaimDetailStatus = async (order_claim_codes, status) => {
+    const sql = `UPDATE product_order_claim SET detail_status = ? WHERE order_claim_code IN (?)`;
+    await db.query(sql, [status, order_claim_codes]);
+    return { success: true };
+}
+
+export const updateProductOrderClaimRefoundActive = async (order_claim_item_codes) => {
+    const sql = `UPDATE product_order_claim SET claim_type = 'REFUND', claim_status = 'PROCESSING', detail_status = 'REFUND' WHERE order_claim_code IN (?)`;
+    await db.query(sql, [order_claim_item_codes]);
+    return { success: true };
+}
+
+export const getProductOrderClaim = async (order_claim_code) => {
+    const sql = `SELECT * FROM product_order_claim WHERE order_claim_code = ?`;
+    const [rows] = await db.query(sql, [order_claim_code]);
+    return rows[0] || null;
+}
+
+export const getProductOrderClaims = async (order_claim_codes) => {
+    const codesArray = Array.isArray(order_claim_codes) ? order_claim_codes : [order_claim_codes];
+    if (codesArray.length === 0) return [];
+    const sql = `SELECT * FROM product_order_claim WHERE order_claim_code IN (?)`;
+    const [rows] = await db.query(sql, [codesArray]);
+    return rows;
+}
+
+export const updateProductOrderClaimsStatus = async (order_claim_codes, claim_status) => {
+    const codesArray = Array.isArray(order_claim_codes) ? order_claim_codes : [order_claim_codes];
+    if (codesArray.length === 0) return { success: true };
+    const sql = `UPDATE product_order_claim SET claim_status = ?, processed_at = NOW() WHERE order_claim_code IN (?)`;
+    await db.query(sql, [claim_status, codesArray]);
+    return { success: true };
+}
+
+export const updateProductOrderClaimsCompleted = async (order_claim_codes) => {
+    const codesArray = Array.isArray(order_claim_codes) ? order_claim_codes : [order_claim_codes];
+    if (codesArray.length === 0) return { success: true };
+    const sql = `UPDATE product_order_claim SET claim_status = 'COMPLETED', completed_at = NOW() WHERE order_claim_code IN (?)`;
+    await db.query(sql, [codesArray]);
+    return { success: true };
+}
+
+export const updateProductOrderClaimsRejected = async (order_claim_codes) => {
+    const codesArray = Array.isArray(order_claim_codes) ? order_claim_codes : [order_claim_codes];
+    if (codesArray.length === 0) return { success: true };
+    const sql = `UPDATE product_order_claim SET claim_status = 'REJECTED', rejected_at = NOW() WHERE order_claim_code IN (?)`;
+    await db.query(sql, [codesArray]);
+    return { success: true };
+}
+
+export const updateProductOrderClaimRefund = async ({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code }) => {
+    const sql = `UPDATE product_order_claim SET total_product_amount = ?, deducted_delivery_fee = ?, refund_charge_amount = ?, total_refund_amount = ?, refund_method = ?, claim_status = 'COMPLETED', detail_status = 'REFUND', completed_at = NOW() WHERE order_claim_code = ?`;
+    await db.query(sql, [total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code]);
+    return { success: true };
 }

@@ -1,4 +1,4 @@
-import { Button, Checkbox, CloseButton, Dialog, HStack, Image, NativeSelect, RadioGroup, Stack, Table, Text, Textarea } from "@chakra-ui/react";
+import { Button, Checkbox, CloseButton, Dialog, HStack, Image, Input, NativeSelect, RadioGroup, Stack, Table, Text, Textarea } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 
 const LocalTextarea = ({ value, onChange, ...props }) => {
@@ -18,7 +18,34 @@ const LocalTextarea = ({ value, onChange, ...props }) => {
     );
 };
 
-function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim }) {
+const RefundBankSelect = ({ value, onChange }) => {
+    return (
+        <NativeSelect.Root>
+            <NativeSelect.Field placeholder="은행을 선택해주세요" value={value} onChange={(e) => onChange(e.currentTarget.value)}>
+                <option value="국민은행">국민은행</option>
+                <option value="신한은행">신한은행</option>
+                <option value="우리은행">우리은행</option>
+                <option value="KEB하나은행">KEB하나은행</option>
+                <option value="기업은행">기업은행</option>
+                <option value="농협은행">농협은행</option>
+                <option value="부산은행">부산은행</option>
+                <option value="대구은행">대구은행</option>
+                <option value="경남은행">경남은행</option>
+                <option value="전북은행">전북은행</option>
+                <option value="광주은행">광주은행</option>
+                <option value="제주은행">제주은행</option>
+                <option value="카카오뱅크">카카오뱅크</option>
+                <option value="케이뱅크">케이뱅크</option>
+                <option value="토스뱅크">토스뱅크</option>
+                <option value="산업은행">산업은행</option>
+                <option value="수협은행">수협은행</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+        </NativeSelect.Root>
+    )
+};
+
+function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim, productOrderPayment }) {
     const [selectedItems, setSelectedItems] = useState([]);
     const [allChecked, setAllChecked] = useState(false);
     const [selectedType, setSelectedType] = useState('');
@@ -27,6 +54,10 @@ function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim })
     const [isSubmitChecked, setIsSubmitChecked] = useState(false);
     const [selectedQuantities, setSelectedQuantities] = useState({});
     const [isAgree, setIsAgree] = useState(false);
+
+    const [refundBank, setRefundBank] = useState('');
+    const [refundAccountNumber, setRefundAccountNumber] = useState('');
+    const [refundAccountHolder, setRefundAccountHolder] = useState('');
 
     const confirmAction = async () => {
         const claimItems = selectedItems.map(code => {
@@ -42,7 +73,10 @@ function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim })
             reason_type: reasonCategory,
             reason_detail: reasonDetail,
             product_order_items: claimItems,
-            claim_type: selectedType === '교환' ? 'EXCHANGE' : 'RETURN'
+            claim_type: selectedType === '교환' ? 'EXCHANGE' : 'RETURN',
+            refund_bank: refundBank,
+            refund_account: refundAccountNumber,
+            refund_holder: refundAccountHolder
         });
 
         onOpenChange({ open: false });
@@ -53,6 +87,9 @@ function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim })
         setSelectedType('');
         setSelectedQuantities({});
         setIsAgree(false);
+        setRefundBank('');
+        setRefundAccountNumber('');
+        setRefundAccountHolder('');
     }
 
     useEffect(() => {
@@ -65,12 +102,21 @@ function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim })
             setSelectedType('');
             setSelectedQuantities({});
             setIsAgree(false);
+            setRefundBank('');
+            setRefundAccountNumber('');
+            setRefundAccountHolder('');
         }
     }, [open]);
 
     useEffect(() => {
-        setIsSubmitChecked(!!reasonCategory && !!reasonDetail && !!isAgree && selectedItems.length > 0);
-    }, [reasonCategory, reasonDetail, isAgree, selectedItems]);
+        let isFormValid = !!reasonCategory && !!reasonDetail && !!isAgree && selectedItems.length > 0;
+
+        if (productOrderPayment?.payment_type === "BANK" && selectedType === '반품') {
+            isFormValid = isFormValid && !!refundBank && !!refundAccountNumber && !!refundAccountHolder;
+        }
+
+        setIsSubmitChecked(isFormValid);
+    }, [reasonCategory, reasonDetail, isAgree, selectedItems, productOrderPayment, selectedType, refundBank, refundAccountNumber, refundAccountHolder]);
 
     const handleAllCheck = (e) => {
         const isChecked = !!e.checked;
@@ -216,6 +262,18 @@ function ExchangeDialog({ open, onOpenChange, orderItemList = [], submitClaim })
                                                 <LocalTextarea value={reasonDetail} onChange={(e) => setReasonDetail(e.target.value)} placeholder={selectedType === '교환' ? "자세한 사유와 함께 어떤 상품과 교환이 필요하신지 상세히 적어주세요." : "자세한 사유를 상세히 적어주세요."} fontSize="xs" height="48" />
                                             </Table.Cell>
                                         </Table.Row>
+                                        {productOrderPayment?.payment_type === "BANK" && selectedType === '반품' && (
+                                            <Table.Row>
+                                                <Table.ColumnHeader>환불 계좌</Table.ColumnHeader>
+                                                <Table.Cell>
+                                                    <Stack>
+                                                        <RefundBankSelect value={refundBank} onChange={setRefundBank} />
+                                                        <Input placeholder="계좌번호를 입력해주세요" value={refundAccountNumber} onChange={(e) => setRefundAccountNumber(e.target.value)} />
+                                                        <Input placeholder="예금주를 입력해주세요" value={refundAccountHolder} onChange={(e) => setRefundAccountHolder(e.target.value)} />
+                                                    </Stack>
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        )}
                                     </Table.Body>
                                 </Table.Root>
                             )}

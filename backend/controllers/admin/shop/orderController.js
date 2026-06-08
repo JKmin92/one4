@@ -60,3 +60,58 @@ export const getProductOrderClaimByType = async (req, res, next) => {
         next(e);
     }
 }
+
+export const updateProductOrderClaimProcessing = async (req, res, next) => {
+    try {
+        const { order_claim_code } = req.body;
+        const result = await orderService.updateProductOrderClaimProcessing(order_claim_code);
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateProductOrderClaimDetailStatus = async (req, res, next) => {
+    try {
+        const { order_claim_codes, status } = req.body;
+        const result = await orderService.updateProductOrderClaimDetailStatus(order_claim_codes, status);
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateProductOrderClaimsProcessing = async (req, res, next) => {
+    try {
+        const { order_claim_codes } = req.body;
+        let result = { success: false };
+
+        for (const order_claim_code of order_claim_codes) {
+            result = await orderService.updateProductOrderClaimProcessing(order_claim_code);
+        }
+
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateProductOrderClaimsRejected = async (req, res, next) => {
+    try {
+        const { order_claim_codes } = req.body;
+        const result = await orderService.updateProductOrderClaimsRejected(order_claim_codes);
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateProductOrderClaimRefund = async (req, res, next) => {
+    try {
+        const { total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code } = req.body;
+        const result = await orderService.updateProductOrderClaimRefund({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code });
+        return res.status(200).json(result);
+    } catch (e) {
+        next(e);
+    }
+}
