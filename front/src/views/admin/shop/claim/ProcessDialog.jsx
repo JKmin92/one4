@@ -11,10 +11,10 @@ function ProcessDialog({ id, claim_items = [], claim, setChangeStatus, payment_t
     const totalRefundableAmount = claim_items.reduce((acc, item) => acc + (item.product_amount || 0), 0);
     const title = id === 'cancel' ? '취소' : id === 'exchange' ? '교환' : id === 'return' ? '반품' : id === 'refund' ? '환불' : '자동 취소';
 
-    const [refundDeliveryPrice, setRefundDeliveryPrice] = useState(0);
-    const [refundChargePrice, setRefundChargePrice] = useState(0);
-    const [refundAmount, setRefundAmount] = useState(0);
-    const [refundMethod, setRefundMethod] = useState('');
+    const [refundDeliveryPrice, setRefundDeliveryPrice] = useState(claim?.deducted_delivery_fee || 0);
+    const [refundChargePrice, setRefundChargePrice] = useState(claim?.refund_charge_amount || 0);
+    const [refundAmount, setRefundAmount] = useState(claim?.total_refund_amount || 0);
+    const [refundMethod, setRefundMethod] = useState(claim?.refund_method || '');
 
     const getPaymentMethod = (payment_type) => {
         const boxStyle = { fontSize: "xs", p: "1", color: "fg.inverted", rounded: "sm", w: "auto" };
@@ -230,7 +230,7 @@ function ProcessDialog({ id, claim_items = [], claim, setChangeStatus, payment_t
                                 </Stack>
                             )}
 
-                            {id === 'refund' && claim.claim_status == 'PROCESSING' && (
+                            {id === 'refund' && (claim.claim_status == 'PROCESSING' || claim.claim_status === 'COMPLETED') && (
                                 <Stack>
                                     <Table.Root>
                                         <Table.Body>
@@ -242,7 +242,7 @@ function ProcessDialog({ id, claim_items = [], claim, setChangeStatus, payment_t
                                                 <Table.ColumnHeader>택배비 환불</Table.ColumnHeader>
                                                 <Table.Cell>
                                                     <InputGroup endElement="원">
-                                                        <Input value={refundDeliveryPrice} onChange={e => setRefundDeliveryPrice(e.target.value)} />
+                                                        <Input value={refundDeliveryPrice} onChange={e => setRefundDeliveryPrice(e.target.value)} readOnly={claim.claim_status === 'COMPLETED' ? true : false} />
                                                     </InputGroup>
                                                 </Table.Cell>
                                             </Table.Row>
@@ -250,7 +250,7 @@ function ProcessDialog({ id, claim_items = [], claim, setChangeStatus, payment_t
                                                 <Table.ColumnHeader>환불 수수료</Table.ColumnHeader>
                                                 <Table.Cell>
                                                     <InputGroup endElement="원">
-                                                        <Input value={refundChargePrice} onChange={e => setRefundChargePrice(e.target.value)} />
+                                                        <Input value={refundChargePrice} onChange={e => setRefundChargePrice(e.target.value)} readOnly={claim.claim_status === 'COMPLETED' ? true : false} />
                                                     </InputGroup>
                                                 </Table.Cell>
                                             </Table.Row>
@@ -262,7 +262,7 @@ function ProcessDialog({ id, claim_items = [], claim, setChangeStatus, payment_t
                                                 <Table.ColumnHeader>환불 수단</Table.ColumnHeader>
                                                 <Table.Cell>
                                                     <NativeSelect.Root>
-                                                        <NativeSelect.Field placeholder="환불 수단을 선택해주세요" onChange={e => setRefundMethod(e.target.value)} value={refundMethod}>
+                                                        <NativeSelect.Field placeholder="환불 수단을 선택해주세요" onChange={e => setRefundMethod(e.target.value)} value={refundMethod} disabled={claim.claim_status === 'COMPLETED' ? true : false}>
                                                             <option value="BANK">계좌이체</option>
                                                             <option value="MILEAGE">마일리지</option>
                                                             {payment_type != 'BANK' && (
@@ -277,7 +277,7 @@ function ProcessDialog({ id, claim_items = [], claim, setChangeStatus, payment_t
                                                 <Table.ColumnHeader>환불할 금액</Table.ColumnHeader>
                                                 <Table.Cell>
                                                     <InputGroup endElement="원">
-                                                        <Input onChange={e => setRefundAmount(e.target.value)} value={refundAmount} placeholder="환불할 금액을 입력해주세요" />
+                                                        <Input onChange={e => setRefundAmount(e.target.value)} value={refundAmount} placeholder="환불할 금액을 입력해주세요" readOnly={claim.claim_status === 'COMPLETED' ? true : false} />
                                                     </InputGroup>
                                                 </Table.Cell>
                                             </Table.Row>

@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `product_image` (
   CONSTRAINT `FK_product_image_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_image:~4 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.product_image:~5 rows (대략적) 내보내기
 INSERT INTO `product_image` (`i_num`, `product_code`, `url`, `is_main`, `sort_order`) VALUES
 	(15, '20260209165809589', '/uploads/2026/02/09/product/20260209165809589/1770623889549-o9z5kytsu.webp', 1, NULL),
 	(16, '20260209165809589', '/uploads/2026/02/09/product/20260209165809589/1770623889702-2ahs0n5th.webp', 0, 1),
@@ -452,9 +452,9 @@ CREATE TABLE IF NOT EXISTS `refresh_tokens` (
   PRIMARY KEY (`id`),
   KEY `user_code` (`user_code`),
   CONSTRAINT `FK_refresh_tokens_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.refresh_tokens:~5 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.refresh_tokens:~9 rows (대략적) 내보내기
 INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdAt`) VALUES
 	(4, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsImVtYWlsIjoiamVvbmdrZXkzMzE3QG5hdmVyLmNvbSIsIm5hbWUiOiLrr7zsoJXquLAiLCJwYXNzd29yZCI6IiQyYiQxMCROcFhnMTZlMkdCVGdHRllyS1RoUHp1a1JnYXROeWVzUnFZVVROODJIVFJMNkJ4elJaLm9WcSIsIm1hcmtldGluZ0FncmVlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjpbMV19LCJwcm9maWxlIjpudWxsLCJyb2xlIjoiVVNFUiIsInN0YXR1cyI6IkFDVElWRSJ9LCJpYXQiOjE3Njk2NTk1NjIsImV4cCI6MTc3MDI2NDM2Mn0.X66tl8mDal9shwAnjwXDHq-K-c2Jqvtq4ZuVIxkVVqA', '2026-02-05 13:06:02', '2026-01-29 13:06:02'),
 	(31, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsInJvbGUiOiJVU0VSIiwicHJvZmlsZSI6bnVsbH0sImlhdCI6MTc3MjYwNjg1OSwiZXhwIjoxNzczMjExNjU5fQ.GB5v_jpXDuka80imLH-uBCRVFEz6vmn5xL6dZLVCV2E', '2026-03-11 15:47:39', '2026-03-04 15:47:39'),
@@ -465,7 +465,7 @@ INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdA
 	(42, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc4NjUzNDY3LCJleHAiOjE3NzkyNTgyNjd9.aKfY84EPTFGZyndA7dWqhPmiSmo8HylOehjYfuzNdK8', '2026-05-20 15:24:27', '2026-05-13 15:24:27'),
 	(43, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5MzI1NjU0LCJleHAiOjE3Nzk5MzA0NTR9._rVkNE9HHpr5MbwmSgVKbWqba5LkrTrEn49lj2vd1n8', '2026-05-28 10:07:34', '2026-05-21 10:07:34'),
 	(44, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5OTQ5MDM5LCJleHAiOjE3ODA1NTM4Mzl9.k3UzgxmLN3CVPN-EW5f59h5A9EpnDx26lMe8yIWYgUk', '2026-06-04 15:17:19', '2026-05-28 15:17:19'),
-	(45, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzgwNjI1NDE3LCJleHAiOjE3ODEyMzAyMTd9.JA5vGgKzGl-1wesfV1TJfd3bJBbbQvbXN9pm2OMvka4', '2026-06-12 11:10:17', '2026-06-05 11:10:17');
+	(49, 'jeo7507NL202606', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83NTA3TkwyMDI2MDYiLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAZ21haWwuY29tIiwicGhvbmUiOiIwMTA2NTUxMzMxNyIsImlhdCI6MTc4MTA2MzI0OSwiZXhwIjoxNzgxNjY4MDQ5fQ.qdRb3iOJUzSOz7ch3z580Mix_3XiSKO_3_9Ynzr0T0I', '2026-06-17 12:47:29', '2026-06-10 12:47:29');
 
 -- 테이블 newone4.review_campaign 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign` (
@@ -500,8 +500,8 @@ CREATE TABLE IF NOT EXISTS `review_campaign` (
 -- 테이블 데이터 newone4.review_campaign:~4 rows (대략적) 내보내기
 INSERT INTO `review_campaign` (`id`, `campaign_code`, `product_name`, `title`, `short_description`, `is_display`, `user_code`, `campaign_category_code`, `campaign_type`, `state`, `max_applicants`, `main_image`, `detail_images`, `content`, `start_application_date`, `end_application_date`, `reviewer_selection_date`, `start_write_date`, `end_write_date`, `created_at`, `updated_at`) VALUES
 	(11, '202603251523561942', '와바미 파데', '와바미 뷰티', '와바미에서 만든 뷰티 브랜드!!', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'COMPLETED', 10, '/uploads/2026/03/25/review/20260325152356099/1774419836258-zxsqcl4be.webp', '["/uploads/2026/03/27/review/20260327144427556_d0/1774590267260-yniyp0wrg.webp","/uploads/2026/03/27/review/20260327143905099_d1/1774589945886-pqqagjgoe.webp","/uploads/2026/03/27/review/20260327143905099_d0/1774589945778-iuy4g4waf.webp","/uploads/2026/03/27/review/20260327143905099_d2/1774589946601-sw4g6bafx.webp"]', '이것 저것 그것 베이비', '2026-02-26 00:00:00', '2026-04-20 00:00:00', '2026-04-21 00:00:00', '2026-04-22 00:00:00', '2026-04-26 00:00:00', '2026-03-25 15:23:56', '2026-04-22 12:04:27'),
-	(12, '202604231037085673', '와바미 닥터버니 티모시 베이직', '와바미 토끼사료 닥터 버니', '캠페인 테스트', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'RECRUITING', 5, '/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp', '["/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp","/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp","/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp"]', '이건 테스트임', '2026-04-23 00:00:00', '2026-05-18 00:00:00', '2026-05-19 00:00:00', '2026-05-19 00:00:00', '2026-05-24 00:00:00', '2026-04-23 10:37:11', '2026-05-11 16:35:37'),
-	(14, '202605121348356767', '제품명 테스트', '테스트2', 'ㅁㅇㄹ우ㅏ', 1, 'jeo7334Wt202601', '20260402142217001', 'VISIT', 'RECRUITING', 10, '/uploads/2026/05/12/review/20260512135111209/1778561471360-fpwth31r7.webp', '["/uploads/2026/05/12/review/20260512135540197_d0/1778561740411-henle2u1t.webp","/uploads/2026/05/12/review/20260512140252078_d0/1778562172308-gzmpx16kn.webp"]', 'ㅁㄴㅇㄹㄴㅁㅇㄻㄴㅇㄹㄴㅁㅇㄹ\r\n\r\nㅁㄴㅇㄻㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄻ', '2026-05-12 00:00:00', '2026-05-20 00:00:00', '2026-05-21 00:00:00', '2026-05-21 00:00:00', '2026-05-25 00:00:00', '2026-05-12 13:48:35', '2026-05-12 14:14:12'),
+	(12, '202604231037085673', '와바미 닥터버니 티모시 베이직', '와바미 토끼사료 닥터 버니', '캠페인 테스트', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'REVIEWING', 5, '/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp', '["/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp","/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp","/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp"]', '이건 테스트임', '2026-04-23 00:00:00', '2026-05-18 00:00:00', '2026-05-19 00:00:00', '2026-05-19 00:00:00', '2026-05-24 00:00:00', '2026-04-23 10:37:11', '2026-06-09 10:44:11'),
+	(14, '202605121348356767', '제품명 테스트', '테스트2', 'ㅁㅇㄹ우ㅏ', 1, 'jeo7334Wt202601', '20260402142217001', 'VISIT', 'REVIEWING', 10, '/uploads/2026/05/12/review/20260512135111209/1778561471360-fpwth31r7.webp', '["/uploads/2026/05/12/review/20260512135540197_d0/1778561740411-henle2u1t.webp","/uploads/2026/05/12/review/20260512140252078_d0/1778562172308-gzmpx16kn.webp"]', 'ㅁㄴㅇㄹㄴㅁㅇㄻㄴㅇㄹㄴㅁㅇㄹ\r\n\r\nㅁㄴㅇㄻㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄻ', '2026-05-12 00:00:00', '2026-05-20 00:00:00', '2026-05-21 00:00:00', '2026-05-21 00:00:00', '2026-05-25 00:00:00', '2026-05-12 13:48:35', '2026-06-09 10:44:11'),
 	(15, '202605121412250150', 'ㅁㄴㅇㅁㄴㅇ', 'loading test', '', 1, 'jeo7334Wt202601', '', 'VISIT', 'DRAFT', 0, '', NULL, '', '2026-05-12 00:00:00', '2026-05-20 00:00:00', '2026-05-21 00:00:00', '2026-05-21 00:00:00', '2026-06-01 00:00:00', '2026-05-12 14:12:25', '2026-05-12 14:12:25');
 
 -- 테이블 newone4.review_campaign_application 구조 내보내기
@@ -776,6 +776,40 @@ INSERT INTO `review_campaign_reward_option` (`id`, `reward_code`, `reward_option
 	(12, '202604211322287549', '202604211322287031', '색상', '21호,23호', '2026-04-21 13:22:28', '2026-04-21 13:22:28'),
 	(16, '202605121414128051', '202605121414122783', 'ㅁㄴㅇㄹ', 'ㅁㅇㄹ,ㅁㄴㅇㄹ,ㅁㄴㅇㄹ', '2026-05-12 14:14:12', '2026-05-12 14:14:12');
 
+-- 테이블 newone4.shop_account 구조 내보내기
+CREATE TABLE IF NOT EXISTS `shop_account` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `account_code` varchar(50) NOT NULL DEFAULT '0',
+  `bank` varchar(255) NOT NULL DEFAULT '0',
+  `account_number` varchar(255) NOT NULL DEFAULT '0',
+  `account_holder` varchar(255) NOT NULL DEFAULT '0',
+  `is_active` bit(1) NOT NULL DEFAULT b'0',
+  `order` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `account_code` (`account_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.shop_account:~2 rows (대략적) 내보내기
+INSERT INTO `shop_account` (`id`, `account_code`, `bank`, `account_number`, `account_holder`, `is_active`, `order`) VALUES
+	(3, '202606091612052257', '국민은행', '123123-123-6785678', '에이민', b'1', 1),
+	(4, '202606091612559602', '신한은행', '123123-123-12321312', '에이민', b'1', 2);
+
+-- 테이블 newone4.shop_delivery_setting 구조 내보내기
+CREATE TABLE IF NOT EXISTS `shop_delivery_setting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `day_delivery_time` varchar(50) NOT NULL DEFAULT '0',
+  `day_delivery_impassable` varchar(50) NOT NULL DEFAULT '0',
+  `delivery_method` enum('FREE','FIXED','PRICE') NOT NULL DEFAULT 'FREE',
+  `basic_delivery_price` int(11) NOT NULL DEFAULT 0,
+  `order_standard` int(11) NOT NULL DEFAULT 0,
+  `island_price` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.shop_delivery_setting:~1 rows (대략적) 내보내기
+INSERT INTO `shop_delivery_setting` (`id`, `day_delivery_time`, `day_delivery_impassable`, `delivery_method`, `basic_delivery_price`, `order_standard`, `island_price`) VALUES
+	(1, '12', '"[\\"weekends\\",\\"holidays\\",\\"accHolidays\\"]"', 'PRICE', 3500, 50000, NULL);
+
 -- 테이블 newone4.user 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user` (
   `user_code` varchar(50) NOT NULL,
@@ -795,7 +829,8 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 -- 테이블 데이터 newone4.user:~1 rows (대략적) 내보내기
 INSERT INTO `user` (`user_code`, `email`, `name`, `phone`, `profile`, `password`, `role`, `status`, `marketingAgree`, `created_at`, `deleted_at`, `last_login_at`) VALUES
-	('jeo7334Wt202601', 'jeongkey3317@naver.com', '민정기', '01065513317', NULL, '$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6', 'SUPER_ADMIN', 'ACTIVE', b'1', '2026-01-29 12:27:25', NULL, '2026-06-05 11:10:17');
+	('jeo7334Wt202601', 'jeongkey3317@naver.com', '민정기', '01065513317', NULL, '$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6', 'SUPER_ADMIN', 'ACTIVE', b'1', '2026-01-29 12:27:25', NULL, '2026-06-10 11:35:38'),
+	('jeo7507NL202606', 'jeongkey3317@gmail.com', '민정기', '01065513317', NULL, '$2b$10$1a3Zqa2xK5HsUa0Nq.tNuukJOPL/H2UR8RR5a1Op9gycUov2yCOc6', 'USER', 'ACTIVE', b'1', '2026-06-10 12:47:29', NULL, '2026-06-10 12:47:29');
 
 -- 테이블 newone4.user_address 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user_address` (

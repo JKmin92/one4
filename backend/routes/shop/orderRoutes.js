@@ -8,6 +8,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/', authMiddleware, orderController.insertProductOrder);
 router.get('/list', authMiddleware, orderController.getUserProductOrder);
+router.get('/account', authMiddleware, orderController.getShopAccountList);
+router.get('/delivery/setting', authMiddleware, orderController.getShopDeliverySetting);
 router.get('/:order_code', authMiddleware, orderController.getProductOrder);
 router.patch('/:order_code/completed', authMiddleware, orderController.updateOrderCompleted);
 router.post('/claim', authMiddleware, orderController.insertProductOrderClaim);

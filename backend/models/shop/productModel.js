@@ -291,3 +291,8 @@ export const getOrderProductInfo = async (orderItems) => {
 
     return results.filter(r => r !== null);
 };
+
+export const getDeliverySetting = async () => {
+    const [rows] = await db.query('SELECT * FROM shop_delivery_setting WHERE id = 1');
+    return rows[0];
+};

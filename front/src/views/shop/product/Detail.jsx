@@ -374,6 +374,8 @@ function Detail() {
     const [reviewScore, setReviewScore] = useState(0);
     const [inquiryList, setInquiryList] = useState([]);
 
+    const [deliverySetting, setDeliverySetting] = useState(null);
+
     const { user } = useAuth();
 
     useEffect(() => {
@@ -390,6 +392,7 @@ function Detail() {
                     }
                 }
                 setProduct(data);
+                setDeliverySetting(data.deliverySetting);
 
                 if (data.options && Array.isArray(data.options) && data.options.length > 0) {
                     setOptions(data.options);
@@ -619,11 +622,15 @@ function Detail() {
                         <Stack gap="6" borderTop="2px solid #000" pt="30px">
                             <Heading size="2xl">{product.name}</Heading>
                             <HStack gap="5">
-                                <RatingGroup.Root readOnly allowHalf count={5} defaultValue={0} size="sm" value={reviewScore} colorPalette="yellow">
-                                    <RatingGroup.HiddenInput />
-                                    <RatingGroup.Control />
-                                </RatingGroup.Root>
-                                {reviewList.length > 0 && <Button variant="plain" borderBottom="1px solid #000" p="0" rounded="0" height="auto" onClick={() => scrollViewPosition('review')}>{reviewList.length}개 리뷰 보기</Button>}
+                                {reviewList.length > 0 && (
+                                    <>
+                                        <RatingGroup.Root readOnly allowHalf count={5} defaultValue={0} size="sm" value={reviewScore} colorPalette="yellow">
+                                            <RatingGroup.HiddenInput />
+                                            <RatingGroup.Control />
+                                        </RatingGroup.Root>
+                                        {reviewList.length > 0 && <Button variant="plain" borderBottom="1px solid #000" p="0" rounded="0" height="auto" onClick={() => scrollViewPosition('review')}>{reviewList.length}개 리뷰 보기</Button>}
+                                    </>
+                                )}
                             </HStack>
                             <Stack gap="0">
                                 {discount.price > 0 && <Text fontSize="md" textDecoration="line-through" color="fg.subtle">{formatNumber(product.price)}</Text>}
@@ -639,15 +646,25 @@ function Detail() {
                                 </DataList.Item>
                                 <DataList.Item>
                                     <DataList.ItemLabel>배송정보<InfoTip>주말, 공휴일 등으로 발송이 지연될 수 있습니다.</InfoTip ></DataList.ItemLabel>
-                                    <DataList.ItemValue>1일 이내 배송 시작</DataList.ItemValue>
+                                    <DataList.ItemValue>{deliverySetting.day_delivery_time}시 이내 주문 시 당일 발송</DataList.ItemValue>
                                 </DataList.Item>
                                 <DataList.Item>
                                     <DataList.ItemLabel>배송비</DataList.ItemLabel>
                                     <DataList.ItemValue>
                                         <Stack gap="0">
-                                            <Text>{formatNumber(3000)}원</Text>
-                                            <Text>{formatNumber(50000)}원 이상 구매시 무료배송</Text>
-                                            <Text>제주/도서산간 {formatNumber(3000)}원 추가</Text>
+                                            {deliverySetting.delivery_method != 'FREE' ? (
+                                                <Stack gap="0">
+                                                    <Text>{formatNumber(deliverySetting.basic_delivery_price)}원</Text>
+                                                    {deliverySetting.delivery_method === 'PRICE' && (
+                                                        <Text>{formatNumber(deliverySetting.order_standard)}원 이상 구매시 무료배송</Text>
+                                                    )}
+                                                </Stack>
+                                            ) : (
+                                                <Text>무료배송</Text>
+                                            )}
+                                            {deliverySetting.island_price > 0 && (
+                                                <Text>제주/도서산간 {formatNumber(deliverySetting.island_price)}원 추가</Text>
+                                            )}
                                         </Stack>
                                     </DataList.ItemValue>
                                 </DataList.Item>

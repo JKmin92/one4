@@ -257,9 +257,29 @@ function Delivery({ deliveryList, setDeliveryList, setSelectedAddress }) {
 
 function Payment({ setSelectedPayment }) {
 
-    const [paymentType, setPaymentType] = useState('card');
+    const [paymentType, setPaymentType] = useState('CARD');
     const [selectedBank, setSelectedBank] = useState('');
     const [depositName, setDepositName] = useState('');
+    const [accountList, setAccountList] = useState([]);
+
+    useEffect(() => {
+        getAccountList();
+    }, []);
+
+    const getAccountList = async () => {
+        try {
+            const res = await axiosInstance.get('/shop/product/order/account');
+            if (res.status !== 200) {
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+                return;
+            }
+            setAccountList(res.data);
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
+    }
+
 
     const paymentKinds = [
         {
@@ -274,7 +294,9 @@ function Payment({ setSelectedPayment }) {
                 <Stack>
                     <NativeSelect.Root value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)}>
                         <NativeSelect.Field placeholder="계좌를 선택해주세요">
-                            <option value="ibk">기업은행 123-45871-27156(예금주 : 에이민)</option>
+                            {accountList.map((account) => (
+                                <option key={account.account_code} value={account.account_code}>{account.bank} {account.account_number}({account.account_holder})</option>
+                            ))}
                         </NativeSelect.Field>
                         <NativeSelect.Indicator />
                     </NativeSelect.Root>
@@ -343,6 +365,7 @@ function Order() {
 
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [selectedPayment, setSelectedPayment] = useState(null);
+    const [shopDeliverySetting, setShopDeliverySetting] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -407,11 +430,35 @@ function Order() {
             }
             getBasketProductList();
         }
+
+        const getShopDeliverySetting = async () => {
+            try {
+                const response = await axiosInstance.get(`/shop/product/order/delivery/setting`);
+                if (response.data) {
+                    setShopDeliverySetting(response.data);
+                } else {
+                    toaster.create({ title: '배송지를 불러올 수 없습니다.', type: 'error' });
+                }
+            } catch (e) {
+                console.error(e);
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+            }
+        }
+        getShopDeliverySetting();
     }, [location]);
 
     useEffect(() => {
-        setDeliveryPrice(totalProductPrice > 50000 ? 0 : 3500);
-    }, [totalProductPrice]);
+        let delivery_price = 0;
+        if (!shopDeliverySetting) return;
+        if (shopDeliverySetting.delivery_method === 'FREE') {
+            delivery_price = 0;
+        } else if (shopDeliverySetting.delivery_method === 'FIXED') {
+            delivery_price = shopDeliverySetting.basic_delivery_price;
+        } else {
+            delivery_price = totalProductPrice >= shopDeliverySetting.order_standard ? 0 : shopDeliverySetting.basic_delivery_price;
+        }
+        setDeliveryPrice(delivery_price);
+    }, [totalProductPrice, shopDeliverySetting]);
 
 
     useEffect(() => {
@@ -442,7 +489,6 @@ function Order() {
             });
 
             if (response.data.result == true) {
-                console.log('response.data : ', response.data);
                 navigate('/order/complete', { state: { orderCode: response.data.order_code } });
             }
         } catch (e) {

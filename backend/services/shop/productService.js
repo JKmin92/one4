@@ -123,6 +123,7 @@ export const getProductById = async (product_code) => {
         }
     });
     product.options = Object.values(optionsMap);
+    product.deliverySetting = await ProductModel.getDeliverySetting();
 
     return product;
 };

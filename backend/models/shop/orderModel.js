@@ -182,3 +182,15 @@ export const getProductOrderItemForOrderItemCode = async (order_item_code) => {
     const [rows] = await db.query(sql, [order_item_code]);
     return rows[0] || null;
 }
+
+export const getShopAccountList = async () => {
+    const sql = `SELECT * FROM shop_account WHERE is_active = 1 ORDER BY \`order\` ASC`;
+    const [rows] = await db.query(sql);
+    return rows;
+}
+
+export const getShopDeliverySetting = async () => {
+    const sql = `SELECT * FROM shop_delivery_setting WHERE id=1`;
+    const [rows] = await db.query(sql);
+    return rows[0] || null;
+}

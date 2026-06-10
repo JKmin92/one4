@@ -13,6 +13,8 @@ import adminReviewCampaignRoutes from './routes/admin/review/reviewCampaignRoute
 import reviewRoutes from './routes/review/reviewRoutes.js';
 import utilRoutes from './routes/utilRoutes.js';
 import adminOrderRoutes from './routes/admin/shop/orderRoutes.js';
+import adminShopSettingRoutes from './routes/admin/shop/settingRoutes.js';
+import adminMemberUserRoutes from './routes/admin/member/userRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -33,9 +35,11 @@ app.use('/api/user', userRoutes);
 app.use('/api/shop/product', productRoutes);
 app.use('/api/shop/board', shopBoardRoutes);
 app.use('/api/shop/product/order', orderRoutes);
+app.use('/api/admin/shop/setting', adminShopSettingRoutes);
 app.use('/api/review/campaign', reviewRoutes);
 app.use('/api/admin/shop/board', adminShopBoardRoutes);
 app.use('/api/admin/review/campaign', adminReviewCampaignRoutes);
+app.use('/api/admin/member/user', adminMemberUserRoutes);
 app.use('/api/utils', utilRoutes);
 app.use('/api/admin/shop/order', adminOrderRoutes);
 

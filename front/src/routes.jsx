@@ -50,6 +50,11 @@ import AdminCompletedList from './views/admin/shop/order/CompletedList';
 import AdminOrderDetail from './views/admin/shop/order/OrderDetail';
 import AdminOrderClaimList from './views/admin/shop/claim/List';
 
+import AdminShopDeliverySetting from './views/admin/shop/setting/Delivery';
+import AdminShopAccountSetting from './views/admin/shop/setting/Account';
+
+import AdminMemberUserList from './views/admin/member/user/List';
+
 const router = createBrowserRouter([
     {
         path: '/',
@@ -104,10 +109,13 @@ const router = createBrowserRouter([
             { path: 'shop/order/complete_list', element: <AdminCompletedList /> },
             { path: 'shop/order/:order_code', element: <AdminOrderDetail /> },
             { path: 'shop/claim/:id', element: <AdminOrderClaimList /> },
+            { path: 'shop/setting/delivery', element: <AdminShopDeliverySetting /> },
+            { path: 'shop/setting/account', element: <AdminShopAccountSetting /> },
             { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
-            { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> }
+            { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> },
+            { path: 'member/user/list', element: <AdminMemberUserList /> }
 
         ]
     }, {

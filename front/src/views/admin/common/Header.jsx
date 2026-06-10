@@ -11,6 +11,7 @@ function Header() {
                 <HStack gap="6">
                     <Link href="/admin/review/campaign/list" fontSize="lg" color={pathname.includes('review') ? 'main' : null}>체험단</Link>
                     <Link href="/admin/shop/product/list" fontSize="lg" color={pathname.includes('shop') ? 'main' : null}>쇼핑몰</Link>
+                    <Link href="/admin/member/user/list" fontSize="lg" color={pathname.includes('member') ? 'main' : null}>회원</Link>
                 </HStack>
             </Flex>
         </Box>

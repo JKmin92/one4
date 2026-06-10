@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { HiX } from "react-icons/hi";
 import axiosInstance from "../../../utils/api";
 import { useNavigate } from "react-router-dom";
+import { toaster } from "../../../components/ui/toaster";
 
 
 function OrderBasketProduct({ orderBasket, checked, changeSelectBasket, removeBasket, changeQuantity }) {
@@ -74,19 +75,33 @@ function Cart() {
     const [allChecked, setAllChecked] = useState(false);
     const [orderBasketList, setOrderBasketList] = useState([]);
     const [selectedBasketList, setSelectedBasketList] = useState([]);
+    const [shopDeliverySetting, setShopDeliverySetting] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const getProductList = async () => {
-            const response = await axiosInstance.get('/shop/product/basket');
-            setOrderBasketList(response.data);
-            
-            // 모든 상품을 초기 선택 상태로 설정
-            if (response.data.length > 0) {
-                setSelectedBasketList(response.data.map(basket => ({ order_basket_code: basket.order_basket_code })));
-                setAllChecked(true);
+        const getShopDeliverySetting = async () => {
+            try {
+                const response = await axiosInstance.get('/shop/product/order/delivery/setting');
+                setShopDeliverySetting(response.data);
+            } catch {
+                toaster.create({ title: '배송설정 정보를 불러올 수 없습니다.', type: 'error' });
             }
         }
+        const getProductList = async () => {
+            try {
+                const response = await axiosInstance.get('/shop/product/basket');
+                setOrderBasketList(response.data);
+
+                // 모든 상품을 초기 선택 상태로 설정
+                if (response.data.length > 0) {
+                    setSelectedBasketList(response.data.map(basket => ({ order_basket_code: basket.order_basket_code })));
+                    setAllChecked(true);
+                }
+            } catch {
+                toaster.create({ title: '장바구니 정보를 불러올 수 없습니다.', type: 'error' });
+            }
+        }
+        getShopDeliverySetting();
         getProductList();
     }, []);
 
@@ -130,7 +145,12 @@ function Cart() {
         return (unitPrice + sum) * quantity;
     }, 0);
 
-    const deliveryCost = totalProductPrice >= 50000 ? 0 : 3500;
+    const deliveryCost = !shopDeliverySetting ? '0'
+        : shopDeliverySetting.delivery_method === 'FREE' ?
+            "무료" : shopDeliverySetting.delivery_method === 'FIXED' ?
+                formatNumber(shopDeliverySetting.basic_delivery_price) + "원"
+                : totalProductPrice >= shopDeliverySetting.order_standard ? "무료"
+                    : formatNumber(shopDeliverySetting.basic_delivery_price) + "원";
     const selectedProductCount = selectedBasketList.length;
 
 
@@ -205,11 +225,11 @@ function Cart() {
                             </DataList.Item>
                             <DataList.Item>
                                 <DataList.ItemLabel>배송비</DataList.ItemLabel>
-                                <DataList.ItemValue justifyContent="end">{formatNumber(deliveryCost)}원</DataList.ItemValue>
+                                <DataList.ItemValue justifyContent="end">{deliveryCost}</DataList.ItemValue>
                             </DataList.Item>
                         </DataList.Root>
                         <Separator />
-                        <Text fontWeight="medium" textAlign="right">{formatNumber(totalProductPrice + deliveryCost)}원</Text>
+                        <Text fontWeight="medium" textAlign="right">{formatNumber(totalProductPrice + (typeof deliveryCost === 'string' ? 0 : deliveryCost))}원</Text>
                         <Button disabled={selectedProductCount > 0 ? false : true} onClick={onOrder}>
                             {selectedProductCount > 0 ? `총 ${formatNumber(selectedBasketList.length)}개 구매하기` : `구매할 제품을 선택해주세요.`}
                         </Button>

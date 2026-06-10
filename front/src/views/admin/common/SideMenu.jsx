@@ -53,6 +53,12 @@ function SideMenu() {
                 { path: ['list/notice'], label: '공지사항' },
                 { path: ['list/faq'], label: 'FAQ' },
             ]
+        }, {
+            path: 'setting', label: '샵 설정',
+            children: [
+                { path: ['delivery'], label: '배송설정' },
+                { path: ['account'], label: '계좌 관리' },
+            ]
         }
     ];
 
@@ -66,14 +72,29 @@ function SideMenu() {
         },
     ];
 
+    const memberCategory = [
+        {
+            path: 'user', label: '회원',
+            children: [
+                { path: ['list'], label: '회원 리스트' },
+            ]
+        }
+    ];
+
     const [opens, setOpens] = useState([]);
+    const [activeCategory, setActiveCategory] = useState([]);
 
     useEffect(() => {
 
         if (pathname.includes('/admin/shop')) {
             setOpens(shopCategory.map(c => pathname.includes(`/${c.path}`)))
+            setActiveCategory(shopCategory)
         } else if (pathname.includes('/admin/review')) {
             setOpens(reviewCategory.map(c => pathname.includes(`/${c.path}`)))
+            setActiveCategory(reviewCategory)
+        } else if (pathname.includes('/admin/member')) {
+            setOpens(memberCategory.map(c => pathname.includes(`/${c.path}`)))
+            setActiveCategory(memberCategory)
         }
     }, [pathname]);
 
@@ -82,7 +103,7 @@ function SideMenu() {
             <Stack h="full" overflowY="auto" p="4" pb="10" gap="12">
                 <Image src="/public/resources/img/logo/logo.svg" w="32" />
                 <Stack gap="2">
-                    {pathname.includes('/admin/shop') ? shopCategory.map((category, index) => (
+                    {activeCategory.map((category, index) => (
                         <Collapsible.Root key={index} open={opens[index]} onOpenChange={(e) => setOpens(prev => prev.map((value, i) => i === index ? e.open : value))}>
                             <Collapsible.Trigger w="full" asChild>
                                 <Button w='full' justifyContent="start" marginBottom="5px">{category.label}</Button>
@@ -106,31 +127,7 @@ function SideMenu() {
                                 </Stack>
                             </Collapsible.Content>
                         </Collapsible.Root>
-                    )) : pathname.includes('/admin/review') ? reviewCategory.map((category, index) => (
-                        <Collapsible.Root key={index} open={opens[index]} onOpenChange={(e) => setOpens(prev => prev.map((value, i) => i === index ? e.open : value))}>
-                            <Collapsible.Trigger w="full" asChild>
-                                <Button w='full' justifyContent="start" marginBottom="5px">{category.label}</Button>
-                            </Collapsible.Trigger>
-                            <Collapsible.Content>
-                                <Stack>
-                                    {category.children.map((children, i) => {
-                                        const paths = Array.isArray(children.path) ? children.path : [children.path];
-                                        const isActive = paths.some(p => pathname.includes(`${category.path}/${p}`));
-                                        return (
-                                            <Link
-                                                key={i}
-                                                href={`/admin/review/${category.path}/${paths[0]}`}
-                                                {...linkStyle}
-                                                {...(isActive ? linkActiveStyle : null)}
-                                            >
-                                                {children.label}
-                                            </Link>
-                                        );
-                                    })}
-                                </Stack>
-                            </Collapsible.Content>
-                        </Collapsible.Root>
-                    )) : null}
+                    ))}
                 </Stack>
             </Stack>
         </Box>

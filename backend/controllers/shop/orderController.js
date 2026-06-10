@@ -56,3 +56,23 @@ export const insertProductOrderClaim = async (req, res, next) => {
         next(error);
     }
 }
+
+export const getShopAccountList = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+        const result = await orderService.getShopAccountList();
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getShopDeliverySetting = async (req, res, next) => {
+    try {
+        const result = await orderService.getShopDeliverySetting();
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}

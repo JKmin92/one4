@@ -17,7 +17,11 @@ export const insertProductOrder = async (data) => {
 
             return total + (price * item.quantity);
         }, 0);
-        const delivery_price = total_product_price >= 50000 ? 0 : 3500; //관련 세팅 추가 필요
+        const shopDeliverySetting = await orderModel.getShopDeliverySetting();
+        const delivery_price = !shopDeliverySetting ? 0 :
+            shopDeliverySetting.delivery_method === 'free' ? 0 :
+                shopDeliverySetting.delivery_method === 'FIXED' ? shopDeliverySetting.basic_delivery_price :
+                    total_product_price >= shopDeliverySetting.order_standard ? 0 : shopDeliverySetting.basic_delivery_price;
         const product_order = {
             order_code: order_code,
             user_code: data.user_code,
@@ -146,4 +150,12 @@ export const insertProductOrderClaim = async (data) => {
 
 
     return { result: true };
+}
+
+export const getShopAccountList = async () => {
+    return await orderModel.getShopAccountList();
+}
+
+export const getShopDeliverySetting = async () => {
+    return await orderModel.getShopDeliverySetting();
 }

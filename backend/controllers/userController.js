@@ -26,8 +26,8 @@ export const createUser = async (req, res, next) => {
         const data = req.body;
         const newUser = await userService.createUser(data);
 
-        const accesstoken = await issueTokens(newUser, res);
-        res.status(201).json({ ...newUser, accesstoken });
+        const accessToken = await issueTokens(newUser, res);
+        res.status(201).json({ ...newUser, accessToken });
     } catch (err) {
         next(err);
     }
