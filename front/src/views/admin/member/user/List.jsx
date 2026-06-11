@@ -1,4 +1,4 @@
-import { Heading, HStack, Input, Stack, Button, Table, Box } from "@chakra-ui/react";
+import { Heading, HStack, Input, Stack, Button, Table, Box, Image, Link } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
@@ -44,6 +44,12 @@ function List() {
         }
     }
 
+    const channels = [
+        { label: "네이버 블로그", value: "https://blog.naver.com/", icon: "naver.svg" },
+        { label: "유튜브", value: "https://www.youtube.com/", icon: "youtube.svg" },
+        { label: "인스타그램", value: "https://www.instagram.com/", icon: "instagram.svg" },
+    ];
+
     return (
         <Stack p="30px" px="layoutX" gap="6">
             <Heading>회원 리스트</Heading>
@@ -83,12 +89,25 @@ function List() {
                 <Table.Body>
                     {userList.map((user) => {
                         return (
-                            <Table.Row>
+                            <Table.Row key={user.user_code}>
                                 <Table.Cell textAlign="center">{user.user_code}</Table.Cell>
                                 <Table.Cell textAlign="center">{user.email}</Table.Cell>
                                 <Table.Cell textAlign="center">{user.name}</Table.Cell>
                                 <Table.Cell textAlign="center">{user.phone}</Table.Cell>
-                                <Table.Cell textAlign="center">{user.channel}</Table.Cell>
+                                <Table.Cell textAlign="center">
+                                    <HStack justifyContent="center">
+                                        {channels.map((channel) => {
+                                            const matchChannel = user.review_channels.find(c => c.channel_url.includes(channel.value));
+                                            return matchChannel ? (
+                                                <Link href={matchChannel.channel_url} target="_blank" key={channel.value} display="inline-block" flexShrink={0}>
+                                                    <Image src={`/resources/img/logo/${channel.icon}`} w="5" h="5" rounded="md" />
+                                                </Link>
+                                            ) : (
+                                                <Image key={channel.value} src={`/resources/img/logo/${channel.icon}`} w="5" h="5" rounded="md" filter="grayscale(100%)" opacity="0.3" />
+                                            );
+                                        })}
+                                    </HStack>
+                                </Table.Cell>
                                 <Table.Cell textAlign="center">{marketingText(user.marketingAgree)}</Table.Cell>
                                 <Table.Cell textAlign="center">{formatDateYMD(user.created_at)}</Table.Cell>
                                 <Table.Cell textAlign="center">{statusText(user.status)}</Table.Cell>
