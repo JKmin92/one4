@@ -61,7 +61,7 @@ export const insertProductOrder = async (data) => {
                 order_item_code: generateUniqueId(),
                 order_code,
                 product_code: item.product_code,
-                product_option_code: item.product_option_code,
+                product_option_code: item.product_option_code !== 'unique' ? item.product_option_code : null,
                 quantity: item.quantity,
                 discount_type: item.promotions?.[0]?.discount_type || null,
                 discount_value: item.promotions?.[0]?.discount_value || null,

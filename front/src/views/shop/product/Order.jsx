@@ -1,4 +1,4 @@
-import { Accordion, Box, Button, Checkbox, CloseButton, Collapsible, DataList, Dialog, Field, Flex, NativeSelect, Heading, HStack, Icon, Input, InputGroup, RadioCard, RadioGroup, Separator, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Accordion, Box, Button, Checkbox, CloseButton, Collapsible, DataList, Dialog, Field, Flex, NativeSelect, Heading, HStack, Icon, Input, InputGroup, RadioCard, RadioGroup, Separator, Stack, StackSeparator, Text, EmptyState, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { formatNumber } from "../../../utils/simpleUtils";
 import { LuSearch } from "react-icons/lu";
@@ -107,14 +107,27 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus }) {
         }, 0);
     }
 
-    const addAddress = () => {
-        /** TODO : 별도 address Id 생성 */
-        const id = deliveryList.reduce((max, cur) => cur.id > max ? cur.id : max, 0) + 1;
-        const phone = phoneRef.current.value.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
-        const newAddress = { id: id, name: nameRef.current.value, postcode: postcode, address: address, detailAddress: detailAddressRef.current.value, phone: phone };
+    const addAddress = async () => {
+        try {
+            const response = await axiosInstance.post(`/user/address`, {
+                name: nameRef.current.value,
+                postcode: postcode,
+                address: address,
+                detailAddress: detailAddressRef.current.value,
+                phone: phoneRef.current.value.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3')
+            });
+            if (response.data) {
+                console.log(response.data);
+                setDeliveryList(prev => [...prev, response.data]);
+                setAddDeliveryStatus(false);
+            } else {
+                toaster.create({ title: '배송지를 불러올 수 없습니다.', type: 'error' });
+            }
+        } catch (e) {
+            console.error(e);
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
+        }
 
-        setDeliveryList(prev => [...prev, newAddress]);
-        setAddDeliveryStatus(false);
     }
 
 
@@ -184,6 +197,15 @@ function Delivery({ deliveryList, setDeliveryList, setSelectedAddress }) {
         }
     }
 
+    const addDeliveryDialogOpen = () => {
+        setOpen(true);
+        setAddDeliveryStatus(true);
+    }
+
+    useEffect(() => {
+        if (!open) setAddDeliveryStatus(false);
+    }, [open]);
+
     return (
         <Box borderWidth="1px" rounded="md">
             <Flex bg="gray.subtle" p="10px" justifyContent="space-between" alignItems="center">
@@ -231,7 +253,15 @@ function Delivery({ deliveryList, setDeliveryList, setSelectedAddress }) {
                                             <Button width="1/2" onClick={selectAddress}>배송지 선택</Button>
                                         </HStack>
                                     ) : (
-                                        <Button variant="outline">배송지 추가</Button>
+                                        <EmptyState.Root>
+                                            <EmptyState.Content>
+                                                <VStack textAlign="center">
+                                                    <EmptyState.Title>배송지가 없습니다.</EmptyState.Title>
+                                                    <EmptyState.Description>배송지를 추가해주세요.</EmptyState.Description>
+                                                </VStack>
+                                                <Button onClick={addDeliveryDialogOpen}>배송지 추가</Button>
+                                            </EmptyState.Content>
+                                        </EmptyState.Root>
                                     )
                                 )}
                             </Dialog.Footer>
@@ -249,7 +279,15 @@ function Delivery({ deliveryList, setDeliveryList, setSelectedAddress }) {
                     <Text fontSize="sm">{delivery.phone}</Text>
                 </Stack>
             ) : (
-                <Button>배송지 추가</Button>
+                <EmptyState.Root>
+                    <EmptyState.Content>
+                        <VStack textAlign="center">
+                            <EmptyState.Title>배송지가 없습니다.</EmptyState.Title>
+                            <EmptyState.Description>배송지를 추가해주세요.</EmptyState.Description>
+                        </VStack>
+                        <Button onClick={addDeliveryDialogOpen}>배송지 추가</Button>
+                    </EmptyState.Content>
+                </EmptyState.Root>
             )}
         </Box>
     )

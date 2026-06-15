@@ -54,6 +54,7 @@ import AdminShopDeliverySetting from './views/admin/shop/setting/Delivery';
 import AdminShopAccountSetting from './views/admin/shop/setting/Account';
 
 import AdminMemberUserList from './views/admin/member/user/List';
+import AdminMemberUserDetail from './views/admin/member/user/Detail';
 
 const router = createBrowserRouter([
     {
@@ -115,8 +116,8 @@ const router = createBrowserRouter([
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> },
-            { path: 'member/user/list', element: <AdminMemberUserList /> }
-
+            { path: 'member/user/list', element: <AdminMemberUserList /> },
+            { path: 'member/user/:id', element: <AdminMemberUserDetail /> }
         ]
     }, {
         path: '/review',

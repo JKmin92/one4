@@ -9,7 +9,7 @@ import { toaster } from "../../components/ui/toaster";
 
 function AddressSelectModal({ addressList, open, setOpen, setAddress, setDetailAddress, setPostcode }) {
 
-    const [userAddressCode, setUserAddressCode] = useState(addressList.filter(address => address.isDefault)[0].address_code);
+    const [userAddressCode, setUserAddressCode] = useState(addressList.filter(address => address.isDefault)[0]?.address_code);
 
     return (
         <Dialog.Root open={open} onOpenChange={(e) => setOpen(e.open)}>
@@ -129,9 +129,9 @@ function Application() {
             const resource = await axiosInstance.get(`/user/address`);
             setAddressList(resource.data);
             if (resource.data.length > 0) {
-                setAddress(resource.data.filter(address => address.isDefault)[0].address);
-                setPostcode(resource.data.filter(address => address.isDefault)[0].postcode);
-                setDetailAddress(resource.data.filter(address => address.isDefault)[0].detailAddress);
+                setAddress(resource.data.filter(address => address.isDefault)[0]?.address);
+                setPostcode(resource.data.filter(address => address.isDefault)[0]?.postcode);
+                setDetailAddress(resource.data.filter(address => address.isDefault)[0]?.detailAddress);
             }
         };
 

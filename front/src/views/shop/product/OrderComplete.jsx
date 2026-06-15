@@ -1,23 +1,23 @@
 import { Button, Heading, HStack, Image, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toaster } from "../../../components/ui/toaster";
 import axiosInstance from "../../../utils/api";
 import { formatDate, formatDateToMonthDay, formatNumber } from "../../../utils/simpleUtils";
 
 function OrderComplete() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [productOrder, setProductOrder] = useState();
     const [productOrderItems, setProductOrderItems] = useState();
     const [productOrderPayment, setProductOrderPayment] = useState();
     const [address, setAddress] = useState();
+    const orderCode = location.state.orderCode;
 
     useEffect(() => {
-        if (location.state && location.state.orderCode) {
-
+        if (orderCode) {
             const getProductOrder = async () => {
                 try {
-                    const orderCode = location.state.orderCode;
                     const response = await axiosInstance.get(`/shop/product/order/${orderCode}`);
                     setProductOrder(response.data.product_order);
                     setProductOrderItems(response.data.product_order_items);
@@ -106,7 +106,7 @@ function OrderComplete() {
                 </Table.Body>
             </Table.Root>
             <HStack justifyContent="center" gap="4">
-                <Button>주문 내역 확인</Button>
+                <Button onClick={() => navigate(`/mypage/order/${orderCode}`)}>주문 내역 확인</Button>
                 <Button variant="outline">쇼핑 계속하기</Button>
             </HStack>
         </Stack>

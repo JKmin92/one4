@@ -41,6 +41,7 @@ export const insertUserAddress = async (user_address) => {
         `INSERT INTO user_address (user_code, address_code, name, postcode, address, detailAddress, phone, isDefault) VALUES (?,?,?,?,?,?,?,?)`,
         [user_address.user_code, user_address.address_code, user_address.name, user_address.postcode, user_address.address, user_address.detailAddress, user_address.phone, user_address.isDefault]
     );
+    return user_address;
 }
 
 export const updateUserAddress = async (user_address) => {

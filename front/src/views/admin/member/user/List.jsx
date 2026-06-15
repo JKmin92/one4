@@ -112,7 +112,9 @@ function List() {
                                 <Table.Cell textAlign="center">{formatDateYMD(user.created_at)}</Table.Cell>
                                 <Table.Cell textAlign="center">{statusText(user.status)}</Table.Cell>
                                 <Table.Cell textAlign="center">
-                                    <Button size="xs">상세보기</Button>
+                                    <Button size="xs" asChild>
+                                        <Link href={`/admin/member/user/${user.user_code}`} target="_blank" >상세보기</Link>
+                                    </Button>
                                 </Table.Cell>
                             </Table.Row>
                         )
