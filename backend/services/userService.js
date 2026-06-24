@@ -11,6 +11,8 @@ export const createUser = async (data) => {
         exists = await model.existsUserCode(user_code);
     }
     const hashedPassword = await bcrypt.hash(data.password, 10);
+    const point_code = generateUniqueId();
+    await model.insertUserPoint({ point_code: point_code, user_code: user_code });
     return await model.insertUser({ ...data, user_code: user_code, password: hashedPassword });
 }
 
@@ -20,6 +22,7 @@ export const existsEmail = async (email) => {
 
 export const signIn = async (data) => {
     const user = await model.login({ email: data.email });
+    if (!user) return null;
     const isMatch = await bcrypt.compare(data.password, user.password);
 
     if (!isMatch) return null;
@@ -98,4 +101,35 @@ export const updatePassword = async (user_code, currentPassword, newPassword) =>
     if (!isMatch) return { result: false, code: '001' };
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     return await model.updateUserPassword(user_code, hashedPassword);
+}
+
+export const insertUserAccount = async (user_account) => {
+    const account_code = generateUniqueId();
+    return await model.insertUserAccount({ ...user_account, account_code: account_code });
+}
+
+export const deleteUserAccount = async (account_code, user_code) => {
+    return await model.deleteUserAccount(account_code, user_code);
+}
+
+export const getUserAccountList = async (user_code) => {
+    return await model.getUserAccountList(user_code);
+}
+
+export const getUserPointHistory = async (user_code) => {
+    return await model.getUserPointHistory(user_code);
+}
+
+export const getUserPoint = async (user_code) => {
+    return await model.getUserPoint(user_code);
+}
+
+export const getUserPointPayoutList = async (user_code) => {
+    return await model.getUserPointPayoutList(user_code);
+}
+
+export const insertUserPointPayout = async (payout) => {
+    const payout_code = generateUniqueId();
+    const history_code = generateUniqueId();
+    await model.insertUserPointPayout({ ...payout, payout_code: payout_code, history_code: history_code });
 }

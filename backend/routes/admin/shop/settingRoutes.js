@@ -13,4 +13,7 @@ router.post('/account', controller.insertAccount);
 router.put('/account', controller.updateAccount);
 router.delete('/account/:account_code', controller.deleteAccount);
 
+router.get('/order', controller.getShopOrderSetting);
+router.put('/order', controller.updateShopOrderSetting);
+
 export default router;

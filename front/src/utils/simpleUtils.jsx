@@ -98,3 +98,48 @@ export const getReviewCampaignState = (status) => {
     ];
     return states.find(s => s.key === status);
 }
+
+export const getProductOrderStatus = (status) => {
+    switch (status) {
+        case 'PENDING':
+            return { color: 'orange', text: '결제전' };
+        case 'PAID':
+            return { color: 'blue', text: '결제완료' };
+        case 'PROCESSING':
+            return { color: 'blue', text: '상품준비중' };
+        case 'SHIPPING':
+            return { color: 'blue', text: '배송중' };
+        case 'DELIVERED':
+            return { color: 'blue', text: '배송완료' };
+        case 'COMPLETED':
+            return { color: 'blue', text: '구매확정' };
+        case 'CANCEL':
+            return { color: 'red', text: '취소' };
+        case 'CLAIM':
+            return { color: 'orange', text: '클레임 접수' };
+        default:
+            return 'gray';
+    }
+}
+
+export const getBankList = () => {
+    return [
+        { value: "국민은행", text: "국민은행" },
+        { value: "신한은행", text: "신한은행" },
+        { value: "우리은행", text: "우리은행" },
+        { value: "KEB하나은행", text: "KEB하나은행" },
+        { value: "기업은행", text: "기업은행" },
+        { value: "농협은행", text: "농협은행" },
+        { value: "부산은행", text: "부산은행" },
+        { value: "대구은행", text: "대구은행" },
+        { value: "경남은행", text: "경남은행" },
+        { value: "전북은행", text: "전북은행" },
+        { value: "광주은행", text: "광주은행" },
+        { value: "제주은행", text: "제주은행" },
+        { value: "카카오뱅크", text: "카카오뱅크" },
+        { value: "케이뱅크", text: "케이뱅크" },
+        { value: "토스뱅크", text: "토스뱅크" },
+        { value: "산업은행", text: "산업은행" },
+        { value: "수협은행", text: "수협은행" },
+    ];
+}

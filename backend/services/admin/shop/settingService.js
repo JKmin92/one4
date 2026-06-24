@@ -33,3 +33,11 @@ export const deleteAccount = async (account_code) => {
 export const updateAccountOrder = async (orders) => {
     return await model.updateAccountOrder(orders);
 }
+
+export const getShopOrderSetting = async () => {
+    return await model.getShopOrderSetting();
+}
+
+export const updateShopOrderSetting = async (setting) => {
+    return await model.updateShopOrderSetting(setting);
+}

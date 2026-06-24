@@ -6,6 +6,7 @@ import Delivery from "./info/Delivery";
 import axiosInstance from "../../../utils/api";
 import ReviewChannel from "./info/ReviewChannel";
 import Password from "./info/Password";
+import PrivateInfo from "./info/PrivateInfo";
 
 function Info() {
 
@@ -59,7 +60,7 @@ function Info() {
                     </Stack>
                 </HStack>
                 <Stack separator={<StackSeparator />}>
-                    <Button variant="ghost" justifyContent="space-between">개인정보 수정<LuChevronRight /></Button>
+                    <PrivateInfo user={user} />
                     <Password />
                     <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
                     <ReviewChannel reviewChannelList={reviewChannelList} setReviewChannelList={setReviewChannelList} reviewCampaignChannelViewList={reviewCampaignChannelViewList} />

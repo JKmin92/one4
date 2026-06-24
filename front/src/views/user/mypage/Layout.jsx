@@ -43,6 +43,7 @@ function Layout() {
                                 <Link href="/mypage/order" fontSize="sm" px="20px">주문내역</Link>
                                 <Link href="/mypage/review" fontSize="sm" px="20px">리뷰 캠페인</Link>
                                 <Link href="/mypage/info" fontSize="sm" px="20px">개인정보 수정</Link>
+                                <Link href="/mypage/point" fontSize="sm" px="20px">포인트</Link>
                             </Stack>
                         </Stack>
                     </Box>

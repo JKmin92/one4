@@ -1,5 +1,45 @@
 import db from "../../config/db.js";
 
+export const applyAutomaticOrderTransitions = async () => {
+    const cancelItemSql = `
+        UPDATE product_order_item poi
+        JOIN product_order po ON poi.order_code = po.order_code
+        JOIN shop_order_setting sos ON sos.id = 1
+        SET poi.status = 'CANCEL'
+        WHERE po.status = 'PENDING'
+          AND DATE_ADD(po.created_at, INTERVAL sos.bank_auto_cancel_days DAY) < NOW()
+    `;
+    await db.query(cancelItemSql);
+
+    const cancelOrderSql = `
+        UPDATE product_order po
+        JOIN shop_order_setting sos ON sos.id = 1
+        SET po.status = 'CANCEL', po.canceled_at = NOW()
+        WHERE po.status = 'PENDING'
+          AND DATE_ADD(po.created_at, INTERVAL sos.bank_auto_cancel_days DAY) < NOW()
+    `;
+    await db.query(cancelOrderSql);
+
+    const completeItemSql = `
+        UPDATE product_order_item poi
+        JOIN product_order po ON poi.order_code = po.order_code
+        JOIN shop_order_setting sos ON sos.id = 1
+        SET poi.status = 'COMPLETED'
+        WHERE po.status = 'DELIVERED'
+          AND DATE_ADD(po.delivered_at, INTERVAL sos.order_auto_complete_days DAY) < NOW()
+    `;
+    await db.query(completeItemSql);
+
+    const completeOrderSql = `
+        UPDATE product_order po
+        JOIN shop_order_setting sos ON sos.id = 1
+        SET po.status = 'COMPLETED', po.completed_at = NOW()
+        WHERE po.status = 'DELIVERED'
+          AND DATE_ADD(po.delivered_at, INTERVAL sos.order_auto_complete_days DAY) < NOW()
+    `;
+    await db.query(completeOrderSql);
+}
+
 export const insertProductOrder = async (product_order) => {
     const sql = `INSERT INTO product_order (order_code, user_code, address_code, total_product_price, delivery_price, used_mileage, actual_payment_amount, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -20,6 +60,7 @@ export const insertProductOrderPayment = async (product_order_payment) => {
 }
 
 export const getProductOrder = async (order_code) => {
+    await applyAutomaticOrderTransitions();
     const orderSql = `SELECT * FROM product_order WHERE order_code = ?`;
     const orderResult = await db.query(orderSql, [order_code]);
 
@@ -71,6 +112,7 @@ export const getProductOrder = async (order_code) => {
 }
 
 export const getUserProductOrder = async (user_code) => {
+    await applyAutomaticOrderTransitions();
     const orderSql = `SELECT * FROM product_order WHERE user_code = ? ORDER BY created_at DESC`;
     const orderResult = await db.query(orderSql, [user_code]);
     const orders = orderResult[0];
@@ -122,7 +164,7 @@ export const getProductOptionByCode = async (product_option_code) => {
 }
 
 export const updateOrderCompleted = async (order_code, user_code) => {
-    const sql = `UPDATE product_order SET status = 'COMPLETED' WHERE order_code = ? AND user_code = ?`;
+    const sql = `UPDATE product_order SET status = 'COMPLETED', completed_at = NOW() WHERE order_code = ? AND user_code = ?`;
     await db.query(sql, [order_code, user_code]);
 
     const itemSql = `UPDATE product_order_item SET status = 'COMPLETED' WHERE order_code = ?`;

@@ -101,7 +101,7 @@ function Detail() {
                         <Status.Indicator /> 구매 확정
                     </Status.Root>
                 )
-            case 'CANCELED':
+            case 'CANCEL':
                 return (
                     <Status.Root colorPalette="orange">
                         <Status.Indicator /> 주문 취소
@@ -136,8 +136,7 @@ function Detail() {
                         </Status.Root>
                     )
                 }
-            default:
-                return '알 수 없음';
+            default: return '알 수 없음';
         }
     }
 

@@ -9,6 +9,7 @@ import BasketDetail from "./details/BasketDetail";
 import ReviewCampaignDetail from "./details/ReviewCampaignDetail";
 import ProductReviewDetail from "./details/ProductReviewDetail";
 import ProductInquiryDetail from "./details/ProductInquiryDetail";
+import Point from "./details/Point";
 
 function Detail() {
     const { id } = useParams();
@@ -42,6 +43,7 @@ function Detail() {
                     <Tabs.Trigger value="reviewCampaign">체험단</Tabs.Trigger>
                     <Tabs.Trigger value="review">구매리뷰내역</Tabs.Trigger>
                     <Tabs.Trigger value="inquery">문의내역</Tabs.Trigger>
+                    <Tabs.Trigger value="point">포인트</Tabs.Trigger>
                 </Tabs.List>
                 <Tabs.Content value="user"><UserDetail user={user} /></Tabs.Content>
                 <Tabs.Content value="order"><OrderDetail user_code={id} /></Tabs.Content>
@@ -50,6 +52,7 @@ function Detail() {
                 <Tabs.Content value="reviewCampaign"><ReviewCampaignDetail user_code={id} /></Tabs.Content>
                 <Tabs.Content value="review"><ProductReviewDetail user_code={id} /></Tabs.Content>
                 <Tabs.Content value="inquery"><ProductInquiryDetail user_code={id} /></Tabs.Content>
+                <Tabs.Content value="point"><Point user_code={id} name={user.name} email={user.email} phone={user.phone} /></Tabs.Content>
             </Tabs.Root>
         </Stack>
     )

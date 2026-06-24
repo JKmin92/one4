@@ -71,3 +71,21 @@ export const updateAccountOrder = async (req, res, next) => {
         next(e);
     }
 }
+
+export const getShopOrderSetting = async (req, res, next) => {
+    try {
+        const setting = await settingService.getShopOrderSetting();
+        res.status(201).json(setting);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateShopOrderSetting = async (req, res, next) => {
+    try {
+        const setting = await settingService.updateShopOrderSetting(req.body);
+        res.status(201).json(setting);
+    } catch (e) {
+        next(e);
+    }
+}

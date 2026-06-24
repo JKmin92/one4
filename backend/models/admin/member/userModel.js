@@ -152,6 +152,21 @@ export const getUserReviewCampaignList = async (user_code) => {
     return rows;
 }
 
+export const getReviewCampaignApplicationChannelList = async (campaign_application_code) => {
+    const sql = `SELECT urc.*
+        FROM review_campaign_application_channel rac
+        LEFT JOIN user_review_channel urc ON rac.review_channel_code = urc.review_channel_code
+        WHERE rac.campaign_application_code = ?`;
+    const [rows] = await db.query(sql, [campaign_application_code]);
+    return rows;
+}
+
+export const getUserAddress = async (address_code) => {
+    const sql = `SELECT * FROM user_address WHERE address_code = ?`;
+    const [rows] = await db.query(sql, [address_code]);
+    return rows[0] || null;
+}
+
 export const getUserProductReviewList = async (user_code) => {
     const sql = `SELECT * FROM product_review WHERE user_code = ? ORDER BY created_at DESC`;
     const [rows] = await db.query(sql, [user_code]);
@@ -162,4 +177,46 @@ export const getUserProductInquiryList = async (user_code) => {
     const sql = `SELECT * FROM product_inquiry WHERE user_code = ? ORDER BY created_at DESC`;
     const [rows] = await db.query(sql, [user_code]);
     return rows;
+}
+
+export const getUserPoint = async (user_code) => {
+    const [rows] = await db.query(`SELECT * FROM user_point WHERE user_code = ?`, [user_code]);
+    return rows[0] || null;
+}
+
+export const getUserPointHistory = async (user_code) => {
+    const sql = `SELECT * FROM user_point_history WHERE user_code = ? ORDER BY created_at DESC`;
+    const [rows] = await db.query(sql, [user_code]);
+    return rows;
+}
+
+export const getUserPointPayout = async (user_code) => {
+    const sql = `SELECT pu.*, ua.bank, ua.holder, ua.number
+        FROM user_point_payout pu 
+        LEFT JOIN user_account ua ON pu.account_code = ua.account_code 
+        WHERE pu.user_code = ? 
+        ORDER BY pu.created_at DESC`;
+    const [rows] = await db.query(sql, [user_code]);
+    return rows;
+}
+
+export const updateUserPoint = async (user_code, amount, type) => {
+    let sql = `UPDATE user_point SET current_point = current_point + ? WHERE user_code = ?`
+    if (type === 'MINUS') { sql = `UPDATE user_point SET current_point = current_point - ? WHERE user_code = ?`; }
+    await db.query(sql, [amount, user_code]);
+}
+
+export const insertUserPointHistory = async (history_code, user_code, amount, reason, type) => {
+    const sql = `INSERT INTO user_point_history (history_code, user_code, amount, descript, type) VALUES (?, ?, ?, ?, ?)`;
+    await db.query(sql, [history_code, user_code, amount, reason, type]);
+}
+
+export const updateUserPointPayout = async (data) => {
+    const sql = `UPDATE user_point_payout SET status = ?, reject_description = ?, processed_at = NOW() WHERE payout_code = ?`;
+    await db.query(sql, [data.status, data.reject_description, data.payout_code]);
+}
+
+export const getUserPointPayoutOne = async (payout_code) => {
+    const [rows] = await db.query(`SELECT * FROM user_point_payout WHERE payout_code = ?`, [payout_code]);
+    return rows[0] || null;
 }

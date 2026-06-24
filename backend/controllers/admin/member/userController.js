@@ -72,6 +72,24 @@ export const getUserReviewCampaignList = async (req, res, next) => {
     }
 }
 
+export const getReviewCampaignApplicationChannelList = async (req, res, next) => {
+    try {
+        const reviewCampaignApplicationChannelList = await userService.getReviewCampaignApplicationChannelList(req.params.campaign_application_code);
+        return res.status(200).json(reviewCampaignApplicationChannelList);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const getUserAddress = async (req, res, next) => {
+    try {
+        const userAddress = await userService.getUserAddress(req.params.address_code);
+        return res.status(200).json(userAddress);
+    } catch (e) {
+        next(e);
+    }
+}
+
 export const getUserProductReviewList = async (req, res, next) => {
     try {
         const userProductReviewList = await userService.getUserProductReviewList(req.params.user_code);
@@ -85,6 +103,51 @@ export const getUserProductInquiryList = async (req, res, next) => {
     try {
         const userProductInqueryList = await userService.getUserProductInquiryList(req.params.user_code);
         return res.status(200).json(userProductInqueryList);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const getUserPoint = async (req, res, next) => {
+    try {
+        const userPoint = await userService.getUserPoint(req.params.user_code);
+        return res.status(200).json(userPoint);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const getUserPointHistory = async (req, res, next) => {
+    try {
+        const userPointHistoryList = await userService.getUserPointHistory(req.params.user_code);
+        return res.status(200).json(userPointHistoryList);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const getUserPointPayout = async (req, res, next) => {
+    try {
+        const userPointPayoutList = await userService.getUserPointPayout(req.params.user_code);
+        return res.status(200).json(userPointPayoutList);
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateUserPoint = async (req, res, next) => {
+    try {
+        await userService.updateUserPoint(req.params.user_code, req.body);
+        return res.status(200).json({ message: '포인트 지급/차감이 완료되었습니다.' });
+    } catch (e) {
+        next(e);
+    }
+}
+
+export const updateUserPointPayout = async (req, res, next) => {
+    try {
+        await userService.updateUserPointPayout(req.body);
+        return res.status(200).json({ message: '출금 신청이 처리되었습니다.' });
     } catch (e) {
         next(e);
     }

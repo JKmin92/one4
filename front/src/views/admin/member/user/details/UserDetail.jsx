@@ -1,4 +1,4 @@
-import { Badge, Heading, HStack, Stack, Table, Text } from "@chakra-ui/react";
+import { Badge, Heading, HStack, Stack, StackSeparator, Table, Text } from "@chakra-ui/react";
 import { formatDate, formatDateYMD, formatNumber } from "../../../../../utils/simpleUtils";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../../components/ui/toaster";
@@ -16,7 +16,7 @@ function UserDetail({ user }) {
 
     const getAddressList = async () => {
         try {
-            const res = await axiosInstance.get(`/admin/member/user/address/${user.user_code}`);
+            const res = await axiosInstance.get(`/admin/member/user/addressList/${user.user_code}`);
             setAddressList(res.data);
         } catch (e) {
             console.error(e);
@@ -70,7 +70,7 @@ function UserDetail({ user }) {
                             <Table.ColumnHeader>주소</Table.ColumnHeader>
                             <Table.Cell colSpan="3">
                                 {addressList.length > 0 ? (
-                                    <Stack>
+                                    <Stack borderWidth="1px" rounded="md" p="2" separator={<StackSeparator />}>
                                         {addressList.map((address) => (
                                             <HStack key={address.address_code} alignItems="center">
                                                 {address.isDefault && (

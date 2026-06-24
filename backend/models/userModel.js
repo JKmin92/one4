@@ -121,3 +121,62 @@ export const updateUserPassword = async (user_code, newPassword) => {
     await db.query(`UPDATE user SET password = ? WHERE user_code = ? AND status != 'WITHDRAW'`, [newPassword, user_code]);
     return { result: true };
 }
+
+export const insertUserAccount = async (user_account) => {
+    if (user_account.is_basic) {
+        await db.query(`UPDATE user_account SET is_basic = 0 WHERE user_code = ?`, [user_account.user_code]);
+    }
+    const sql = `INSERT INTO user_account (account_code, user_code, holder, number, bank, is_basic, deleted) VALUES (?,?,?,?,?,?,0)`;
+    await db.query(sql, [user_account.account_code, user_account.user_code, user_account.holder, user_account.number, user_account.bank, user_account.is_basic]);
+
+    const [rows] = await db.query(`SELECT * FROM user_account WHERE account_code = ?`, [user_account.account_code]);
+    return rows[0];
+}
+
+export const deleteUserAccount = async (account_code, user_code) => {
+    await db.query(`UPDATE user_account SET deleted = 1 WHERE account_code = ? AND user_code = ?`, [account_code, user_code]);
+}
+
+export const getUserAccountList = async (user_code) => {
+    const [rows] = await db.query(`SELECT * FROM user_account WHERE user_code = ? AND deleted != 1`, [user_code]);
+    return rows;
+}
+
+export const insertUserPoint = async (user_point) => {
+    const sql = `INSERT INTO user_point (point_code, user_code, current_point) VALUE (?,?,0)`;
+    await db.query(sql, [user_point.point_code, user_point.user_code]);
+}
+
+export const getUserPointHistory = async (user_code) => {
+    const [rows] = await db.query(`SELECT * FROM user_point_history WHERE user_code = ? ORDER BY created_at DESC`, [user_code]);
+    return rows;
+}
+
+export const getUserPoint = async (user_code) => {
+    const [rows] = await db.query(`SELECT * FROM user_point WHERE user_code = ?`, [user_code]);
+    return rows[0];
+}
+
+export const getUserPointPayoutList = async (user_code) => {
+    const sql = `
+        SELECT up.*, ua.holder, ua.bank, ua.number
+        FROM user_point_payout up
+        LEFT JOIN user_account ua ON up.account_code = ua.account_code
+        WHERE up.user_code = ?
+        ORDER BY up.created_at DESC
+    `;
+    const [rows] = await db.query(sql, [user_code]);
+    return rows;
+}
+
+export const insertUserPointPayout = async (payout) => {
+    const sql = `INSERT INTO user_point_payout (payout_code, user_code, amount, account_code) VALUES (?,?,?,?)`;
+    await db.query(sql, [payout.payout_code, payout.user_code, payout.amount, payout.account_code]);
+
+    const updateSql = `UPDATE user_point SET current_point = current_point - ? WHERE user_code = ?`;
+    await db.query(updateSql, [payout.amount, payout.user_code]);
+
+    const currentPoint = (await getUserPoint(payout.user_code)).current_point;
+    const historySql = `INSERT INTO user_point_history (history_code, user_code, amount, balance, type, payout_code, descript) VALUE (?,?,?,?, 'PAYOUT', ?, '출금 요청')`;
+    await db.query(historySql, [payout.history_code, payout.user_code, payout.amount, currentPoint, payout.payout_code]);
+}

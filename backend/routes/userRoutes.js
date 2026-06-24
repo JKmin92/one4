@@ -25,4 +25,13 @@ router.delete('/review/channel/:review_channel_code', authMiddleware, userContro
 
 router.put('/password', authMiddleware, userController.updatePassword);
 
+router.post('/account', authMiddleware, userController.insertUserAccount);
+router.get('/account', authMiddleware, userController.getUserAccountList);
+router.delete('/account/:account_code', authMiddleware, userController.deleteUserAccount);
+
+router.get('/point/history', authMiddleware, userController.getUserPointHistory);
+router.get('/point', authMiddleware, userController.getUserPoint);
+router.get('/point/payout/list', authMiddleware, userController.getUserPointPayoutList);
+router.post('/point/payout', authMiddleware, userController.insertUserPointPayout);
+
 export default router;

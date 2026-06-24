@@ -46,7 +46,7 @@ export const signIn = async (req, res, next) => {
     try {
         const data = req.body;
         const user = await userService.signIn(data);
-        if (!user) return res.status(401).send({ error: '확인되는 계정이 없습니다.' });
+        if (!user) return res.status(200).json({ success: false, error: '확인되는 계정이 없습니다.' });
 
         const accessToken = await issueTokens(user, res);
         res.status(200).json({ ...user, accessToken });
@@ -215,6 +215,77 @@ export const updatePassword = async (req, res, next) => {
         const user = req.user;
         if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.updatePassword(user.user_code, req.body.currentPassword, req.body.newPassword));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const insertUserAccount = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.insertUserAccount({ ...req.body, user_code: user.user_code }));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserAccountList = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserAccountList(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const deleteUserAccount = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.deleteUserAccount(req.params.account_code, user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserPointHistory = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserPointHistory(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserPoint = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserPoint(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserPointPayoutList = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        res.status(200).json(await userService.getUserPointPayoutList(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const insertUserPointPayout = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(201).send({ message: 'no user' });
+        await userService.insertUserPointPayout({ ...req.body, user_code: user.user_code });
+        res.status(200).json({ message: 'success' });
     } catch (err) {
         next(err);
     }

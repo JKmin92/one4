@@ -12,6 +12,7 @@ import MypageReview from './views/user/mypage/review/List';
 import MypageReviewDetail from './views/user/mypage/review/Detail';
 import MypageOrderList from './views/user/mypage/shop/List';
 import MypageOrderDetail from './views/user/mypage/shop/Detail';
+import MypagePoint from './views/user/mypage/point/List';
 
 import ShopLayout from './views/shop/common/Layout';
 import ShopMain from './views/shop/Main';
@@ -52,9 +53,11 @@ import AdminOrderClaimList from './views/admin/shop/claim/List';
 
 import AdminShopDeliverySetting from './views/admin/shop/setting/Delivery';
 import AdminShopAccountSetting from './views/admin/shop/setting/Account';
+import AdminShopPaymentSetting from './views/admin/shop/setting/Payment';
 
 import AdminMemberUserList from './views/admin/member/user/List';
 import AdminMemberUserDetail from './views/admin/member/user/Detail';
+import AdminMemberPointPayoutList from './views/admin/member/point/PayoutList';
 
 const router = createBrowserRouter([
     {
@@ -86,7 +89,8 @@ const router = createBrowserRouter([
             { path: 'review', element: <MypageReview /> },
             { path: 'review/:campaign_application_code', element: <MypageReviewDetail /> },
             { path: 'order', element: <MypageOrderList /> },
-            { path: 'order/:order_code', element: <MypageOrderDetail /> }
+            { path: 'order/:order_code', element: <MypageOrderDetail /> },
+            { path: 'point', element: <MypagePoint /> }
         ]
     }, {
         path: '/admin',
@@ -112,12 +116,14 @@ const router = createBrowserRouter([
             { path: 'shop/claim/:id', element: <AdminOrderClaimList /> },
             { path: 'shop/setting/delivery', element: <AdminShopDeliverySetting /> },
             { path: 'shop/setting/account', element: <AdminShopAccountSetting /> },
+            { path: 'shop/setting/payment', element: <AdminShopPaymentSetting /> },
             { path: 'review/campaign/list', element: <AdminReviewCampaignList /> },
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> },
             { path: 'member/user/list', element: <AdminMemberUserList /> },
-            { path: 'member/user/:id', element: <AdminMemberUserDetail /> }
+            { path: 'member/user/:id', element: <AdminMemberUserDetail /> },
+            { path: 'member/point/payout/list', element: <AdminMemberPointPayoutList /> }
         ]
     }, {
         path: '/review',

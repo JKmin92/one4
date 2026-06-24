@@ -25,7 +25,7 @@ function ChannelSelect({ value, onValueChange }) {
                                 if (!items || items.length === 0) return "채널 선택";
                                 return (
                                     <HStack gap="2">
-                                        <Image src={`/resources/img/logo/${items[0].icon}`} w="5" h="5" rounded="md" />
+                                        <Image src={`/resources/img/logo/${items[0]?.icon}`} w="5" h="5" rounded="md" />
                                         <Text fontSize="xs">{items[0].label}</Text>
                                     </HStack>
                                 );
@@ -43,7 +43,7 @@ function ChannelSelect({ value, onValueChange }) {
                         {channels.items.map((item) => (
                             <Select.Item item={item} key={item.value} p="2" cursor="pointer" rounded="sm" _hover={{ bg: "gray.100" }}>
                                 <HStack gap="2">
-                                    <Image src={`/resources/img/logo/${item.icon}`} w="5" h="5" rounded="full" />
+                                    <Image src={`/resources/img/logo/${item?.icon}`} w="5" h="5" rounded="full" />
                                     <Text fontSize="xs">{item.label}</Text>
                                 </HStack>
                                 <Select.ItemIndicator />
@@ -76,7 +76,7 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
             } else {
                 setChannelId(url);
             }
-            setChannelIcon(reviewCampaignChannelViewList.find(c => c.channel_code === user_review_channel.channel_code).icon);
+            setChannelIcon(reviewCampaignChannelViewList.find(c => c.channel_code === user_review_channel.channel_code)?.icon);
         }
     }, [user_review_channel, reviewCampaignChannelViewList]);
 
@@ -221,8 +221,8 @@ function AddReviewChannel({ reviewChannelList, setReviewChannelList, setAddRevie
     }
 
 
-    const isDuplicate = reviewChannelList.some(channel => 
-        channel.channel_url === channelLink && 
+    const isDuplicate = reviewChannelList.some(channel =>
+        channel.channel_url === channelLink &&
         channel.review_channel_code !== user_review_channel?.review_channel_code
     );
 
@@ -441,7 +441,7 @@ function ReviewChannel({ reviewChannelList, setReviewChannelList, reviewCampaign
                                                         <RadioCard.ItemContent>
                                                             <RadioCard.ItemText>
                                                                 <HStack>
-                                                                    <Image src={`/public/resources/img/logo/${channel.icon}`} rounded="md" w="5" h="5" />
+                                                                    <Image src={`/public/resources/img/logo/${channel?.icon}`} rounded="md" w="5" h="5" />
                                                                     <Text>{channel.name}</Text>
                                                                 </HStack>
                                                             </RadioCard.ItemText>

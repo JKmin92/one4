@@ -48,3 +48,14 @@ export const updateAccountOrder = async (orders) => {
     }
     return { success: true };
 }
+
+export const getShopOrderSetting = async () => {
+    const [rows] = await db.query(`SELECT * FROM shop_order_setting WHERE id=1`);
+    return rows[0];
+}
+
+export const updateShopOrderSetting = async (setting) => {
+    const sql = `UPDATE shop_order_setting SET bank_auto_cancel_days = ?, order_auto_complete_days = ? WHERE id = 1`;
+    const [rows] = await db.query(sql, [setting.bank_auto_cancel_days, setting.order_auto_complete_days]);
+    return rows;
+}

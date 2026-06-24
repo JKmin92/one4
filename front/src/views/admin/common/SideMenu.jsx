@@ -9,6 +9,7 @@ function SideMenu() {
     const linkActiveStyle = { bg: 'teal.subtle', color: 'teal.fg', _hover: { bg: 'teal.subtle', color: 'teal.fg' } };
     const location = useLocation();
     const pathname = location.pathname;
+    const adminSubPath = pathname.split('/')[2] || 'shop';
 
     const shopCategory = [
         {
@@ -58,6 +59,7 @@ function SideMenu() {
             children: [
                 { path: ['delivery'], label: '배송설정' },
                 { path: ['account'], label: '계좌 관리' },
+                { path: ['payment'], label: '결제 설정' },
             ]
         }
     ];
@@ -77,6 +79,12 @@ function SideMenu() {
             path: 'user', label: '회원',
             children: [
                 { path: ['list'], label: '회원 리스트' },
+            ]
+        },
+        {
+            path: 'point', label: '포인트',
+            children: [
+                { path: ['payout/list'], label: '출금 리스트' },
             ]
         }
     ];
@@ -116,7 +124,7 @@ function SideMenu() {
                                         return (
                                             <Link
                                                 key={i}
-                                                href={`/admin/shop/${category.path}/${paths[0]}`}
+                                                href={`/admin/${adminSubPath}/${category.path}/${paths[0]}`}
                                                 {...linkStyle}
                                                 {...(isActive ? linkActiveStyle : null)}
                                             >

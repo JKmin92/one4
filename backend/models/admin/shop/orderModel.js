@@ -1,6 +1,8 @@
 import db from '../../../config/db.js';
+import { applyAutomaticOrderTransitions } from '../../shop/orderModel.js';
 
 export const getOrderList = async (status) => {
+    await applyAutomaticOrderTransitions();
     let whereSql = '';
     if (status && status !== 'total') {
         whereSql = `WHERE status = ?`;
@@ -97,6 +99,7 @@ export const insertProductOrderDelivery = async (product_order_delivery) => {
 }
 
 export const getOrder = async (order_code) => {
+    await applyAutomaticOrderTransitions();
     const orderSql = `SELECT * FROM product_order WHERE order_code = ?`;
     const [orders] = await db.query(orderSql, [order_code]);
     const order = orders[0];
@@ -165,7 +168,14 @@ export const getProductOrderItems = async (order_codes) => {
 }
 
 export const updateOrderStatus = async (order_codes, status) => {
-    const sql = `UPDATE product_order SET status = ? WHERE order_code IN (?)`;
+    let timestampField = '';
+    if (status === 'PAID') timestampField = ', paided_at = NOW()';
+    else if (status === 'PROCESSING') timestampField = ', processed_at = NOW()';
+    else if (status === 'DELIVERED') timestampField = ', delivered_at = NOW()';
+    else if (status === 'COMPLETED') timestampField = ', completed_at = NOW()';
+    else if (status === 'CANCEL') timestampField = ', canceled_at = NOW()';
+
+    const sql = `UPDATE product_order SET status = ?${timestampField} WHERE order_code IN (?)`;
     return await db.query(sql, [status, order_codes]);
 }
 

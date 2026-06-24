@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `product_image` (
   CONSTRAINT `FK_product_image_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_image:~5 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.product_image:~4 rows (대략적) 내보내기
 INSERT INTO `product_image` (`i_num`, `product_code`, `url`, `is_main`, `sort_order`) VALUES
 	(15, '20260209165809589', '/uploads/2026/02/09/product/20260209165809589/1770623889549-o9z5kytsu.webp', 1, NULL),
 	(16, '20260209165809589', '/uploads/2026/02/09/product/20260209165809589/1770623889702-2ahs0n5th.webp', 0, 1),
@@ -182,19 +182,25 @@ CREATE TABLE IF NOT EXISTS `product_order` (
   `actual_payment_amount` double NOT NULL DEFAULT 0 COMMENT '실제 결제 비용',
   `status` enum('PENDING','PAID','PROCESSING','SHIPPING','DELIVERED','COMPLETED','CANCEL','CLAIM') NOT NULL DEFAULT 'PENDING',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `paided_at` timestamp NULL DEFAULT NULL,
+  `processed_at` timestamp NULL DEFAULT NULL,
+  `delivered_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `canceled_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `order_code` (`order_code`),
   KEY `FK_product_order_user` (`user_code`),
   KEY `FK_product_order_user_address` (`address_code`),
   CONSTRAINT `FK_product_order_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_product_order_user_address` FOREIGN KEY (`address_code`) REFERENCES `user_address` (`address_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_order:~3 rows (대략적) 내보내기
-INSERT INTO `product_order` (`id`, `order_code`, `user_code`, `address_code`, `total_product_price`, `delivery_price`, `used_mileage`, `actual_payment_amount`, `status`, `created_at`) VALUES
-	(7, '202605151407488202', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'DELIVERED', '2026-05-15 05:07:48'),
-	(8, '202605180929164816', 'jeo7334Wt202601', '202604081121299155', 9000, 3500, 0, 12500, 'PROCESSING', '2026-05-18 00:29:16'),
-	(9, '202605181007243694', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'CLAIM', '2026-05-18 01:07:24');
+-- 테이블 데이터 newone4.product_order:~4 rows (대략적) 내보내기
+INSERT INTO `product_order` (`id`, `order_code`, `user_code`, `address_code`, `total_product_price`, `delivery_price`, `used_mileage`, `actual_payment_amount`, `status`, `created_at`, `paided_at`, `processed_at`, `delivered_at`, `completed_at`, `canceled_at`) VALUES
+	(7, '202605151407488202', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'DELIVERED', '2026-05-15 05:07:48', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52'),
+	(8, '202605180929164816', 'jeo7334Wt202601', '202604081121299155', 9000, 3500, 0, 12500, 'SHIPPING', '2026-05-18 00:29:16', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52'),
+	(9, '202605181007243694', 'jeo7334Wt202601', '202604081121299155', 75000, 0, 0, 75000, 'CLAIM', '2026-05-18 01:07:24', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52'),
+	(13, '202606151054113857', 'jeo7507NL202606', '202606151049245747', 12000, 3500, 0, 15500, 'CANCEL', '2026-06-15 01:54:11', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-17 05:22:52', '2026-06-19 03:00:16');
 
 -- 테이블 newone4.product_order_basket 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order_basket` (
@@ -214,14 +220,16 @@ CREATE TABLE IF NOT EXISTS `product_order_basket` (
   CONSTRAINT `FK_product_order_basket_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_product_order_basket_product_option` FOREIGN KEY (`product_option_code`) REFERENCES `product_option` (`product_option_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_product_order_basket_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_order_basket:~3 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.product_order_basket:~6 rows (대략적) 내보내기
 INSERT INTO `product_order_basket` (`id`, `order_basket_code`, `user_code`, `product_code`, `product_option_code`, `quantity`, `created_at`, `updated_at`) VALUES
 	(4, '202605081337218659', 'jeo7334Wt202601', '20260209165809589', 'opt20260209165809589', 5, '2026-05-08 04:37:21', '2026-05-11 02:18:08'),
 	(10, '202605081512545832', 'jeo7334Wt202601', '20260506111049033', NULL, 1, '2026-05-08 06:12:54', '2026-05-08 06:12:54'),
 	(11, '202605111650532077', 'jeo7334Wt202601', '20260209165809589', 'opt20260209165809142', 1, '2026-05-11 07:50:53', '2026-05-11 07:50:53'),
-	(12, '202605121117118678', 'jeo7334Wt202601', '20260209165809589', 'opt20260209165809180', 1, '2026-05-12 02:17:11', '2026-05-12 02:17:11');
+	(12, '202605121117118678', 'jeo7334Wt202601', '20260209165809589', 'opt20260209165809180', 1, '2026-05-12 02:17:11', '2026-05-12 02:17:11'),
+	(13, '202606151335067902', 'jeo7507NL202606', '20260209165809589', 'opt20260209165809015', 4, '2026-06-15 04:35:06', '2026-06-15 06:52:21'),
+	(14, '202606151552060965', 'jeo7507NL202606', '20260506111049033', NULL, 1, '2026-06-15 06:52:06', '2026-06-15 06:52:06');
 
 -- 테이블 newone4.product_order_claim 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order_claim` (
@@ -344,19 +352,20 @@ CREATE TABLE IF NOT EXISTS `product_order_item` (
   CONSTRAINT `FK_product_order_item_product` FOREIGN KEY (`product_code`) REFERENCES `product` (`product_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_product_order_item_product_option` FOREIGN KEY (`product_option_code`) REFERENCES `product_option` (`product_option_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_product_order_item_product_order` FOREIGN KEY (`order_code`) REFERENCES `product_order` (`order_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.product_order_item:~9 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.product_order_item:~10 rows (대략적) 내보내기
 INSERT INTO `product_order_item` (`id`, `order_item_code`, `order_code`, `product_code`, `product_option_code`, `quantity`, `discount_type`, `discount_value`, `each_price`, `price`, `final_price`, `status`, `product_name`, `product_option_label`, `product_option_value`) VALUES
 	(25, '202605151407483464', '202605151407488202', '20260209165809589', 'opt20260209165809589', 5, 'FIXED', 1000, 9000, 50000, 45000, 'DELIVERED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
 	(26, '202605151407485046', '202605151407488202', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 12000, 'DELIVERED', '다이나믹 듀오(dynamic dou) - 죽일놈', '컬러', NULL),
 	(27, '202605151407485943', '202605151407488202', '20260209165809589', 'opt20260209165809142', 1, 'FIXED', 1000, 9000, 10000, 9000, 'DELIVERED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블랙'),
 	(28, '202605151407488126', '202605151407488202', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 9000, 10000, 9000, 'DELIVERED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플'),
-	(29, '202605180929167660', '202605180929164816', '20260209165809589', 'opt20260209165809589', 1, 'FIXED', 1000, 9000, 10000, 9000, 'PENDING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
+	(29, '202605180929167660', '202605180929164816', '20260209165809589', 'opt20260209165809589', 1, 'FIXED', 1000, 9000, 10000, 9000, 'SHIPPING', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
 	(30, '202605181007241781', '202605181007243694', '20260209165809589', 'opt20260209165809589', 5, 'FIXED', 1000, 9000, 50000, 45000, 'RETURN', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블루'),
 	(31, '202605181007245917', '202605181007243694', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 12000, 'REFUND', '다이나믹 듀오(dynamic dou) - 죽일놈', '컬러', NULL),
 	(32, '202605181007243203', '202605181007243694', '20260209165809589', 'opt20260209165809142', 1, 'FIXED', 1000, 9000, 10000, 9000, 'RETURN', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '블랙'),
-	(33, '202605181007244287', '202605181007243694', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 9000, 10000, 9000, 'COMPLETED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플');
+	(33, '202605181007244287', '202605181007243694', '20260209165809589', 'opt20260209165809180', 1, 'FIXED', 1000, 9000, 10000, 9000, 'COMPLETED', 'ㅅㄷㄴㅅㅁㄴㅇㅁㄴ121', '컬러', '퍼플'),
+	(35, '202606151054114771', '202606151054113857', '20260506111049033', NULL, 1, NULL, NULL, 12000, 12000, 12000, 'CANCEL', '다이나믹 듀오(dynamic dou) - 죽일놈', NULL, NULL);
 
 -- 테이블 newone4.product_order_payment 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_order_payment` (
@@ -369,13 +378,14 @@ CREATE TABLE IF NOT EXISTS `product_order_payment` (
   `paid_check_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `payment_code` (`payment_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.product_order_payment:~3 rows (대략적) 내보내기
 INSERT INTO `product_order_payment` (`id`, `payment_code`, `order_code`, `payment_type`, `deposit_name`, `payment_deadline`, `paid_check_time`) VALUES
 	(7, '202605151407481535', '202605151407488202', 'BANK', 'asdf', '2026-05-20 23:59:59', '2026-05-21 14:06:16'),
 	(8, '202605180929164124', '202605180929164816', 'BANK', 'asdf', '2026-05-23 23:59:59', NULL),
-	(9, '202605181007249103', '202605181007243694', 'BANK', 'ㅁㄴㅇㅇㅁㄴㄹ', '2026-05-23 23:59:59', '2026-05-26 16:44:23');
+	(9, '202605181007249103', '202605181007243694', 'BANK', 'ㅁㄴㅇㅇㅁㄴㄹ', '2026-05-23 23:59:59', '2026-05-26 16:44:23'),
+	(10, '202606151054116557', '202606151054113857', 'BANK', '테스트입니다', '2026-06-20 23:59:59', NULL);
 
 -- 테이블 newone4.product_promotion 구조 내보내기
 CREATE TABLE IF NOT EXISTS `product_promotion` (
@@ -452,9 +462,9 @@ CREATE TABLE IF NOT EXISTS `refresh_tokens` (
   PRIMARY KEY (`id`),
   KEY `user_code` (`user_code`),
   CONSTRAINT `FK_refresh_tokens_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.refresh_tokens:~9 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.refresh_tokens:~11 rows (대략적) 내보내기
 INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdAt`) VALUES
 	(4, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsImVtYWlsIjoiamVvbmdrZXkzMzE3QG5hdmVyLmNvbSIsIm5hbWUiOiLrr7zsoJXquLAiLCJwYXNzd29yZCI6IiQyYiQxMCROcFhnMTZlMkdCVGdHRllyS1RoUHp1a1JnYXROeWVzUnFZVVROODJIVFJMNkJ4elJaLm9WcSIsIm1hcmtldGluZ0FncmVlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjpbMV19LCJwcm9maWxlIjpudWxsLCJyb2xlIjoiVVNFUiIsInN0YXR1cyI6IkFDVElWRSJ9LCJpYXQiOjE3Njk2NTk1NjIsImV4cCI6MTc3MDI2NDM2Mn0.X66tl8mDal9shwAnjwXDHq-K-c2Jqvtq4ZuVIxkVVqA', '2026-02-05 13:06:02', '2026-01-29 13:06:02'),
 	(31, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJfY29kZSI6ImplbzczMzRXdDIwMjYwMSIsInJvbGUiOiJVU0VSIiwicHJvZmlsZSI6bnVsbH0sImlhdCI6MTc3MjYwNjg1OSwiZXhwIjoxNzczMjExNjU5fQ.GB5v_jpXDuka80imLH-uBCRVFEz6vmn5xL6dZLVCV2E', '2026-03-11 15:47:39', '2026-03-04 15:47:39'),
@@ -465,7 +475,9 @@ INSERT INTO `refresh_tokens` (`id`, `user_code`, `token`, `expiresAt`, `createdA
 	(42, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc4NjUzNDY3LCJleHAiOjE3NzkyNTgyNjd9.aKfY84EPTFGZyndA7dWqhPmiSmo8HylOehjYfuzNdK8', '2026-05-20 15:24:27', '2026-05-13 15:24:27'),
 	(43, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5MzI1NjU0LCJleHAiOjE3Nzk5MzA0NTR9._rVkNE9HHpr5MbwmSgVKbWqba5LkrTrEn49lj2vd1n8', '2026-05-28 10:07:34', '2026-05-21 10:07:34'),
 	(44, 'jeo7334Wt202601', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83MzM0V3QyMDI2MDEiLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJwcm9maWxlIjpudWxsLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAbmF2ZXIuY29tIiwiaWF0IjoxNzc5OTQ5MDM5LCJleHAiOjE3ODA1NTM4Mzl9.k3UzgxmLN3CVPN-EW5f59h5A9EpnDx26lMe8yIWYgUk', '2026-06-04 15:17:19', '2026-05-28 15:17:19'),
-	(49, 'jeo7507NL202606', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83NTA3TkwyMDI2MDYiLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAZ21haWwuY29tIiwicGhvbmUiOiIwMTA2NTUxMzMxNyIsImlhdCI6MTc4MTA2MzI0OSwiZXhwIjoxNzgxNjY4MDQ5fQ.qdRb3iOJUzSOz7ch3z580Mix_3XiSKO_3_9Ynzr0T0I', '2026-06-17 12:47:29', '2026-06-10 12:47:29');
+	(49, 'jeo7507NL202606', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83NTA3TkwyMDI2MDYiLCJuYW1lIjoi66-87KCV6riwIiwiZW1haWwiOiJqZW9uZ2tleTMzMTdAZ21haWwuY29tIiwicGhvbmUiOiIwMTA2NTUxMzMxNyIsImlhdCI6MTc4MTA2MzI0OSwiZXhwIjoxNzgxNjY4MDQ5fQ.qdRb3iOJUzSOz7ch3z580Mix_3XiSKO_3_9Ynzr0T0I', '2026-06-17 12:47:29', '2026-06-10 12:47:29'),
+	(51, 'jeo7507NL202606', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83NTA3TkwyMDI2MDYiLCJyb2xlIjoiVVNFUiIsInN0YXR1cyI6IkFDVElWRSIsInByb2ZpbGUiOm51bGwsIm5hbWUiOiLrr7zsoJXquLAiLCJlbWFpbCI6Implb25na2V5MzMxN0BnbWFpbC5jb20iLCJpYXQiOjE3ODE2NzIzMDMsImV4cCI6MTc4MjI3NzEwM30.dNGJ6-UZtslCu3IU5jraAy5bjXToA7gENaUMlZm9KOI', '2026-06-24 13:58:23', '2026-06-17 13:58:23'),
+	(52, 'jeo7507NL202606', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2NvZGUiOiJqZW83NTA3TkwyMDI2MDYiLCJyb2xlIjoiVVNFUiIsInN0YXR1cyI6IkFDVElWRSIsInByb2ZpbGUiOm51bGwsIm5hbWUiOiLrr7zsoJXquLAiLCJlbWFpbCI6Implb25na2V5MzMxN0BnbWFpbC5jb20iLCJpYXQiOjE3ODIyNzc2ODksImV4cCI6MTc4Mjg4MjQ4OX0.pDhHe-IfhHQP9je0XJowBLZWu494-dJdw1Cn5r8wXbw', '2026-07-01 14:08:09', '2026-06-24 14:08:09');
 
 -- 테이블 newone4.review_campaign 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign` (
@@ -500,7 +512,7 @@ CREATE TABLE IF NOT EXISTS `review_campaign` (
 -- 테이블 데이터 newone4.review_campaign:~4 rows (대략적) 내보내기
 INSERT INTO `review_campaign` (`id`, `campaign_code`, `product_name`, `title`, `short_description`, `is_display`, `user_code`, `campaign_category_code`, `campaign_type`, `state`, `max_applicants`, `main_image`, `detail_images`, `content`, `start_application_date`, `end_application_date`, `reviewer_selection_date`, `start_write_date`, `end_write_date`, `created_at`, `updated_at`) VALUES
 	(11, '202603251523561942', '와바미 파데', '와바미 뷰티', '와바미에서 만든 뷰티 브랜드!!', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'COMPLETED', 10, '/uploads/2026/03/25/review/20260325152356099/1774419836258-zxsqcl4be.webp', '["/uploads/2026/03/27/review/20260327144427556_d0/1774590267260-yniyp0wrg.webp","/uploads/2026/03/27/review/20260327143905099_d1/1774589945886-pqqagjgoe.webp","/uploads/2026/03/27/review/20260327143905099_d0/1774589945778-iuy4g4waf.webp","/uploads/2026/03/27/review/20260327143905099_d2/1774589946601-sw4g6bafx.webp"]', '이것 저것 그것 베이비', '2026-02-26 00:00:00', '2026-04-20 00:00:00', '2026-04-21 00:00:00', '2026-04-22 00:00:00', '2026-04-26 00:00:00', '2026-03-25 15:23:56', '2026-04-22 12:04:27'),
-	(12, '202604231037085673', '와바미 닥터버니 티모시 베이직', '와바미 토끼사료 닥터 버니', '캠페인 테스트', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'REVIEWING', 5, '/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp', '["/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp","/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp","/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp"]', '이건 테스트임', '2026-04-23 00:00:00', '2026-05-18 00:00:00', '2026-05-19 00:00:00', '2026-05-19 00:00:00', '2026-05-24 00:00:00', '2026-04-23 10:37:11', '2026-06-09 10:44:11'),
+	(12, '202604231037085673', '와바미 닥터버니 티모시 베이직', '와바미 토끼사료 닥터 버니', '캠페인 테스트', 1, 'jeo7334Wt202601', '20260402141854001', 'DELIVERY', 'REVIEWING', 5, '/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp', '["/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp","/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp","/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp"]', '이건 테스트임', '2026-06-15 00:00:00', '2026-06-23 00:00:00', '2026-06-24 00:00:00', '2026-06-24 00:00:00', '2026-07-08 00:00:00', '2026-04-23 10:37:11', '2026-06-24 17:45:43'),
 	(14, '202605121348356767', '제품명 테스트', '테스트2', 'ㅁㅇㄹ우ㅏ', 1, 'jeo7334Wt202601', '20260402142217001', 'VISIT', 'REVIEWING', 10, '/uploads/2026/05/12/review/20260512135111209/1778561471360-fpwth31r7.webp', '["/uploads/2026/05/12/review/20260512135540197_d0/1778561740411-henle2u1t.webp","/uploads/2026/05/12/review/20260512140252078_d0/1778562172308-gzmpx16kn.webp"]', 'ㅁㄴㅇㄹㄴㅁㅇㄻㄴㅇㄹㄴㅁㅇㄹ\r\n\r\nㅁㄴㅇㄻㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄻ', '2026-05-12 00:00:00', '2026-05-20 00:00:00', '2026-05-21 00:00:00', '2026-05-21 00:00:00', '2026-05-25 00:00:00', '2026-05-12 13:48:35', '2026-06-09 10:44:11'),
 	(15, '202605121412250150', 'ㅁㄴㅇㅁㄴㅇ', 'loading test', '', 1, 'jeo7334Wt202601', '', 'VISIT', 'DRAFT', 0, '', NULL, '', '2026-05-12 00:00:00', '2026-05-20 00:00:00', '2026-05-21 00:00:00', '2026-05-21 00:00:00', '2026-06-01 00:00:00', '2026-05-12 14:12:25', '2026-05-12 14:12:25');
 
@@ -510,7 +522,7 @@ CREATE TABLE IF NOT EXISTS `review_campaign_application` (
   `campaign_application_code` varchar(50) NOT NULL DEFAULT '0',
   `campaign_code` varchar(50) NOT NULL DEFAULT '0',
   `user_code` varchar(50) NOT NULL DEFAULT '0',
-  `address_code` varchar(50) NOT NULL,
+  `address_code` varchar(50) DEFAULT NULL,
   `status` enum('APPLIED','SELECTED','REJECTED','CANCELLED','SUBMITTED','RETURNED','COMPLETED') NOT NULL DEFAULT 'APPLIED',
   `applied_at` datetime NOT NULL DEFAULT current_timestamp(),
   `selected_at` datetime DEFAULT NULL,
@@ -524,14 +536,15 @@ CREATE TABLE IF NOT EXISTS `review_campaign_application` (
   CONSTRAINT `FK_review_campaign_application_review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_review_campaign_application_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_review_campaign_application_user_address` FOREIGN KEY (`address_code`) REFERENCES `user_address` (`address_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.review_campaign_application:~4 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.review_campaign_application:~5 rows (대략적) 내보내기
 INSERT INTO `review_campaign_application` (`id`, `campaign_application_code`, `campaign_code`, `user_code`, `address_code`, `status`, `applied_at`, `selected_at`, `created_at`, `updated_at`) VALUES
 	(10, '202604211541539460', '202603251523561942', 'jeo7334Wt202601', '202604081121299155', 'COMPLETED', '2026-04-21 15:41:53', NULL, '2026-04-21 15:41:53', '2026-04-22 11:32:16'),
 	(11, '202604231037379557', '202604231037085673', 'jeo7334Wt202601', '202604081121299155', 'CANCELLED', '2026-04-23 10:37:37', NULL, '2026-04-23 10:37:37', '2026-04-27 15:37:02'),
 	(14, '202605121031155241', '202604231037085673', 'jeo7334Wt202601', '202604081121299155', 'CANCELLED', '2026-05-12 10:31:15', NULL, '2026-05-12 10:31:15', '2026-05-12 10:45:34'),
-	(15, '202605121112386489', '202604231037085673', 'jeo7334Wt202601', '202604211324085275', 'CANCELLED', '2026-05-12 11:12:38', NULL, '2026-05-12 11:12:38', '2026-05-12 11:12:56');
+	(15, '202605121112386489', '202604231037085673', 'jeo7334Wt202601', '202604211324085275', 'CANCELLED', '2026-05-12 11:12:38', NULL, '2026-05-12 11:12:38', '2026-05-12 11:12:56'),
+	(16, '202606151558319596', '202604231037085673', 'jeo7507NL202606', '202606151049245747', 'APPLIED', '2026-06-15 15:58:31', NULL, '2026-06-15 15:58:31', '2026-06-15 15:58:31');
 
 -- 테이블 newone4.review_campaign_application_channel 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_application_channel` (
@@ -544,14 +557,15 @@ CREATE TABLE IF NOT EXISTS `review_campaign_application_channel` (
   KEY `FK_review_campaign_application_channel_user_review_channel` (`review_channel_code`),
   CONSTRAINT `FK_campaign_application_code` FOREIGN KEY (`campaign_application_code`) REFERENCES `review_campaign_application` (`campaign_application_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_review_campaign_application_channel_user_review_channel` FOREIGN KEY (`review_channel_code`) REFERENCES `user_review_channel` (`review_channel_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.review_campaign_application_channel:~4 rows (대략적) 내보내기
 INSERT INTO `review_campaign_application_channel` (`id`, `campaign_application_channel_code`, `campaign_application_code`, `review_channel_code`) VALUES
 	(3, '202604211541532951', '202604211541539460', '202604101108336720'),
 	(4, '202604231037384646', '202604231037379557', '202604091524092907'),
 	(7, '202605121031161263', '202605121031155241', '202604281407109012'),
-	(8, '202605121112400853', '202605121112386489', '202604281407109012');
+	(8, '202605121112400853', '202605121112386489', '202604281407109012'),
+	(9, '202606151558314044', '202606151558319596', '202606111054202320');
 
 -- 테이블 newone4.review_campaign_application_delivery 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_application_delivery` (
@@ -636,13 +650,13 @@ CREATE TABLE IF NOT EXISTS `review_campaign_channel` (
   KEY `FK_review_campaign_channel_review_campaign_channel_view` (`channel_code`),
   CONSTRAINT `FK__review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_review_campaign_channel_review_campaign_channel_view` FOREIGN KEY (`channel_code`) REFERENCES `review_campaign_channel_view` (`channel_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.review_campaign_channel:~3 rows (대략적) 내보내기
 INSERT INTO `review_campaign_channel` (`id`, `campaign_code`, `channel_code`) VALUES
 	(52, '202603251523561942', '202603171602001'),
-	(56, '202604231037085673', '202603171603001'),
-	(79, '202605121348356767', '202603171602001');
+	(79, '202605121348356767', '202603171602001'),
+	(80, '202604231037085673', '202603171602001');
 
 -- 테이블 newone4.review_campaign_channel_view 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_channel_view` (
@@ -706,7 +720,7 @@ CREATE TABLE IF NOT EXISTS `review_campaign_mission` (
 -- 테이블 데이터 newone4.review_campaign_mission:~4 rows (대략적) 내보내기
 INSERT INTO `review_campaign_mission` (`id`, `campaign_code`, `title_guide`, `content_guide`, `hashtags`, `mandatory_keyword`, `optional_keyword`, `min_photo_count`, `min_text_length`) VALUES
 	(7, '202603251523561942', '이것 저것 그것 베이비', '1. 이것에 대해 작성해주세요\n2. 링크 연결', '와바미뷰티,뷰러,파데', '와바미뷰티,뷰러,파데', '필수템', 10, 1000),
-	(8, '202604231037085673', '', '1. 제품 이미지 및 반려동물이 먹는 이미지 포함 최소 5장 이상\n2. 이미지에 반려동물이 잘 먹는 이미지 2장 이상 필수 포함\n3. 긍정적인 후기 작성', '와바미,닥터버니,티모시,티모시사료,토끼사료', '', '', 5, 500),
+	(8, '202604231037085673', '필수키워드 + 제품명을 조합한 제목으로 만들어주세요.\n선택키워드는 선택사항으로 반드시 넣어야 하는 키워드는 아닙니다.', '1. 제품 이미지 및 반려동물이 먹는 이미지 포함 최소 5장 이상\n2. 이미지에 반려동물이 잘 먹는 이미지 2장 이상 필수 포함\n3. 긍정적인 후기 작성', '와바미,닥터버니,티모시,티모시사료,토끼사료', '', '', 5, 500),
 	(10, '202605121348356767', 'ㅁㄴㅇㄹ', 'ㅁㄴㅇㄻㄴㅇㄹ', 'ㅁㄴㄹ,ㅇㄹ,ㄹ,ㄹㅁㄴㅇㄹ,ㅁㄴㅇㄹ', '', '', 10, 1000),
 	(11, '202605121412250150', '', '', '', '', '', 10, 1000);
 
@@ -747,14 +761,14 @@ CREATE TABLE IF NOT EXISTS `review_campaign_reward` (
   KEY `FK_review_campaign_reward_review_campaign` (`campaign_code`),
   KEY `reward_code` (`reward_code`),
   CONSTRAINT `FK_review_campaign_reward_review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.review_campaign_reward:~4 rows (대략적) 내보내기
 INSERT INTO `review_campaign_reward` (`id`, `reward_code`, `campaign_code`, `reward_type`, `name`, `description`, `value`, `quantity`) VALUES
 	(45, '202604211322287549', '202603251523561942', 'PRODUCT', '와바미 파데 50g', '와바미 파데 21호, 23호 중 택 1', 0, 1),
-	(48, '202605111635370766', '202604231037085673', 'PRODUCT', '와바미 닥터버니 티모시 베이직 1kg', '티모시가 주 성분으로 만든 토끼 사료', 0, 1),
 	(64, '202605121412280799', '202605121412250150', 'PRODUCT', '', '', 0, 0),
-	(66, '202605121414128051', '202605121348356767', 'PRODUCT', 'ㅁㄴㅇㄹ', 'ㅁㅇㄹ', 0, 1);
+	(66, '202605121414128051', '202605121348356767', 'PRODUCT', 'ㅁㄴㅇㄹ', 'ㅁㅇㄹ', 0, 1),
+	(67, '202606151556254815', '202604231037085673', 'PRODUCT', '와바미 닥터버니 티모시 베이직 1kg', '티모시가 주 성분으로 만든 토끼 사료', 0, 1);
 
 -- 테이블 newone4.review_campaign_reward_option 구조 내보내기
 CREATE TABLE IF NOT EXISTS `review_campaign_reward_option` (
@@ -810,6 +824,18 @@ CREATE TABLE IF NOT EXISTS `shop_delivery_setting` (
 INSERT INTO `shop_delivery_setting` (`id`, `day_delivery_time`, `day_delivery_impassable`, `delivery_method`, `basic_delivery_price`, `order_standard`, `island_price`) VALUES
 	(1, '12', '"[\\"weekends\\",\\"holidays\\",\\"accHolidays\\"]"', 'PRICE', 3500, 50000, NULL);
 
+-- 테이블 newone4.shop_order_setting 구조 내보내기
+CREATE TABLE IF NOT EXISTS `shop_order_setting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `bank_auto_cancel_days` int(11) NOT NULL DEFAULT 0 COMMENT '주문 후 bank_auto_cancel_days 일 후 자동 취소',
+  `order_auto_complete_days` int(11) NOT NULL COMMENT '배송 완료 후 order_auto_complete_days 일 후 자동 완료',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.shop_order_setting:~1 rows (대략적) 내보내기
+INSERT INTO `shop_order_setting` (`id`, `bank_auto_cancel_days`, `order_auto_complete_days`) VALUES
+	(1, 3, 7);
+
 -- 테이블 newone4.user 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user` (
   `user_code` varchar(50) NOT NULL,
@@ -830,7 +856,28 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- 테이블 데이터 newone4.user:~1 rows (대략적) 내보내기
 INSERT INTO `user` (`user_code`, `email`, `name`, `phone`, `profile`, `password`, `role`, `status`, `marketingAgree`, `created_at`, `deleted_at`, `last_login_at`) VALUES
 	('jeo7334Wt202601', 'jeongkey3317@naver.com', '민정기', '01065513317', NULL, '$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6', 'SUPER_ADMIN', 'ACTIVE', b'1', '2026-01-29 12:27:25', NULL, '2026-06-10 11:35:38'),
-	('jeo7507NL202606', 'jeongkey3317@gmail.com', '민정기', '01065513317', NULL, '$2b$10$1a3Zqa2xK5HsUa0Nq.tNuukJOPL/H2UR8RR5a1Op9gycUov2yCOc6', 'USER', 'ACTIVE', b'1', '2026-06-10 12:47:29', NULL, '2026-06-10 12:47:29');
+	('jeo7507NL202606', 'jeongkey3317@gmail.com', '민정기', '01065513317', NULL, '$2b$10$1a3Zqa2xK5HsUa0Nq.tNuukJOPL/H2UR8RR5a1Op9gycUov2yCOc6', 'USER', 'ACTIVE', b'1', '2026-06-10 12:47:29', NULL, '2026-06-24 14:08:09');
+
+-- 테이블 newone4.user_account 구조 내보내기
+CREATE TABLE IF NOT EXISTS `user_account` (
+  `account_code` varchar(50) NOT NULL DEFAULT '',
+  `user_code` varchar(50) NOT NULL DEFAULT '',
+  `holder` varchar(255) NOT NULL DEFAULT '',
+  `number` varchar(255) NOT NULL DEFAULT '',
+  `bank` varchar(255) NOT NULL DEFAULT '',
+  `is_basic` bit(1) NOT NULL DEFAULT b'0',
+  `deleted` bit(1) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`account_code`),
+  KEY `user_code` (`user_code`),
+  CONSTRAINT `FK_user_account_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.user_account:~3 rows (대략적) 내보내기
+INSERT INTO `user_account` (`account_code`, `user_code`, `holder`, `number`, `bank`, `is_basic`, `deleted`, `created_at`) VALUES
+	('202606221544150177', 'jeo7507NL202606', '민정기', '01065513317', '기업은행', b'0', b'1', '2026-06-22 06:44:15'),
+	('202606231659141688', 'jeo7507NL202606', '123123a', '23123123', '신한은행', b'0', b'0', '2026-06-23 07:59:14'),
+	('202606241128114586', 'jeo7507NL202606', '민정기', '01065513317', '기업은행', b'1', b'0', '2026-06-24 02:28:11');
 
 -- 테이블 newone4.user_address 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user_address` (
@@ -851,12 +898,76 @@ CREATE TABLE IF NOT EXISTS `user_address` (
   KEY `FK_user_address_user` (`user_code`),
   KEY `address_code` (`address_code`),
   CONSTRAINT `FK_user_address_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 테이블 데이터 newone4.user_address:~2 rows (대략적) 내보내기
+-- 테이블 데이터 newone4.user_address:~4 rows (대략적) 내보내기
 INSERT INTO `user_address` (`id`, `address_code`, `user_code`, `name`, `postcode`, `address`, `detailAddress`, `phone`, `post_request`, `isDefault`, `deleted`, `created_at`, `updated_at`) VALUES
 	(1, '202604081121299155', 'jeo7334Wt202601', '민정기', '21069', '인천 계양구 오조산로57번길 15(계산동, 명동빌딩)', '721호', '010-6551-3317', NULL, 1, 0, '2026-04-08 11:21:29', '2026-04-09 15:50:32'),
-	(2, '202604211324085275', 'jeo7334Wt202601', '민정기', '21035', '인천 계양구 장제로 878(병방동, 학마을서해.영남아파트)', '111동 1102호', '010-6551-3317', NULL, 0, 0, '2026-04-21 13:24:08', '2026-04-21 13:26:43');
+	(2, '202604211324085275', 'jeo7334Wt202601', '민정기', '21035', '인천 계양구 장제로 878(병방동, 학마을서해.영남아파트)', '111동 1102호', '010-6551-3317', NULL, 0, 0, '2026-04-21 13:24:08', '2026-04-21 13:26:43'),
+	(3, '202606151049245747', 'jeo7507NL202606', '민정기', '21035', '인천 계양구 장제로 878(병방동, 학마을서해.영남아파트)', '111-1102', '010-6551-3317', NULL, NULL, 0, '2026-06-15 10:49:24', '2026-06-15 10:49:24'),
+	(4, '202606151050124334', 'jeo7507NL202606', '민정기', '21035', '인천 계양구 장제로 878(병방동, 학마을서해.영남아파트)', '111-1102', '010-6551-3317', NULL, NULL, 0, '2026-06-15 10:50:12', '2026-06-15 10:50:12');
+
+-- 테이블 newone4.user_point 구조 내보내기
+CREATE TABLE IF NOT EXISTS `user_point` (
+  `point_code` varchar(50) NOT NULL,
+  `user_code` varchar(50) NOT NULL,
+  `current_point` int(11) NOT NULL DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`point_code`),
+  KEY `user_code` (`user_code`),
+  CONSTRAINT `FK_user_point_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.user_point:~2 rows (대략적) 내보내기
+INSERT INTO `user_point` (`point_code`, `user_code`, `current_point`, `updated_at`) VALUES
+	('202606231153021123', 'jeo7334Wt202601', 0, '2026-06-23 02:53:46'),
+	('20260623120024311574', 'jeo7507NL202606', 30000, '2026-06-24 05:08:26');
+
+-- 테이블 newone4.user_point_history 구조 내보내기
+CREATE TABLE IF NOT EXISTS `user_point_history` (
+  `history_code` varchar(50) NOT NULL,
+  `user_code` varchar(50) NOT NULL,
+  `amount` int(11) NOT NULL DEFAULT 0,
+  `balance` int(11) NOT NULL DEFAULT 0 COMMENT '지급 또는 차감 이후 최종 잔액',
+  `type` enum('EARN','PAYOUT','PAYOUT_CANCEL','MINUS') NOT NULL DEFAULT 'EARN' COMMENT 'EARN - 지급, PAYOUT - 출금, PAYOUT_CANCEL - 출금 반려로 인한 복구',
+  `payout_code` varchar(50) DEFAULT NULL,
+  `descript` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`history_code`),
+  KEY `user_code` (`user_code`),
+  KEY `payout_cde` (`payout_code`) USING BTREE,
+  CONSTRAINT `FK_user_point_history_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_user_point_history_user_point_payout` FOREIGN KEY (`payout_code`) REFERENCES `user_point_payout` (`payout_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.user_point_history:~5 rows (대략적) 내보내기
+INSERT INTO `user_point_history` (`history_code`, `user_code`, `amount`, `balance`, `type`, `payout_code`, `descript`, `created_at`) VALUES
+	('202606231629441778', 'jeo7507NL202606', 10000, 10000, 'EARN', NULL, 'test', '2026-06-23 07:29:44'),
+	('202606231630492118', 'jeo7507NL202606', 10000, 20000, 'EARN', NULL, 'test2', '2026-06-23 07:30:49'),
+	('202606231631079568', 'jeo7507NL202606', 10000, 30000, 'EARN', NULL, 'test3', '2026-06-23 07:31:07'),
+	('202606231659491290', 'jeo7507NL202606', 10000, 40000, 'EARN', NULL, 'test', '2026-06-23 07:59:49'),
+	('202606241408263896', 'jeo7507NL202606', 10000, 30000, 'PAYOUT', '202606241408267240', '출금 요청', '2026-06-24 05:08:26');
+
+-- 테이블 newone4.user_point_payout 구조 내보내기
+CREATE TABLE IF NOT EXISTS `user_point_payout` (
+  `payout_code` varchar(50) NOT NULL,
+  `user_code` varchar(50) NOT NULL,
+  `amount` int(11) NOT NULL DEFAULT 0 COMMENT '출금 신청 금액',
+  `account_code` varchar(50) NOT NULL DEFAULT '0',
+  `status` enum('REQUEST','COMPLETED','REJECTED') NOT NULL DEFAULT 'REQUEST',
+  `reject_description` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `processed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`payout_code`),
+  KEY `user_code` (`user_code`),
+  KEY `account_code` (`account_code`),
+  CONSTRAINT `FK_user_point_payout_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `FK_user_point_payout_user_account` FOREIGN KEY (`account_code`) REFERENCES `user_account` (`account_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 테이블 데이터 newone4.user_point_payout:~1 rows (대략적) 내보내기
+INSERT INTO `user_point_payout` (`payout_code`, `user_code`, `amount`, `account_code`, `status`, `reject_description`, `created_at`, `processed_at`) VALUES
+	('202606241408267240', 'jeo7507NL202606', 10000, '202606241128114586', 'COMPLETED', '', '2026-06-24 05:08:26', '2026-06-24 07:52:26');
 
 -- 테이블 newone4.user_review_channel 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user_review_channel` (
@@ -880,7 +991,7 @@ CREATE TABLE IF NOT EXISTS `user_review_channel` (
   KEY `review_channel_code` (`review_channel_code`),
   CONSTRAINT `FK_user_review_channel_review_campaign_channel_view` FOREIGN KEY (`channel_code`) REFERENCES `review_campaign_channel_view` (`channel_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_user_review_channel_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 테이블 데이터 newone4.user_review_channel:~6 rows (대략적) 내보내기
 INSERT INTO `user_review_channel` (`id`, `review_channel_code`, `channel_code`, `user_code`, `channel_url`, `meta_image`, `meta_title`, `meta_description`, `follower_count`, `deleted`, `certifed`, `reject_descript`, `created_at`, `updated_at`) VALUES
@@ -889,7 +1000,8 @@ INSERT INTO `user_review_channel` (`id`, `review_channel_code`, `channel_code`, 
 	(3, '202604101108336720', '202603171602001', 'jeo7334Wt202601', 'https://blog.naver.com/jeongkey3317', 'https://blogpfthumb-phinf.pstatic.net/20210503_171/jeongkey3317_1620019703837UAq6n_JPEG/profileImage.jpg?type=f204_204', 'Jeonkey\'s LAB : 네이버 블로그', '100% 주관적 시점', NULL, 0, 'REVIEWING', NULL, '2026-04-10 02:08:33', '2026-04-17 01:36:32'),
 	(4, '202604131023015944', '202603171602001', 'jeo7334Wt202601', 'https://blog.naver.com/jeongnim33', 'https://ssl.pstatic.net/static/blog/icon/og_270x270.png', 'jeongnim33 : 네이버 블로그', '당신의 모든 기록을 담는 공간', NULL, 1, 'REVIEWING', NULL, '2026-04-13 01:23:01', '2026-04-27 05:55:34'),
 	(5, '202604281407109012', '202603171603001', 'jeo7334Wt202601', 'https://www.instagram.com/jeongkey_moa', 'https://scontent-icn2-1.cdninstagram.com/v/t51.2885-19/74889142_802324103538046_8304126774971727872_n.jpg?stp=dst-jpg_s100x100_tt6&_nc_cat=104&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=CYpxz3T4BFYQ7kNvwF5Lnuf&_nc_oc=AdpIf258jiEQG5Qh6Xw_IimBCqzJDRAakrM4iwVG_Ds-hz10N9a_jeIsmCd08oxAvb8&_nc_zt=24&_nc_ht=scontent-icn2-1.cdninstagram.com&_nc_ss=7c689&oh=00_Af5V_QDjkcHVqyi2grALiokN7pkBz0hBWD1HJhXw6PfBBA&oe=6A0852D9', 'jeongkey (@jeongkey_moa)', '63 Followers, 76 Following, 24 Posts - See Instagram photos and videos from jeongkey (@jeongkey_moa)', 63, 0, 'REVIEWING', NULL, '2026-04-28 05:07:10', '2026-05-12 01:14:56'),
-	(6, '202605121114238207', '202603171603001', 'jeo7334Wt202601', 'https://www.instagram.com/incheonutd', 'https://scontent-icn2-1.cdninstagram.com/v/t51.82787-19/632410063_18509333083079854_5486903995777115729_n.jpg?stp=dst-jpg_s100x100_tt6&_nc_cat=111&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=DPugCUTnvTwQ7kNvwGAI1vk&_nc_oc=AdoK7JZzl2GTAaDb3OH9HPPlGuaV2DJKhj8MvE9vhXfngEaKoWGFLDYp7ShdkxFXWj0&_nc_zt=24&_nc_ht=scontent-icn2-1.cdninstagram.com&_nc_gid=fOaBDfq-DJTIgEscmTAb8w&_nc_ss=7c689&oh=00_Af5d_hijLmWsU4-WGjlysAdK3avZX3g9-9Q2V8rY8zlt8g&oe=6A08739F', '인천유나이티드 프로축구단 (@incheonutd)', '57K Followers, 85 Following, 13K Posts - See Instagram photos and videos from 인천유나이티드 프로축구단 (@incheonutd)', 57000, 1, 'REVIEWING', NULL, '2026-05-12 02:14:23', '2026-05-12 02:14:31');
+	(6, '202605121114238207', '202603171603001', 'jeo7334Wt202601', 'https://www.instagram.com/incheonutd', 'https://scontent-icn2-1.cdninstagram.com/v/t51.82787-19/632410063_18509333083079854_5486903995777115729_n.jpg?stp=dst-jpg_s100x100_tt6&_nc_cat=111&ccb=7-5&_nc_sid=bf7eb4&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=DPugCUTnvTwQ7kNvwGAI1vk&_nc_oc=AdoK7JZzl2GTAaDb3OH9HPPlGuaV2DJKhj8MvE9vhXfngEaKoWGFLDYp7ShdkxFXWj0&_nc_zt=24&_nc_ht=scontent-icn2-1.cdninstagram.com&_nc_gid=fOaBDfq-DJTIgEscmTAb8w&_nc_ss=7c689&oh=00_Af5d_hijLmWsU4-WGjlysAdK3avZX3g9-9Q2V8rY8zlt8g&oe=6A08739F', '인천유나이티드 프로축구단 (@incheonutd)', '57K Followers, 85 Following, 13K Posts - See Instagram photos and videos from 인천유나이티드 프로축구단 (@incheonutd)', 57000, 1, 'REVIEWING', NULL, '2026-05-12 02:14:23', '2026-05-12 02:14:31'),
+	(7, '202606111054202320', '202603171602001', 'jeo7507NL202606', 'https://blog.naver.com/jeongkey3317', 'https://blogpfthumb-phinf.pstatic.net/20210503_171/jeongkey3317_1620019703837UAq6n_JPEG/profileImage.jpg?type=f204_204', 'Jeonkey\'s LAB : 네이버 블로그', '100% 주관적 시점', NULL, 0, 'REVIEWING', NULL, '2026-06-11 01:54:20', '2026-06-11 01:54:20');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

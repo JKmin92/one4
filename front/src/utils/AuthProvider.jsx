@@ -15,14 +15,17 @@ export function AuthProvider({ children }) {
             const url = type === 'admin' ? '/admin/user/signIn' : '/user/signIn';
             const res = await axiosInstance.post(url, credentials);
             if (res.status === 200) {
+                if (res.data.success === false) {
+                    throw new Error(res.data.error || '로그인 실패 : 확인되는 계정이 없습니다.');
+                }
                 const { accessToken: newAccessToken, ...userData } = res.data;
                 setUser(userData);
                 setAccessToken(newAccessToken);
                 return userData;
             }
             return null;
-        } catch {
-            throw new Error('로그인 실패 : 확인되는 계정이 없습니다.');
+        } catch (error) {
+            throw error;
         }
     }, []);
 
@@ -42,15 +45,19 @@ export function AuthProvider({ children }) {
             const res = await axiosInstance.post('/user/refresh');
             if (res.status === 200) {
                 const { accessToken: newAccessToken } = res.data;
-                setAccessToken(newAccessToken);
+                if (newAccessToken) {
+                    setAccessToken(newAccessToken);
 
-                const userRes = await axiosInstance.get('/user/', {
-                    headers: { Authorization: `Bearer ${newAccessToken}` }
-                });
-                setUser(userRes.data);
-                return newAccessToken;
+                    const userRes = await axiosInstance.get('/user/', {
+                        headers: { Authorization: `Bearer ${newAccessToken}` }
+                    });
+                    setUser(userRes.data);
+                    return newAccessToken;
+                }
             }
 
+            setUser(null);
+            setAccessToken(null);
             return null;
         } catch {
             logout();
