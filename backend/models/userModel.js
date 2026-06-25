@@ -31,6 +31,21 @@ export const getUserProfile = async (user_code) => {
     return rows[0];
 }
 
+export const updateUserProfile = async (data) => {
+    let sql = `UPDATE user SET name = ?, phone = ?, marketingAgree = ?`;
+    let params = [data.name, data.phone, data.marketingAgree];
+
+    if (data.profile !== undefined) {
+        sql += `, profile = ?`;
+        params.push(data.profile);
+    }
+
+    sql += ` WHERE user_code = ?`;
+    params.push(data.user_code);
+
+    await db.query(sql, params);
+}
+
 export const getUserAddress = async (user_code) => {
     const [rows] = await db.query(`SELECT * FROM user_address WHERE user_code = ? AND deleted != 1`, [user_code]);
     return rows;

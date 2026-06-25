@@ -26,7 +26,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/admin/shop/product', adminProductRoutes);
@@ -42,5 +42,15 @@ app.use('/api/admin/review/campaign', adminReviewCampaignRoutes);
 app.use('/api/admin/member/user', adminMemberUserRoutes);
 app.use('/api/utils', utilRoutes);
 app.use('/api/admin/shop/order', adminOrderRoutes);
+
+app.use((err, req, res, next) => {
+    console.error('🔥 Server Error:', err);
+
+    res.status(500).json({
+        success: false,
+        message: '서버 내부 오류가 발생했습니다.',
+        error: err.message
+    });
+});
 
 export default app;

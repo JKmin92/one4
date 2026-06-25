@@ -16,10 +16,12 @@ router.get('/productInquiryList/:user_code', userController.getUserProductInquir
 router.get('/reviewCampaignApplicationChannelList/:campaign_application_code', userController.getReviewCampaignApplicationChannelList);
 router.get('/address/:address_code', userController.getUserAddress);
 
-router.get('/point/:user_code', userController.getUserPoint);
+
 router.get('/point/history/:user_code', userController.getUserPointHistory);
+router.get('/point/payout/list', userController.getUserPointPayoutList);
 router.get('/point/payout/:user_code', userController.getUserPointPayout);
-router.put('/point/:user_code', userController.updateUserPoint);
 router.put('/point/payout/:payout_code', userController.updateUserPointPayout);
+router.get('/point/:user_code', userController.getUserPoint);
+router.put('/point/:user_code', userController.updateUserPoint);
 
 export default router;

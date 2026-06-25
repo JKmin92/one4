@@ -188,9 +188,30 @@ export const deleteProductOrderBasket = async (order_basket_code, user_code) => 
 }
 
 export const checkProductOrderBasket = async (data) => {
-    const sql = `SELECT COUNT(*) AS count FROM product_order_basket WHERE product_code = ? AND product_option_code = ? AND user_code = ?`;
-    const [rows] = await db.query(sql, [data.product_code, data.product_option_code, data.user_code]);
+    let sql;
+    let params;
+    if (data.product_option_code) {
+        sql = `SELECT COUNT(*) AS count FROM product_order_basket WHERE product_code = ? AND product_option_code = ? AND user_code = ?`;
+        params = [data.product_code, data.product_option_code, data.user_code];
+    } else {
+        sql = `SELECT COUNT(*) AS count FROM product_order_basket WHERE product_code = ? AND product_option_code IS NULL AND user_code = ?`;
+        params = [data.product_code, data.user_code];
+    }
+    const [rows] = await db.query(sql, params);
     return rows[0].count;
+}
+
+export const addQuantityToBasket = async (data) => {
+    let sql;
+    let params;
+    if (data.product_option_code) {
+        sql = `UPDATE product_order_basket SET quantity = quantity + ? WHERE product_code = ? AND product_option_code = ? AND user_code = ?`;
+        params = [data.quantity, data.product_code, data.product_option_code, data.user_code];
+    } else {
+        sql = `UPDATE product_order_basket SET quantity = quantity + ? WHERE product_code = ? AND product_option_code IS NULL AND user_code = ?`;
+        params = [data.quantity, data.product_code, data.user_code];
+    }
+    await db.query(sql, params);
 }
 
 export const getProductOrderBasketCount = async (user_code) => {

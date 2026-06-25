@@ -77,3 +77,7 @@ export const updateUserPointPayout = async (data) => {
         await model.updateUserPoint(data.user_code, userPointPayout.amount, 'CANCEL');
     }
 }
+
+export const getUserPointPayoutList = async () => {
+    return await model.getUserPointPayoutList();
+}

@@ -220,3 +220,13 @@ export const getUserPointPayoutOne = async (payout_code) => {
     const [rows] = await db.query(`SELECT * FROM user_point_payout WHERE payout_code = ?`, [payout_code]);
     return rows[0] || null;
 }
+
+export const getUserPointPayoutList = async () => {
+    const sql = `SELECT pu.*, u.name, ua.bank, ua.holder, ua.number
+        FROM user_point_payout pu 
+        LEFT JOIN user u ON pu.user_code = u.user_code
+        LEFT JOIN user_account ua ON pu.account_code = ua.account_code
+        ORDER BY pu.created_at DESC`;
+    const [rows] = await db.query(sql);
+    return rows;
+}

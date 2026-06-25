@@ -1,4 +1,4 @@
-import { Box, Button, Editable, Heading, HStack, IconButton, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Box, Button, Editable, Heading, HStack, IconButton, Image, Stack, StackSeparator, Text } from "@chakra-ui/react";
 import { LuCheck, LuChevronRight, LuPencilLine, LuUserRound, LuX } from "react-icons/lu";
 import { useAuth } from "../../../utils/useAuth";
 import { useEffect, useState } from "react";
@@ -51,9 +51,13 @@ function Info() {
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
             <Stack w="2xl" margin="0 auto" gap="6">
                 <HStack gap="5">
-                    <Box w="100px" h="100px" rounded="full" bg="gray.200" display="flex" alignItems="center" justifyContent="center">
-                        <LuUserRound size="25" />
-                    </Box>
+                    {user.profile ? (
+                        <Image src={user.profile} w="100px" h="100px" rounded="full" />
+                    ) : (
+                        <Box w="100px" h="100px" rounded="full" bg="gray.200" display="flex" alignItems="center" justifyContent="center">
+                            <LuUserRound size="25" />
+                        </Box>
+                    )}
                     <Stack gap="0">
                         <Text fontSize="lg" fontWeight="bold">{user.name}</Text>
                         <Text color="fg.muted">{user.email}</Text>

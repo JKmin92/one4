@@ -42,6 +42,9 @@ function Header() {
             setBasketCount(response.data);
         }
         getBasketCount();
+
+        window.addEventListener('basket_updated', getBasketCount);
+        return () => window.removeEventListener('basket_updated', getBasketCount);
     }, [user]);
 
     return (
@@ -102,7 +105,9 @@ function Header() {
                             <Icon size="md"><LuBell /></Icon>
                             <Menu.Root>
                                 <Menu.Trigger>
-                                    <Avatar.Root><LuUserRound /></Avatar.Root>
+                                    <Avatar.Root>
+                                        {user.profile ? <Avatar.Image src={user.profile} /> : <LuUserRound />}
+                                    </Avatar.Root>
                                 </Menu.Trigger>
                                 <Menu.Positioner>
                                     <Menu.Content>

@@ -565,6 +565,11 @@ function Detail() {
             product_code: product.product_code,
         }));
 
+        if (!user) {
+            navigate('/login', { state: { redirect: '/order', orderData: order, isDirectOrder: true } });
+            return;
+        }
+
         navigate('/order', { state: { orderData: order, isDirectOrder: true } })
     }
 
@@ -575,8 +580,15 @@ function Detail() {
             product_code: product.product_code,
         }));
 
+        if (!user) {
+            navigate('/login', { state: { action: 'add_basket', basketData: basket, redirect: '/cart' } });
+            return;
+        }
+
         try {
             const response = await axiosInstance.post('/shop/product/basket', basket);
+            
+            window.dispatchEvent(new Event('basket_updated'));
 
             if (response.data.code === '201') {
                 toaster.create({ title: '이미 장바구니에 담겨 있습니다.', type: 'warning' });

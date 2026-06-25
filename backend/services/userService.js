@@ -40,6 +40,11 @@ export const getUserProfile = async (user_code) => {
     return await model.getUserProfile(user_code);
 }
 
+export const updateUserProfile = async (data) => {
+    await model.updateUserProfile(data);
+    return await model.getUserProfile(data.user_code);
+}
+
 export const getUserAddress = async (user_code) => {
     return await model.getUserAddress(user_code);
 }

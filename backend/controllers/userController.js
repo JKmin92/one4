@@ -2,6 +2,9 @@ import * as userService from '../services/userService.js';
 import * as tokenModel from '../models/tokenModel.js';
 import jwt from 'jsonwebtoken';
 import { createAccessToken, createRefreshToken } from '../utils/token.js';
+import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
 
 const issueTokens = async (user, res) => {
 
@@ -103,7 +106,6 @@ export const signOut = async (req, res, next) => {
 export const me = (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(user);
     } catch (err) {
         next(err);
@@ -113,8 +115,53 @@ export const me = (req, res, next) => {
 export const getUserProfile = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserProfile(user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const updateUserProfile = async (req, res, next) => {
+    try {
+        const user = req.user;
+        const { name, phone, marketingAgree, profileImage } = req.body;
+        
+        let updateData = {
+            user_code: user.user_code,
+            name,
+            phone,
+            marketingAgree: marketingAgree === 'true' || marketingAgree === true ? 1 : 0
+        };
+
+        if (profileImage === 'DELETED') {
+            updateData.profile = null;
+        }
+
+        if (req.file) {
+            const uploadDir = path.resolve(`public/uploads/${user.user_code}/profile`);
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+
+            const fileName = `${Date.now()}.webp`;
+            const filePath = path.join(uploadDir, fileName);
+
+            await sharp(req.file.buffer)
+                .resize(500, 500, {
+                    fit: 'cover',
+                    position: 'center',
+                    withoutEnlargement: true
+                })
+                .webp({ quality: 80 })
+                .toFile(filePath);
+
+            updateData.profile = `/uploads/${user.user_code}/profile/${fileName}`;
+        }
+
+        const updatedUser = await userService.updateUserProfile(updateData);
+        const newAccessToken = await issueTokens(updatedUser, res);
+
+        res.status(200).json({ ...updatedUser, accessToken: newAccessToken });
     } catch (err) {
         next(err);
     }
@@ -123,7 +170,6 @@ export const getUserProfile = async (req, res, next) => {
 export const getUserAddress = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserAddress(user.user_code));
     } catch (err) {
         next(err);
@@ -133,7 +179,6 @@ export const getUserAddress = async (req, res, next) => {
 export const insertUserAddress = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.insertUserAddress({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);
@@ -143,7 +188,6 @@ export const insertUserAddress = async (req, res, next) => {
 export const updateUserAddress = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.updateUserAddress({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);
@@ -153,7 +197,6 @@ export const updateUserAddress = async (req, res, next) => {
 export const deleteUserAddress = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.deleteUserAddress(req.params.address_code, user.user_code));
     } catch (err) {
         next(err);
@@ -163,7 +206,6 @@ export const deleteUserAddress = async (req, res, next) => {
 export const getUserReviewChannelList = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserReviewChannelList(user.user_code));
     } catch (err) {
         next(err);
@@ -173,7 +215,6 @@ export const getUserReviewChannelList = async (req, res, next) => {
 export const getUserReviewChannel = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserReviewChannel(user.user_code, req.params.review_channel_code));
     } catch (err) {
         next(err);
@@ -183,7 +224,6 @@ export const getUserReviewChannel = async (req, res, next) => {
 export const insertUserReviewChannel = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.insertUserReviewChannel({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);
@@ -193,7 +233,6 @@ export const insertUserReviewChannel = async (req, res, next) => {
 export const deleteUserReviewChannel = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.deleteUserReviewChannel(req.params.review_channel_code, user.user_code));
     } catch (err) {
         next(err);
@@ -203,7 +242,6 @@ export const deleteUserReviewChannel = async (req, res, next) => {
 export const updateUserReviewChannel = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.updateUserReviewChannel({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);
@@ -213,7 +251,6 @@ export const updateUserReviewChannel = async (req, res, next) => {
 export const updatePassword = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.updatePassword(user.user_code, req.body.currentPassword, req.body.newPassword));
     } catch (err) {
         next(err);
@@ -223,7 +260,6 @@ export const updatePassword = async (req, res, next) => {
 export const insertUserAccount = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.insertUserAccount({ ...req.body, user_code: user.user_code }));
     } catch (err) {
         next(err);
@@ -233,7 +269,6 @@ export const insertUserAccount = async (req, res, next) => {
 export const getUserAccountList = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserAccountList(user.user_code));
     } catch (err) {
         next(err);
@@ -243,7 +278,6 @@ export const getUserAccountList = async (req, res, next) => {
 export const deleteUserAccount = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.deleteUserAccount(req.params.account_code, user.user_code));
     } catch (err) {
         next(err);
@@ -253,7 +287,6 @@ export const deleteUserAccount = async (req, res, next) => {
 export const getUserPointHistory = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserPointHistory(user.user_code));
     } catch (err) {
         next(err);
@@ -263,7 +296,6 @@ export const getUserPointHistory = async (req, res, next) => {
 export const getUserPoint = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserPoint(user.user_code));
     } catch (err) {
         next(err);
@@ -273,7 +305,6 @@ export const getUserPoint = async (req, res, next) => {
 export const getUserPointPayoutList = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         res.status(200).json(await userService.getUserPointPayoutList(user.user_code));
     } catch (err) {
         next(err);
@@ -283,7 +314,6 @@ export const getUserPointPayoutList = async (req, res, next) => {
 export const insertUserPointPayout = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user) return res.status(201).send({ message: 'no user' });
         await userService.insertUserPointPayout({ ...req.body, user_code: user.user_code });
         res.status(200).json({ message: 'success' });
     } catch (err) {

@@ -152,3 +152,12 @@ export const updateUserPointPayout = async (req, res, next) => {
         next(e);
     }
 }
+
+export const getUserPointPayoutList = async (req, res, next) => {
+    try {
+        const userPointPayoutList = await userService.getUserPointPayoutList();
+        return res.status(200).json(userPointPayoutList);
+    } catch (e) {
+        next(e);
+    }
+}

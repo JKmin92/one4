@@ -4,6 +4,7 @@ import { useAuth } from "../../utils/useAuth";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toaster } from "../../components/ui/toaster";
+import axiosInstance from "../../utils/api";
 
 function Login() {
 
@@ -22,8 +23,24 @@ function Login() {
         try {
             const userData = await login({email:data.email, password:data.password});
             if(userData) {
-                const redirectUrl = location.state?.redirect || '/';
-                navigate(redirectUrl, { replace: true });
+                const state = location.state || {};
+                
+                if (state.action === 'add_basket' && state.basketData) {
+                    try {
+                        const response = await axiosInstance.post('/shop/product/basket', state.basketData);
+                        window.dispatchEvent(new Event('basket_updated'));
+                        if (response.data.code === '201') {
+                            toaster.create({ title: '이미 장바구니에 담겨 있습니다.', type: 'warning' });
+                        } else {
+                            toaster.create({ title: '장바구니에 추가되었습니다.', type: 'success' });
+                        }
+                    } catch (error) {
+                        toaster.create({ title: '장바구니에 추가 실패했습니다.', type: 'error' });
+                    }
+                }
+
+                const redirectUrl = state.redirect || '/';
+                navigate(redirectUrl, { replace: true, state: state });
             }
         } catch {
             toaster.create({title:'로그인에 실패했습니다.', type:'error', closable:true});

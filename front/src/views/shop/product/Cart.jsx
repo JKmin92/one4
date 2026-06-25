@@ -109,6 +109,7 @@ function Cart() {
     const removeBasket = async (order_basket_code) => {
         await axiosInstance.delete(`/shop/product/basket/${order_basket_code}`);
         setOrderBasketList(prev => prev.filter((basket) => basket.order_basket_code !== order_basket_code));
+        window.dispatchEvent(new Event('basket_updated'));
     }
 
     const changeSelectBasket = (order_basket_code, status) => {
@@ -171,11 +172,14 @@ function Cart() {
     }
 
     const removeSelectedBasket = async () => {
-        selectedBasketList.map(async (selectedBasket) => {
+        await Promise.all(selectedBasketList.map(async (selectedBasket) => {
             await axiosInstance.delete(`/shop/product/basket/${selectedBasket.order_basket_code}`);
-            setOrderBasketList(prev => prev.filter((basket) => basket.order_basket_code !== selectedBasket.order_basket_code));
-            setSelectedBasketList(prev => prev.filter((basket) => basket.order_basket_code !== selectedBasket.order_basket_code));
-        });
+        }));
+        
+        const removedCodes = selectedBasketList.map(b => b.order_basket_code);
+        setOrderBasketList(prev => prev.filter(basket => !removedCodes.includes(basket.order_basket_code)));
+        setSelectedBasketList([]);
+        window.dispatchEvent(new Event('basket_updated'));
     }
 
     const onOrder = () => {

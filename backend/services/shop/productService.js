@@ -129,20 +129,18 @@ export const getProductById = async (product_code) => {
 };
 
 export const createProductOrderBasket = async (dataArray) => {
-    let addedCount = 0;
-
     for (const data of dataArray) {
+        // 'unique'를 null로 먼저 변환하여 DB 조회 및 저장에 사용
+        data.product_option_code = data.product_option_code === 'unique' ? null : data.product_option_code;
+        
         const count = await ProductModel.checkProductOrderBasket(data);
         if (count === 0) {
             const order_basket_code = generateUniqueId();
-            data.product_option_code = data.product_option_code === 'unique' ? null : data.product_option_code;
             await ProductModel.createProductOrderBasket({ ...data, order_basket_code });
-            addedCount++;
+        } else {
+            // 이미 존재하면 수량 누적
+            await ProductModel.addQuantityToBasket(data);
         }
-    }
-
-    if (addedCount === 0) {
-        return { message: 'already', code: '201', success: false };
     }
 
     return { message: 'success', code: '200', success: true };
