@@ -266,3 +266,15 @@ export const getBasketProduct = async (basketCodes) => {
     const orderProductList = await ProductModel.getBasketProductInfo(basketCodes);
     return getOrderProduct(orderProductList);
 }
+
+export const upsertRecentlyViewed = async (data) => {
+    await ProductModel.upsertRecentlyViewed(data);
+};
+
+export const syncRecentlyViewed = async (user_code, list) => {
+    await ProductModel.syncRecentlyViewed(user_code, list);
+};
+
+export const getRecentlyViewed = async (user_code, limit) => {
+    return await ProductModel.getRecentlyViewed(user_code, limit);
+};

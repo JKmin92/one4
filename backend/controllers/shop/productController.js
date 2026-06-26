@@ -132,3 +132,45 @@ export const getBasketProductInfo = async (req, res, next) => {
         next(error);
     }
 };
+
+export const recordProductAction = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            // 비회원일 경우 에러 대신 성공 반환 (로컬에만 저장)
+            return res.status(200).json({ success: true, message: 'guest' });
+        }
+        
+        const data = { ...req.body, user_code: user.user_code };
+        await ProductService.upsertRecentlyViewed(data);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const syncRecentProducts = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(401).send({ message: 'no user' });
+        
+        const { list } = req.body;
+        await ProductService.syncRecentlyViewed(user.user_code, list);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getRecentProducts = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(401).send({ message: 'no user' });
+        
+        const limit = req.query.limit || 50;
+        const products = await ProductService.getRecentlyViewed(user.user_code, limit);
+        res.status(200).json(products);
+    } catch (error) {
+        next(error);
+    }
+};

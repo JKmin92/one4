@@ -13,3 +13,21 @@ export const authMiddleware = (req, res, next) => {
         return res.status(401).send({ error: 'Invalid Token' });
     }
 }
+
+export const optionalAuthMiddleware = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+    if (!token || token === 'null' || !authHeader.startsWith('Bearer ')) {
+        req.user = null;
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        req.user = decoded.user || decoded;
+        next();
+    } catch {
+        req.user = null;
+        next();
+    }
+}

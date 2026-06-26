@@ -216,25 +216,25 @@ function Main() {
             )}
 
             <Stack separator={<StackSeparator />}>
-                <Link href="#" display="flex" justifyContent="space-between" w="full">
+                <Link href="/mypage/order" display="flex" justifyContent="space-between" w="full">
                     <Stack>
                         <Text fontSize="sm">상품 주문 내역</Text>
                     </Stack>
                     <LuChevronRight size="18" />
                 </Link>
-                <Link href="#" display="flex" justifyContent="space-between" w="full">
+                <Link href="/mypage/order?status=CLAIM" display="flex" justifyContent="space-between" w="full">
                     <Stack>
                         <Text fontSize="sm">취소/반품/교환 내역</Text>
                     </Stack>
                     <LuChevronRight size="18" />
                 </Link>
-                <Link href="#" display="flex" justifyContent="space-between" w="full">
+                <Link href="/mypage/recent" display="flex" justifyContent="space-between" w="full">
                     <Stack>
                         <Text fontSize="sm">최근 본 상품</Text>
                     </Stack>
                     <LuChevronRight size="18" />
                 </Link>
-                <Link href="#" display="flex" justifyContent="space-between" w="full">
+                <Link href="/mypage/review" display="flex" justifyContent="space-between" w="full">
                     <Stack>
                         <Text fontSize="sm">리뷰 캠페인 리스트</Text>
                     </Stack>

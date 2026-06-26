@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { LuChevronRight, LuDot, LuShoppingCart } from "react-icons/lu";
 import { formatDate, formatDateYMD, formatNumber } from "../../../../utils/simpleUtils";
+import { useSearchParams } from "react-router-dom";
 
 function OrderList() {
 
     const [orderList, setOrderList] = useState([]);
+    const [searchParams] = useSearchParams();
+    const statusFilter = searchParams.get('status');
 
     useEffect(() => {
         getOrderList();
@@ -64,7 +67,7 @@ function OrderList() {
                         <Status.Indicator /> 구매 확정
                     </Status.Root>
                 )
-            case 'CANCELED':
+            case 'CANCEL':
                 return (
                     <Status.Root colorPalette="orange">
                         <Status.Indicator /> 주문 취소
@@ -107,28 +110,30 @@ function OrderList() {
         }
     }
 
+    const displayList = statusFilter ? orderList.filter(order => order.status === statusFilter) : orderList;
+
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
-            <Heading fontSize="sm" textAlign="left">주문 내역</Heading>
-            {(!orderList || orderList.length <= 0) ? (
+            <Heading fontSize="sm" textAlign="left">{statusFilter === 'CLAIM' ? '취소/반품/교환 내역' : '주문 내역'}</Heading>
+            {(!displayList || displayList.length <= 0) ? (
                 <EmptyState.Root>
                     <EmptyState.Content>
                         <EmptyState.Indicator><LuShoppingCart /></EmptyState.Indicator>
                         <VStack textAlign="center">
-                            <EmptyState.Title>주문 내역이 없습니다.</EmptyState.Title>
+                            <EmptyState.Title>내역이 없습니다.</EmptyState.Title>
                             <EmptyState.Description>
-                                주문 내역이 없습니다.
+                                조회된 내역이 없습니다.
                             </EmptyState.Description>
                         </VStack>
                     </EmptyState.Content>
                 </EmptyState.Root>
             ) : (
                 <Stack gap="10">
-                    {orderList.map((order) => (
+                    {displayList.map((order) => (
                         <Stack key={order.order_code} shadow="md" rounded="md" p="20px" gap="5">
                             <HStack justifyContent="space-between">
                                 <Text fontWeight="medium">{formatDateYMD(order.created_at)} 주문</Text>
-                                <Link href={`/mypage/order/${order.order_code}`} fontSize="sm">주문 상세 보기 <LuChevronRight /></Link>
+                                <Link href={`/mypage/order/${order.order_code}`} fontSize="sm">상세 보기 <LuChevronRight /></Link>
                             </HStack>
 
                             <Stack direction="row" justifyContent="space-between" alignItems="center" gap="10">

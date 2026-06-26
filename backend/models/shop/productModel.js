@@ -317,3 +317,56 @@ export const getDeliverySetting = async () => {
     const [rows] = await db.query('SELECT * FROM shop_delivery_setting WHERE id = 1');
     return rows[0];
 };
+
+export const upsertRecentlyViewed = async (data) => {
+    const sql = `
+        INSERT INTO user_recently_viewed (user_code, product_code, viewed_at, dwell_time_seconds, time_to_cart_seconds, time_to_buy_seconds)
+        VALUES (?, ?, NOW(), ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+            viewed_at = NOW(),
+            dwell_time_seconds = dwell_time_seconds + VALUES(dwell_time_seconds),
+            time_to_cart_seconds = COALESCE(VALUES(time_to_cart_seconds), time_to_cart_seconds),
+            time_to_buy_seconds = COALESCE(VALUES(time_to_buy_seconds), time_to_buy_seconds)
+    `;
+    const params = [
+        data.user_code, 
+        data.product_code, 
+        data.dwell_time_seconds || 0, 
+        data.time_to_cart_seconds || null, 
+        data.time_to_buy_seconds || null
+    ];
+    await db.query(sql, params);
+};
+
+export const syncRecentlyViewed = async (user_code, list) => {
+    if (!list || list.length === 0) return;
+    
+    for (const item of list) {
+        await upsertRecentlyViewed({
+            user_code,
+            product_code: item.product_code,
+            dwell_time_seconds: item.dwell_time_seconds || 0,
+            time_to_cart_seconds: item.time_to_cart_seconds || null,
+            time_to_buy_seconds: item.time_to_buy_seconds || null
+        });
+    }
+};
+
+export const getRecentlyViewed = async (user_code, limit = 50) => {
+    const sql = `
+        SELECT urv.*, p.name as product_name, p.price as product_price,
+               (
+                   SELECT pi.url 
+                   FROM product_image pi 
+                   WHERE pi.product_code = p.product_code AND pi.is_main = 1 
+                   LIMIT 1
+               ) as main_image
+        FROM user_recently_viewed urv
+        JOIN product p ON urv.product_code = p.product_code
+        WHERE urv.user_code = ?
+        ORDER BY urv.viewed_at DESC
+        LIMIT ?
+    `;
+    const [rows] = await db.query(sql, [user_code, parseInt(limit, 10)]);
+    return rows;
+};

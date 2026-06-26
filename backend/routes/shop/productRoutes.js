@@ -1,6 +1,6 @@
 import express from "express";
 import * as ProductController from "../../controllers/shop/productController.js";
-import { authMiddleware } from '../../middleware/authMiddleware.js';
+import { authMiddleware, optionalAuthMiddleware } from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -17,6 +17,11 @@ router.delete("/basket/:id", authMiddleware, ProductController.deleteProductOrde
 
 router.post("/order/product", authMiddleware, ProductController.getOrderProduct);
 router.post("/order/basket", authMiddleware, ProductController.getBasketProductInfo);
+
+router.post("/action", optionalAuthMiddleware, ProductController.recordProductAction);
+router.post("/recent/sync", authMiddleware, ProductController.syncRecentProducts);
+router.get("/recent", authMiddleware, ProductController.getRecentProducts);
+
 router.get("/:id", ProductController.getProductById);
 
 export default router;

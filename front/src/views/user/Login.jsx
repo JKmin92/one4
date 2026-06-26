@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toaster } from "../../components/ui/toaster";
 import axiosInstance from "../../utils/api";
+import { getLocalRecentProducts, clearLocalRecentProducts } from "../../utils/recentProducts";
 
 function Login() {
 
@@ -23,6 +24,15 @@ function Login() {
         try {
             const userData = await login({email:data.email, password:data.password});
             if(userData) {
+                const localRecentList = getLocalRecentProducts();
+                if (localRecentList.length > 0) {
+                    axiosInstance.post('/shop/product/recent/sync', { list: localRecentList })
+                        .then(() => {
+                            clearLocalRecentProducts();
+                        })
+                        .catch(() => {});
+                }
+
                 const state = location.state || {};
                 
                 if (state.action === 'add_basket' && state.basketData) {

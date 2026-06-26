@@ -13,6 +13,7 @@ import MypageReviewDetail from './views/user/mypage/review/Detail';
 import MypageOrderList from './views/user/mypage/shop/List';
 import MypageOrderDetail from './views/user/mypage/shop/Detail';
 import MypagePoint from './views/user/mypage/point/List';
+import MypageRecentProducts from './views/user/mypage/RecentProducts';
 
 import ShopLayout from './views/shop/common/Layout';
 import ShopMain from './views/shop/Main';
@@ -90,7 +91,8 @@ const router = createBrowserRouter([
             { path: 'review/:campaign_application_code', element: <MypageReviewDetail /> },
             { path: 'order', element: <MypageOrderList /> },
             { path: 'order/:order_code', element: <MypageOrderDetail /> },
-            { path: 'point', element: <MypagePoint /> }
+            { path: 'point', element: <MypagePoint /> },
+            { path: 'recent', element: <MypageRecentProducts /> }
         ]
     }, {
         path: '/admin',

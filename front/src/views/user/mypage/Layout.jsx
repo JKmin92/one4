@@ -26,11 +26,10 @@ function Layout() {
                             <Stack>
                                 {
                                     user.profile
-                                        ? <Image src={user.profile} w="100px" h="100px" rounded="full" m="auto" />
+                                        ? <Image src={user.profile} w="85px" h="85px" rounded="full" m="auto" />
                                         : (
                                             <Box w="85px" h="85px" rounded="full" bg="gray.200" margin="auto" position="relative" display="flex" alignItems="center" justifyContent="center">
                                                 <LuUserRound size="20" />
-                                                <Float offset="2" placement="bottom-end"><LuSettings size="20" /></Float>
                                             </Box>
                                         )
                                 }

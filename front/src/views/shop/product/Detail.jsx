@@ -6,13 +6,15 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { LuChevronDown, LuChevronLeft, LuChevronRight, LuLock, LuMinus, LuPencil, LuPlus, LuTrash } from "react-icons/lu";
 import { calcDiscountPercent, formatDate, formatNumber, scrollViewPosition } from "../../../utils/simpleUtils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { InfoTip } from '../../../components/ui/toggle-tip';
 import { toaster } from "../../../components/ui/toaster";
 import axiosInstance from "../../../utils/api";
 import { HiChevronLeft, HiChevronRight, HiX } from "react-icons/hi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../utils/useAuth";
+import { useBehaviorTracker } from "../../../utils/useBehaviorTracker";
+import { addLocalRecentProduct } from "../../../utils/recentProducts";
 
 function ReviewView({ reviewList = [] }) {
     const [reviewPage, setReviewPage] = useState(1);
@@ -378,6 +380,33 @@ function Detail() {
 
     const { user } = useAuth();
 
+    const activeDwellTime = useBehaviorTracker(10000);
+    const activeDwellTimeRef = useRef(0);
+
+    useEffect(() => {
+        activeDwellTimeRef.current = activeDwellTime;
+    }, [activeDwellTime]);
+
+    useEffect(() => {
+        // 컴포넌트 마운트 시 즉시 조회 기록 갱신 (viewed_at 업데이트)
+        if (id) {
+            axiosInstance.post('/shop/product/action', {
+                product_code: id,
+                dwell_time_seconds: 0
+            }).catch(() => { });
+        }
+
+        // 컴포넌트 언마운트(페이지 이탈) 시 누적된 체류 시간 전송
+        return () => {
+            if (activeDwellTimeRef.current > 0) {
+                axiosInstance.post('/shop/product/action', {
+                    product_code: id,
+                    dwell_time_seconds: activeDwellTimeRef.current
+                }).catch(() => { });
+            }
+        };
+    }, [id]);
+
     useEffect(() => {
         const getProduct = async () => {
             try {
@@ -393,6 +422,7 @@ function Detail() {
                 }
                 setProduct(data);
                 setDeliverySetting(data.deliverySetting);
+                addLocalRecentProduct(data.product_code);
 
                 if (data.options && Array.isArray(data.options) && data.options.length > 0) {
                     setOptions(data.options);
@@ -570,6 +600,11 @@ function Detail() {
             return;
         }
 
+        axiosInstance.post('/shop/product/action', {
+            product_code: product.product_code,
+            time_to_buy_seconds: activeDwellTime
+        }).catch(() => { });
+
         navigate('/order', { state: { orderData: order, isDirectOrder: true } })
     }
 
@@ -587,7 +622,12 @@ function Detail() {
 
         try {
             const response = await axiosInstance.post('/shop/product/basket', basket);
-            
+
+            axiosInstance.post('/shop/product/action', {
+                product_code: product.product_code,
+                time_to_cart_seconds: activeDwellTime
+            }).catch(() => { });
+
             window.dispatchEvent(new Event('basket_updated'));
 
             if (response.data.code === '201') {
