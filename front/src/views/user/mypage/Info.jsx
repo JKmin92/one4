@@ -7,6 +7,8 @@ import axiosInstance from "../../../utils/api";
 import ReviewChannel from "./info/ReviewChannel";
 import Password from "./info/Password";
 import PrivateInfo from "./info/PrivateInfo";
+import Account from "./info/Account";
+import Withdraw from "./info/Withdraw";
 
 function Info() {
 
@@ -69,8 +71,8 @@ function Info() {
                     <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
                     <ReviewChannel reviewChannelList={reviewChannelList} setReviewChannelList={setReviewChannelList} reviewCampaignChannelViewList={reviewCampaignChannelViewList} />
                     <Button variant="ghost" justifyContent="space-between">알림 설정<LuChevronRight /></Button>
-                    <Button variant="ghost" justifyContent="space-between">환불 계좌 관리<LuChevronRight /></Button>
-                    <Button variant="ghost" justifyContent="space-between">회원탈퇴<LuChevronRight /></Button>
+                    <Account />
+                    <Withdraw />
                 </Stack>
 
             </Stack>

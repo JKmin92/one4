@@ -121,6 +121,10 @@ export const getUserAccountList = async (user_code) => {
     return await model.getUserAccountList(user_code);
 }
 
+export const updateUserAccountBasic = async (account_code, user_code) => {
+    return await model.updateUserAccountBasic(account_code, user_code);
+}
+
 export const getUserPointHistory = async (user_code) => {
     return await model.getUserPointHistory(user_code);
 }
@@ -137,4 +141,14 @@ export const insertUserPointPayout = async (payout) => {
     const payout_code = generateUniqueId();
     const history_code = generateUniqueId();
     await model.insertUserPointPayout({ ...payout, payout_code: payout_code, history_code: history_code });
+}
+
+export const userPasswordCheck = async (password, user_code) => {
+    return await model.userPasswordCheck(password, user_code);
+}
+
+export const userWithdraw = async (user_code, password) => {
+    const checkPassword = await model.userPasswordCheck(password, user_code);
+    if (!checkPassword) return { result: false, code: '001' };
+    return await model.userWithdraw(user_code);
 }

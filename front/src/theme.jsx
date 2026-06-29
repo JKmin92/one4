@@ -15,6 +15,11 @@ const config = defineConfig({
         },
         tokens : {
             ...defaultConfig.theme.tokens,
+            fonts: {
+                ...defaultConfig.theme.tokens?.fonts,
+                heading: { value: `"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif` },
+                body: { value: `"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif` },
+            },
             colors:{
                 ...defaultConfig.theme.tokens.colors,
                 main: { value:'#950101' }

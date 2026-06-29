@@ -41,6 +41,7 @@ import AdminBoardDetail from './views/admin/shop/board/Detail';
 import AdminReviewCampaignList from './views/admin/review/campaign/List';
 import AdminReviewCampaignRegister from './views/admin/review/campaign/Register';
 import AdminReviewCampaignDetail from './views/admin/review/campaign/Detail';
+import AdminReviewDisplayBanners from './views/admin/review/display/MainBanner';
 
 import AdminOrderTotalList from './views/admin/shop/order/TotalList';
 import AdminOrderUnpaidList from './views/admin/shop/order/UnpaidList';
@@ -123,6 +124,7 @@ const router = createBrowserRouter([
             { path: 'review/campaign/register', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> },
+            { path: 'review/display/banners', element: <AdminReviewDisplayBanners /> },
             { path: 'member/user/list', element: <AdminMemberUserList /> },
             { path: 'member/user/:id', element: <AdminMemberUserDetail /> },
             { path: 'member/point/payout/list', element: <AdminMemberPointPayoutList /> }

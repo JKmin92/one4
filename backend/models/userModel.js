@@ -1,4 +1,5 @@
 import db from '../config/db.js';
+import bcrypt from 'bcrypt';
 
 export const insertUser = async (data) => {
     await db.query(
@@ -157,6 +158,12 @@ export const getUserAccountList = async (user_code) => {
     return rows;
 }
 
+export const updateUserAccountBasic = async (account_code, user_code) => {
+    await db.query(`UPDATE user_account SET is_basic = 0 WHERE user_code = ?`, [user_code]);
+    await db.query(`UPDATE user_account SET is_basic = 1 WHERE account_code = ? AND user_code = ?`, [account_code, user_code]);
+    return { result: true };
+}
+
 export const insertUserPoint = async (user_point) => {
     const sql = `INSERT INTO user_point (point_code, user_code, current_point) VALUE (?,?,0)`;
     await db.query(sql, [user_point.point_code, user_point.user_code]);
@@ -194,4 +201,15 @@ export const insertUserPointPayout = async (payout) => {
     const currentPoint = (await getUserPoint(payout.user_code)).current_point;
     const historySql = `INSERT INTO user_point_history (history_code, user_code, amount, balance, type, payout_code, descript) VALUE (?,?,?,?, 'PAYOUT', ?, '출금 요청')`;
     await db.query(historySql, [payout.history_code, payout.user_code, payout.amount, currentPoint, payout.payout_code]);
+}
+
+export const userPasswordCheck = async (password, user_code) => {
+    const sql = `SELECT password FROM user WHERE user_code = ? AND status != 'WITHDRAW'`;
+    const [rows] = await db.query(sql, [user_code]);
+    return bcrypt.compare(password, rows[0].password);
+}
+
+export const userWithdraw = async (user_code) => {
+    await db.query(`UPDATE user SET status = 'WITHDRAW' WHERE user_code = ?`, [user_code]);
+    return { result: true };
 }

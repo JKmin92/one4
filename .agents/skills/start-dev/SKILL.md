@@ -22,4 +22,4 @@ Follow these instructions to start both servers in the background so you can con
    - `WaitMsBeforeAsync`: 1000 (To send it to the background)
 
 3. **Notify User**:
-   - Once both commands are launched, tell the user that both servers are running in the background and provide the typical localhost URLs (e.g., frontend usually http://localhost:5173).
+   - Once both commands are launched, tell the user that both servers are running in the background and provide the typical localhost URLs (e.g., frontend usually http://localhost:80).

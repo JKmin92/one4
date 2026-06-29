@@ -442,7 +442,7 @@ function ReviewChannel({ reviewChannelList, setReviewChannelList, reviewCampaign
                                                             <RadioCard.ItemText>
                                                                 <HStack>
                                                                     <Image src={`/public/resources/img/logo/${channel?.icon}`} rounded="md" w="5" h="5" />
-                                                                    <Text>{channel.name}</Text>
+                                                                    <Text>{channel?.name}</Text>
                                                                 </HStack>
                                                             </RadioCard.ItemText>
                                                             <RadioCard.ItemDescription>

@@ -6,19 +6,24 @@ import 'swiper/css/navigation';
 import { LuBraces, LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { getDDay } from "../../utils/simpleUtils";
 
+import { useEffect, useState } from "react";
+import axiosInstance from "../../utils/api";
+
 function Main() {
-    /**
-     * TODO : DB연동
-     */
-    const mainBanner = [
-        { id: 1, label: '이미지' },
-        { id: 2, label: '이미지' },
-        { id: 3, label: '이미지' },
-        { id: 4, label: '이미지' },
-        { id: 5, label: '이미지' },
-        { id: 6, label: '이미지' },
-        { id: 7, label: '이미지' },
-    ];
+    const [mainBanner, setMainBanner] = useState([]);
+
+    const fetchBanners = async () => {
+        try {
+            const res = await axiosInstance.get('/review/campaign/display/banners');
+            setMainBanner(res.data);
+        } catch (e) {
+            console.error("Failed to load banners:", e);
+        }
+    }
+
+    useEffect(() => {
+        fetchBanners();
+    }, []);
 
     const swiperCustomButton = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', zIndex: '2', size: 'xs', rounded: 'full' };
     const swiperPrev = { ...swiperCustomButton, left: '-10px' };
@@ -150,7 +155,13 @@ function Main() {
                     <Swiper {...mainBannerSwiper}>
                         {mainBanner.map((banner, index) => (
                             <SwiperSlide key={index}>
-                                <Flex bg="bg.emphasized" justifyContent="center" alignItems="center" height="300px" rounded="md">{banner.label} {banner.id}</Flex>
+                                <Box as={banner.link_url ? Link : 'div'} href={banner.link_url || undefined} display="block" w="full" h={{ base: '200px', md: '300px' }}>
+                                    <picture style={{ width: '100%', height: '100%' }}>
+                                        {banner.image_mobile && <source media="(max-width: 480px)" srcSet={banner.image_mobile} />}
+                                        {banner.image_tablet && <source media="(max-width: 1024px)" srcSet={banner.image_tablet} />}
+                                        <Image src={banner.image_pc} w="full" h="full" objectFit="cover" rounded="md" alt={banner.title} />
+                                    </picture>
+                                </Box>
                             </SwiperSlide>
                         ))}
                     </Swiper>

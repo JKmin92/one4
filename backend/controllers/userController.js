@@ -125,7 +125,7 @@ export const updateUserProfile = async (req, res, next) => {
     try {
         const user = req.user;
         const { name, phone, marketingAgree, profileImage } = req.body;
-        
+
         let updateData = {
             user_code: user.user_code,
             name,
@@ -275,6 +275,15 @@ export const getUserAccountList = async (req, res, next) => {
     }
 }
 
+export const updateUserAccountBasic = async (req, res, next) => {
+    try {
+        const user = req.user;
+        res.status(200).json(await userService.updateUserAccountBasic(req.params.account_code, user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
 export const deleteUserAccount = async (req, res, next) => {
     try {
         const user = req.user;
@@ -316,6 +325,24 @@ export const insertUserPointPayout = async (req, res, next) => {
         const user = req.user;
         await userService.insertUserPointPayout({ ...req.body, user_code: user.user_code });
         res.status(200).json({ message: 'success' });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const userPasswordCheck = async (req, res, next) => {
+    try {
+        const user = req.user;
+        res.status(200).json(await userService.userPasswordCheck(req.body.password, user.user_code));
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const userWithdraw = async (req, res, next) => {
+    try {
+        const user = req.user;
+        res.status(200).json(await userService.userWithdraw(user.user_code, req.body.password));
     } catch (err) {
         next(err);
     }

@@ -72,6 +72,12 @@ function SideMenu() {
                 { path: ['register', 'update'], label: '캠페인 등록' },
             ]
         },
+        {
+            path: 'display', label: '전시 관리',
+            children: [
+                { path: ['banners'], label: '메인 배너' },
+            ]
+        }
     ];
 
     const memberCategory = [

@@ -1,9 +1,11 @@
 import * as reviewCampaignController from "../../controllers/review/reviewCampaignController.js";
+import * as displayController from "../../controllers/review/displayController.js";
 import { authMiddleware } from "../../middleware/authMiddleware.js";
 import express from "express";
 
 const router = express.Router();
 
+router.get("/display/banners", displayController.getActiveBanners);
 router.get("/channel", reviewCampaignController.getReviewCampaignChannelView);
 router.get("/category", reviewCampaignController.getReviewCategory);
 router.get("/:campaign_code", reviewCampaignController.getReviewCampaign);
