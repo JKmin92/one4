@@ -15,7 +15,6 @@ export const getOrderList = async (status) => {
     }
 
     const orderCodes = orders.map(order => order.order_code);
-    const addressCodes = [...new Set(orders.map(order => order.address_code).filter(Boolean))];
 
     const itemSql = `
         SELECT 
@@ -30,9 +29,9 @@ export const getOrderList = async (status) => {
     const [items] = await db.query(itemSql, [orderCodes]);
 
     let addresses = [];
-    if (addressCodes.length > 0) {
-        const addressSql = `SELECT * FROM user_address WHERE address_code IN (?)`;
-        const [addressResult] = await db.query(addressSql, [addressCodes]);
+    if (orderCodes.length > 0) {
+        const addressSql = `SELECT * FROM product_order_address WHERE order_code IN (?)`;
+        const [addressResult] = await db.query(addressSql, [orderCodes]);
         addresses = addressResult;
     }
 
@@ -71,7 +70,7 @@ export const getOrderList = async (status) => {
             }
         }
 
-        const address = addresses.find(addr => addr.address_code === order.address_code) || null;
+        const address = addresses.find(addr => addr.order_code === order.order_code) || null;
         const product_order_payment = payments.find(pay => pay.order_code === order.order_code) || null;
 
         return {
@@ -128,9 +127,9 @@ export const getOrder = async (order_code) => {
     const payment = payments[0] || null;
 
     let address = null;
-    if (order.address_code) {
-        const addressSql = `SELECT * FROM user_address WHERE address_code = ?`;
-        const [addresses] = await db.query(addressSql, [order.address_code]);
+    if (order.order_code) {
+        const addressSql = `SELECT * FROM product_order_address WHERE order_code = ?`;
+        const [addresses] = await db.query(addressSql, [order.order_code]);
         address = addresses[0] || null;
     }
 
@@ -195,7 +194,6 @@ export const getProductOrderClaimByType = async (type) => {
             poc.*,
             po.created_at AS order_created_at,
             po.delivery_price,
-            po.address_code,
             pop.payment_type
         FROM product_order_claim poc
         LEFT JOIN product_order po ON poc.order_code = po.order_code
@@ -208,7 +206,7 @@ export const getProductOrderClaimByType = async (type) => {
 
     const claimCodes = claims.map(c => c.order_claim_code);
     const userCodes = [...new Set(claims.map(c => c.user_code).filter(Boolean))];
-    const addressCodes = [...new Set(claims.map(c => c.address_code).filter(Boolean))];
+    const orderCodesForAddress = [...new Set(claims.map(c => c.order_code).filter(Boolean))];
 
     let users = [];
     if (userCodes.length > 0) {
@@ -218,9 +216,9 @@ export const getProductOrderClaimByType = async (type) => {
     }
 
     let addresses = [];
-    if (addressCodes.length > 0) {
-        const addressSql = `SELECT * FROM user_address WHERE address_code IN (?)`;
-        const [addressRows] = await db.query(addressSql, [addressCodes]);
+    if (orderCodesForAddress.length > 0) {
+        const addressSql = `SELECT * FROM product_order_address WHERE order_code IN (?)`;
+        const [addressRows] = await db.query(addressSql, [orderCodesForAddress]);
         addresses = addressRows;
     }
 
@@ -247,7 +245,7 @@ export const getProductOrderClaimByType = async (type) => {
     return claims.map(claim => {
         const user = users.find(u => u.user_code === claim.user_code);
         const items = claimItems.filter(item => item.order_claim_code === claim.order_claim_code);
-        const address = addresses.find(a => a.address_code === claim.address_code) || null;
+        const address = addresses.find(a => a.order_code === claim.order_code) || null;
 
         return {
             ...claim,

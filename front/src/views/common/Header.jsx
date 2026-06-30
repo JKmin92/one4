@@ -12,22 +12,26 @@ function Header() {
     const { user, logout } = useAuth();
     const [categories, setCategories] = useState([]);
     const location = useLocation();
-    const [categoryLocation, setCategoryLocation] = useState('');
     const [basketCount, setBasketCount] = useState(0);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        location.pathname.includes('/review') ? setCategoryLocation('/review') : setCategoryLocation('');
+    const isUserPage = location.pathname.includes('/mypage') || location.pathname.includes('/login') || location.pathname.includes('/join');
+    const categoryLocation = location.pathname.includes('/review') ? '/review' : '';
 
+    useEffect(() => {
         const fetchCategories = async () => {
-            const response = location.pathname.includes('/review')
-                ? await axiosInstance.get('/review/campaign/category')
-                : location.pathname.includes('/mypage') ? null
-                    : await axiosInstance.get('/shop/product/category');
-            setCategories(response?.data);
+            try {
+                const response = !isUserPage && location.pathname.includes('/review')
+                    ? await axiosInstance.get('/review/campaign/category')
+                    : !isUserPage ? await axiosInstance.get('/shop/product/category') : null;
+                setCategories(response?.data ?? []);
+            } catch {
+                setCategories([]);
+            }
         };
+
         fetchCategories();
-    }, []);
+    }, [location.pathname, isUserPage]);
 
     const keywordClearElement = keyword ? (<CloseButton size="xs" onClick={() => setKeyword('')} rounded="full" />) : null;
     const onSearchSubmit = (e) => {
@@ -72,8 +76,8 @@ function Header() {
                         <Link href={location.pathname.includes('/review') ? '/review' : '/'}><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                     </HStack>
                     <HStack gap="12" display={{ base: 'none', md: 'flex' }}>
-                        <Link href="/review"><Text fontSize="lg" fontWeight="medium" color={location.pathname.includes('/review') ? 'main' : 'black'}>REVIEW</Text></Link>
-                        <Link href="/"><Text fontSize="lg" fontWeight="medium" color={location.pathname.includes('/review') || location.pathname.includes('/mypage') ? 'black' : 'main'}>SHOPPING</Text></Link>
+                        <Link href="/review"><Text fontSize="lg" fontWeight="medium" color={!isUserPage && location.pathname.includes('/review') ? 'main' : 'black'}>REVIEW</Text></Link>
+                        <Link href="/"><Text fontSize="lg" fontWeight="medium" color={location.pathname.includes('/review') || isUserPage ? 'black' : 'main'}>SHOPPING</Text></Link>
                     </HStack>
                 </HStack>
                 <HStack gap={{ base: 4, md: 6 }}>
@@ -122,7 +126,6 @@ function Header() {
                             </Menu.Root>
                         </>
                     )}
-
                 </HStack>
             </Flex>
             <Category categories={categories} location={categoryLocation} />

@@ -17,6 +17,7 @@ function DeliveryCompanySelectList({ value, onChange }) {
                 <option value="우체국택배">우체국택배</option>
                 <option value="현대택배">현대택배</option>
             </NativeSelect.Field>
+            <NativeSelect.Indicator />
         </NativeSelect.Root>
     )
 }

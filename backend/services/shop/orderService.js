@@ -25,7 +25,7 @@ export const insertProductOrder = async (data) => {
         const product_order = {
             order_code: order_code,
             user_code: data.user_code,
-            address_code: data.selectedAddress.address_code,
+            address: data.selectedAddress,
             total_product_price: total_product_price,
             delivery_price: delivery_price,
             used_mileage: 0,
@@ -100,6 +100,31 @@ export const getUserProductOrder = async (user_code) => {
 
 export const updateOrderCompleted = async (order_code, user_code) => {
     await orderModel.updateOrderCompleted(order_code, user_code);
+    return { result: true };
+}
+
+export const updateOrderAddress = async (order_code, user_code, data) => {
+    // 1. Update product_order_address
+    await orderModel.updateProductOrderAddress(order_code, data);
+    
+    // 2. If updateDefaultAddress is true, update the user's default address
+    if (data.updateDefaultAddress) {
+        const userAddressModel = await import("../../models/userModel.js"); // lazy load or we can assume it's there
+        await userAddressModel.updateUserDefaultAddress(user_code, {
+            name: data.name,
+            phone: data.phone,
+            postcode: data.postcode,
+            address: data.address,
+            detailAddress: data.detailAddress
+        });
+    }
+
+    return { result: true };
+}
+
+export const updateDepositName = async (order_code, user_code, deposit_name) => {
+    // Optionally we can verify if order_code belongs to user_code here
+    await orderModel.updateDepositName(order_code, deposit_name);
     return { result: true };
 }
 

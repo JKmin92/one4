@@ -12,6 +12,8 @@ router.get('/account', authMiddleware, orderController.getShopAccountList);
 router.get('/delivery/setting', authMiddleware, orderController.getShopDeliverySetting);
 router.get('/:order_code', authMiddleware, orderController.getProductOrder);
 router.patch('/:order_code/completed', authMiddleware, orderController.updateOrderCompleted);
+router.put('/:order_code/address', authMiddleware, orderController.updateOrderAddress);
+router.put('/:order_code/deposit-name', authMiddleware, orderController.updateDepositName);
 router.post('/claim', authMiddleware, orderController.insertProductOrderClaim);
 
 export default router;

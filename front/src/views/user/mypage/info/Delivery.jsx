@@ -2,6 +2,7 @@ import { Box, Button, Checkbox, CloseButton, Dialog, Field, Flex, HStack, Icon, 
 import { useEffect, useRef, useState } from "react";
 import { LuChevronRight, LuSearch } from "react-icons/lu";
 import axiosInstance from "../../../../utils/api";
+import { toaster } from "../../../../components/ui/toaster";
 
 function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, delivery }) {
 
@@ -62,6 +63,7 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, deli
         const formattedPhone = phone.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
         const newAddress = {
             id: delivery?.id || id,
+            address_code: delivery?.address_code,
             name: name,
             postcode: postcode,
             address: address,
@@ -73,9 +75,11 @@ function AddDelivery({ deliveryList, setDeliveryList, setAddDeliveryStatus, deli
         if (delivery && deliveryList.find(d => d.id === delivery.id)) {
             await axiosInstance.put('/user/address', newAddress);
             setDeliveryList(prev => prev.map(d => d.id === delivery.id ? newAddress : d));
+            toaster.create({ title: '배송지가 수정되었습니다.', type: 'success' });
         } else {
             await axiosInstance.post('/user/address', newAddress);
             setDeliveryList(prev => [...prev, newAddress]);
+            toaster.create({ title: '배송지가 추가되었습니다.', type: 'success' });
         }
         setAddDeliveryStatus(false);
     }

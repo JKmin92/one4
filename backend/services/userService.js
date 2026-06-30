@@ -152,3 +152,7 @@ export const userWithdraw = async (user_code, password) => {
     if (!checkPassword) return { result: false, code: '001' };
     return await model.userWithdraw(user_code);
 }
+
+export const updateLastLogin = async (user_code) => {
+    await model.updateLastLogin(user_code);
+}

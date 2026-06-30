@@ -4,13 +4,14 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { LuBraces, LuChevronLeft, LuChevronRight } from "react-icons/lu";
-import { getDDay } from "../../utils/simpleUtils";
+import { getDDay, formatDateYMD } from "../../utils/simpleUtils";
 
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/api";
 
 function Main() {
     const [mainBanner, setMainBanner] = useState([]);
+    const [noticeList, setNoticeList] = useState([]);
 
     const fetchBanners = async () => {
         try {
@@ -21,8 +22,18 @@ function Main() {
         }
     }
 
+    const fetchNotices = async () => {
+        try {
+            const res = await axiosInstance.get('/review/notice?limit=5');
+            setNoticeList(res.data);
+        } catch (error) {
+            console.error("Failed to load notices:", error);
+        }
+    }
+
     useEffect(() => {
         fetchBanners();
+        fetchNotices();
     }, []);
 
     const swiperCustomButton = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', zIndex: '2', size: 'xs', rounded: 'full' };
@@ -138,13 +149,7 @@ function Main() {
         { id: 5 },
     ];
 
-    const noticeList = [
-        { id: 1, title: '공지사항 1', date: '2026-02-03' },
-        { id: 2, title: '공지사항 2', date: '2026-02-03' },
-        { id: 3, title: '공지사항 3', date: '2026-02-03' },
-        { id: 4, title: '공지사항 4', date: '2026-02-03' },
-        { id: 5, title: '공지사항 5', date: '2026-02-03' },
-    ]
+
 
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="20">
@@ -258,13 +263,14 @@ function Main() {
                     <Heading>NOTICE</Heading>
                     <Stack gap="1">
                         {noticeList.map((notice) => (
-                            <Link key={notice.id} href="#">
+                            <Link key={notice.notice_code} href={`/review/notice/${notice.notice_code}`}>
                                 <Flex justifyContent="space-between" w="full">
                                     <Text fontSize="sm">{notice.title}</Text>
-                                    <Text fontSize="sm">{notice.date}</Text>
+                                    <Text fontSize="sm" color="fg.muted">{formatDateYMD(notice.created_at)}</Text>
                                 </Flex>
                             </Link>
                         ))}
+                        {noticeList.length === 0 && <Text fontSize="sm" color="fg.muted">등록된 공지사항이 없습니다.</Text>}
                     </Stack>
                 </Stack>
                 <HStack w="3/5">

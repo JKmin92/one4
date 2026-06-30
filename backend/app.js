@@ -16,6 +16,8 @@ import adminOrderRoutes from './routes/admin/shop/orderRoutes.js';
 import adminShopSettingRoutes from './routes/admin/shop/settingRoutes.js';
 import adminMemberUserRoutes from './routes/admin/member/userRoutes.js';
 import adminReviewDisplayRoutes from './routes/admin/review/displayRoutes.js';
+import adminReviewNoticeRoutes from './routes/admin/review/noticeRoutes.js';
+import reviewNoticeRoutes from './routes/review/noticeRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -44,6 +46,8 @@ app.use('/api/admin/member/user', adminMemberUserRoutes);
 app.use('/api/utils', utilRoutes);
 app.use('/api/admin/shop/order', adminOrderRoutes);
 app.use('/api/admin/review/display', adminReviewDisplayRoutes);
+app.use('/api/admin/review/notice', adminReviewNoticeRoutes);
+app.use('/api/review/notice', reviewNoticeRoutes);
 
 app.use((err, req, res, next) => {
     console.error('🔥 Server Error:', err);

@@ -1,4 +1,5 @@
 import db from "../../config/db.js";
+import { generateUniqueId } from "../../utils/customUtils.js";
 
 export const applyAutomaticOrderTransitions = async () => {
     const cancelItemSql = `
@@ -41,10 +42,22 @@ export const applyAutomaticOrderTransitions = async () => {
 }
 
 export const insertProductOrder = async (product_order) => {
-    const sql = `INSERT INTO product_order (order_code, user_code, address_code, total_product_price, delivery_price, used_mileage, actual_payment_amount, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    const sql = `INSERT INTO product_order (order_code, user_code, total_product_price, delivery_price, used_mileage, actual_payment_amount, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
-    await db.query(sql, [product_order.order_code, product_order.user_code, product_order.address_code, product_order.total_product_price, product_order.delivery_price, product_order.used_mileage, product_order.actual_payment_amount, product_order.status]);
+    await db.query(sql, [product_order.order_code, product_order.user_code, product_order.total_product_price, product_order.delivery_price, product_order.used_mileage, product_order.actual_payment_amount, product_order.status]);
+
+    const addressCode = generateUniqueId();
+    const addressSql = `INSERT INTO product_order_address (order_address_code, order_code, name, postcode, address, detailAddress, phone) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    await db.query(addressSql, [
+        addressCode, 
+        product_order.order_code, 
+        product_order.address.name, 
+        product_order.address.postcode, 
+        product_order.address.address, 
+        product_order.address.detailAddress, 
+        product_order.address.phone
+    ]);
 }
 
 export const insertProductOrderItem = async (product_order_item) => {
@@ -57,6 +70,11 @@ export const insertProductOrderItem = async (product_order_item) => {
 export const insertProductOrderPayment = async (product_order_payment) => {
     const sql = `INSERT INTO product_order_payment (payment_code, order_code, payment_type, deposit_name, payment_deadline) VALUES (?, ?, ?, ?, ?)`;
     await db.query(sql, [product_order_payment.payment_code, product_order_payment.order_code, product_order_payment.payment_type, product_order_payment.deposit_name, product_order_payment.payment_deadline]);
+}
+
+export const updateDepositName = async (order_code, deposit_name) => {
+    const sql = `UPDATE product_order_payment SET deposit_name = ? WHERE order_code = ?`;
+    await db.query(sql, [deposit_name, order_code]);
 }
 
 export const getProductOrder = async (order_code) => {
@@ -83,8 +101,8 @@ export const getProductOrder = async (order_code) => {
     const paymentSql = `SELECT * FROM product_order_payment WHERE order_code = ?`;
     const paymentResult = await db.query(paymentSql, [order_code]);
 
-    const addressSql = `SELECT * FROM user_address WHERE address_code = ?`;
-    const addressResult = await db.query(addressSql, [orderResult[0][0]?.address_code]);
+    const addressSql = `SELECT * FROM product_order_address WHERE order_code = ?`;
+    const addressResult = await db.query(addressSql, [order_code]);
 
     const deliverySql = `SELECT * FROM product_order_delivery WHERE order_code = ?`;
     const deliveryResult = await db.query(deliverySql, [order_code]);
@@ -235,4 +253,9 @@ export const getShopDeliverySetting = async () => {
     const sql = `SELECT * FROM shop_delivery_setting WHERE id=1`;
     const [rows] = await db.query(sql);
     return rows[0] || null;
+}
+
+export const updateProductOrderAddress = async (order_code, address_data) => {
+    const sql = `UPDATE product_order_address SET name = ?, postcode = ?, address = ?, detailAddress = ?, phone = ? WHERE order_code = ?`;
+    await db.query(sql, [address_data.name, address_data.postcode, address_data.address, address_data.detailAddress, address_data.phone, order_code]);
 }

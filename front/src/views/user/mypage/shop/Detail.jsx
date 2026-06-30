@@ -1,11 +1,13 @@
 import { Alert, Button, CloseButton, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Table, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../components/ui/toaster";
-import axiosInstance from "../../../../utils/api";
 import { useParams } from "react-router-dom";
 import { formatDate, formatDateToMonthDay, formatDateYMD, formatNumber } from "../../../../utils/simpleUtils";
 import { LuBadgeAlert, LuBox, LuDot } from "react-icons/lu";
 import ExchangeDialog from "./ExchangeDialog";
+import AddressChangeDialog from "./AddressChangeDialog";
+import DepositNameChangeDialog from "./DepositNameChangeDialog";
+import axiosInstance from "../../../../utils/api";
 
 function Detail() {
 
@@ -19,6 +21,8 @@ function Detail() {
     const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false);
     const [productOrderClaim, setProductOrderClaim] = useState();
     const [productOrderClaimItemList, setProductOrderClaimItemList] = useState([]);
+    const [addressChangeOpen, setAddressChangeOpen] = useState(false);
+    const [depositNameChangeOpen, setDepositNameChangeOpen] = useState(false);
 
     const showConfirm = (title, descript) => {
         return new Promise((resolve) => {
@@ -367,7 +371,14 @@ function Detail() {
             <Table.Root>
                 <Table.Body>
                     <Table.Row>
-                        <Table.Cell>받는사람</Table.Cell>
+                        <Table.Cell>
+                            <HStack>
+                                <Text>받는사람</Text>
+                                {(productOrder?.status === 'PENDING' || productOrder?.status === 'PAID') && (
+                                    <Button size="xs" variant="outline" onClick={() => setAddressChangeOpen(true)}>배송지 변경</Button>
+                                )}
+                            </HStack>
+                        </Table.Cell>
                         <Table.Cell>{address?.name}</Table.Cell>
                     </Table.Row>
                     <Table.Row>
@@ -412,10 +423,14 @@ function Detail() {
                     <Table.Row>
                         <Table.Cell w="2/3">
                             {productOrderPayment?.payment_type === "BANK" && (
-                                <Stack gap="1">
+                                <Stack gap="1" fontSize="sm">
                                     <Text>기업은행 123-45871-27156(예금주 : 에이민)</Text>
-                                    <Text>입금자명 : {productOrderPayment?.deposit_name}</Text>
-                                    <Text fontSize="xs">* 실제 결제금액과 입금자명이 일치하지 않으면 발송이 어렵습니다.</Text>
+                                    <HStack>
+                                        <Text>입금자명 : {productOrderPayment?.deposit_name}</Text>
+                                        {productOrder?.status === 'PENDING' && (
+                                            <Button size="xs" variant="outline" onClick={() => setDepositNameChangeOpen(true)}>변경</Button>
+                                        )}
+                                    </HStack>
                                     {productOrder?.status === 'PENDING' && (
                                         <Text>결제 기한 : {formatDateToMonthDay(productOrderPayment?.payment_deadline)}까지</Text>
                                     )}
@@ -459,8 +474,11 @@ function Detail() {
                 )}
             </Stack>
 
-            <Dialog.Root open={confirmState.open} onOpenChange={(open) => {
-                if (!open) {
+            <AddressChangeDialog open={addressChangeOpen} setOpen={setAddressChangeOpen} orderCode={order_code} currentAddress={address} onUpdateSuccess={getOrderData} />
+            <DepositNameChangeDialog open={depositNameChangeOpen} setOpen={setDepositNameChangeOpen} orderCode={order_code} currentDepositName={productOrderPayment?.deposit_name} onUpdateSuccess={getOrderData} />
+
+            <Dialog.Root open={confirmState.open} onOpenChange={(e) => {
+                if (!e.open) {
                     confirmState.resolve(false);
                     setConfirmState(prev => ({ ...prev, open: false }));
                 }

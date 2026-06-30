@@ -29,6 +29,7 @@ import ReviewMain from './views/review/Main';
 import ReviewList from './views/review/List';
 import ReviewDetail from './views/review/Detail';
 import ReviewApplication from './views/review/Application';
+import ReviewNoticeDetail from './views/review/notice/Detail';
 
 import AdminLayout from './views/admin/common/Layout';
 import AdminProductList from './views/admin/shop/product/List';
@@ -42,6 +43,8 @@ import AdminReviewCampaignList from './views/admin/review/campaign/List';
 import AdminReviewCampaignRegister from './views/admin/review/campaign/Register';
 import AdminReviewCampaignDetail from './views/admin/review/campaign/Detail';
 import AdminReviewDisplayBanners from './views/admin/review/display/MainBanner';
+import AdminReviewNoticeList from './views/admin/review/notice/List';
+import AdminReviewNoticeRegister from './views/admin/review/notice/Register';
 
 import AdminOrderTotalList from './views/admin/shop/order/TotalList';
 import AdminOrderUnpaidList from './views/admin/shop/order/UnpaidList';
@@ -125,6 +128,9 @@ const router = createBrowserRouter([
             { path: 'review/campaign/update/:id', element: <AdminReviewCampaignRegister /> },
             { path: 'review/campaign/detail/:id', element: <AdminReviewCampaignDetail /> },
             { path: 'review/display/banners', element: <AdminReviewDisplayBanners /> },
+            { path: 'review/notice/list', element: <AdminReviewNoticeList /> },
+            { path: 'review/notice/register', element: <AdminReviewNoticeRegister /> },
+            { path: 'review/notice/update/:id', element: <AdminReviewNoticeRegister /> },
             { path: 'member/user/list', element: <AdminMemberUserList /> },
             { path: 'member/user/:id', element: <AdminMemberUserDetail /> },
             { path: 'member/point/payout/list', element: <AdminMemberPointPayoutList /> }
@@ -136,7 +142,8 @@ const router = createBrowserRouter([
             { path: '', element: <ReviewMain /> },
             { path: 'categorys/:id', element: <ReviewList /> },
             { path: 'detail/:campaign_code', element: <ReviewDetail /> },
-            { path: 'application/:campaign_code', element: <ReviewApplication /> }
+            { path: 'application/:campaign_code', element: <ReviewApplication /> },
+            { path: 'notice/:notice_code', element: <ReviewNoticeDetail /> }
         ]
     }
 ])

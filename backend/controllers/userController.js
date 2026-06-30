@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
-const issueTokens = async (user, res) => {
+const issueTokens = async (user, res, autoLogin = true) => {
 
     const accesstoken = createAccessToken(user);
     const refreshToken = createRefreshToken(user);
@@ -14,12 +14,17 @@ const issueTokens = async (user, res) => {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await tokenModel.create(user.user_code, refreshToken, expiresAt);
 
-    res.cookie('refreshToken', refreshToken, {
+    const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV == 'production',
         sameSite: 'lax',
-        expires: expiresAt
-    });
+    };
+
+    if (autoLogin) {
+        cookieOptions.expires = expiresAt;
+    }
+
+    res.cookie('refreshToken', refreshToken, cookieOptions);
 
     return accesstoken;
 }
@@ -29,7 +34,7 @@ export const createUser = async (req, res, next) => {
         const data = req.body;
         const newUser = await userService.createUser(data);
 
-        const accessToken = await issueTokens(newUser, res);
+        const accessToken = await issueTokens(newUser, res, true);
         res.status(201).json({ ...newUser, accessToken });
     } catch (err) {
         next(err);
@@ -48,10 +53,11 @@ export const existsEmail = async (req, res, next) => {
 export const signIn = async (req, res, next) => {
     try {
         const data = req.body;
+        const autoLogin = data.autoLogin !== undefined ? data.autoLogin : true; // default to true if not provided
         const user = await userService.signIn(data);
         if (!user) return res.status(200).json({ success: false, error: '확인되는 계정이 없습니다.' });
 
-        const accessToken = await issueTokens(user, res);
+        const accessToken = await issueTokens(user, res, autoLogin);
         res.status(200).json({ ...user, accessToken });
     } catch (err) {
         next(err);
@@ -72,6 +78,9 @@ export const refreshToken = async (req, res) => {
 
         const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         const userPayload = decode.user || decode;
+        
+        // 사용자가 실질적으로 활동 중임을 나타내기 위해 접속 시간 갱신
+        await userService.updateLastLogin(userPayload.user_code);
 
         const data = {
             user_code: userPayload.user_code,

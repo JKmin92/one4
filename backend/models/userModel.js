@@ -86,6 +86,22 @@ export const deleteUserAddress = async (address_code, user_code) => {
     await db.query(`UPDATE user_address SET deleted = 1 WHERE address_code = ? and user_code = ?`, [address_code, user_code]);
 }
 
+export const updateUserDefaultAddress = async (user_code, address_data) => {
+    const sql = `
+        UPDATE user_address 
+        SET name = ?, postcode = ?, address = ?, detailAddress = ?, phone = ? 
+        WHERE user_code = ? AND isDefault = 1
+    `;
+    await db.query(sql, [
+        address_data.name,
+        address_data.postcode,
+        address_data.address,
+        address_data.detailAddress,
+        address_data.phone,
+        user_code
+    ]);
+}
+
 export const getUserReviewChannelList = async (user_code) => {
     const [rows] = await db.query(`SELECT * FROM user_review_channel WHERE user_code = ? AND deleted != 1`, [user_code]);
     return rows;
@@ -212,4 +228,8 @@ export const userPasswordCheck = async (password, user_code) => {
 export const userWithdraw = async (user_code) => {
     await db.query(`UPDATE user SET status = 'WITHDRAW' WHERE user_code = ?`, [user_code]);
     return { result: true };
+}
+
+export const updateLastLogin = async (user_code) => {
+    await db.query(`UPDATE user SET last_login_at = NOW() WHERE user_code = ?`, [user_code]);
 }

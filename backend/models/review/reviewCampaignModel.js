@@ -80,8 +80,21 @@ export const getReviewCampaignList = async (category_code) => {
 }
 
 export const insertReviewCampaignApplication = async (data) => {
-    const sql = `INSERT INTO review_campaign_application (campaign_code, user_code, address_code, campaign_application_code) VALUES (?, ?, ?, ?)`
-    const [rows] = await db.query(sql, [data.campaign_code, data.user_code, data.address_code, data.campaign_application_code]);
+    const sql = `INSERT INTO review_campaign_application (campaign_code, user_code, campaign_application_code) VALUES (?, ?, ?)`
+    const [rows] = await db.query(sql, [data.campaign_code, data.user_code, data.campaign_application_code]);
+    
+    const addressCode = generateUniqueId();
+    const addressSql = `INSERT INTO review_campaign_application_address (application_address_code, campaign_application_code, name, postcode, address, detailAddress, phone) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    await db.query(addressSql, [
+        addressCode, 
+        data.campaign_application_code, 
+        data.address.name, 
+        data.address.postcode, 
+        data.address.address, 
+        data.address.detailAddress, 
+        data.address.phone
+    ]);
+    
     return data.campaign_application_code;
 }
 

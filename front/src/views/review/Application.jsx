@@ -410,12 +410,15 @@ function Application() {
 
         if (matchedAddr) {
             payload.address_code = matchedAddr.address_code;
-        } else if (postcode || address || detailAddress) {
-            payload.postcode = postcode;
-            payload.address = address;
-            payload.detailAddress = detailAddress;
         }
 
+        payload.addressData = {
+            name: name,
+            phone: phone,
+            postcode: postcode,
+            address: address,
+            detailAddress: detailAddress
+        };
         try {
             const resource = await axiosInstance.post(`/review/campaign/application`, payload);
             if (resource.status === 200) {

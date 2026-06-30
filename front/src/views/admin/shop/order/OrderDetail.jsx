@@ -21,6 +21,7 @@ function DeliveryCompanySelectList({ value, onChange }) {
                 <option value="우체국택배">우체국택배</option>
                 <option value="현대택배">현대택배</option>
             </NativeSelect.Field>
+            <NativeSelect.Indicator />
         </NativeSelect.Root>
     )
 }
@@ -499,6 +500,12 @@ function OrderDetail() {
                             <DataList.ItemLabel>결제 방법</DataList.ItemLabel>
                             <DataList.ItemValue>{getPaymentMethod(productOrderPayment?.payment_type)}</DataList.ItemValue>
                         </DataList.Item>
+                        {productOrderPayment?.payment_type === 'BANK' && (
+                            <DataList.Item>
+                                <DataList.ItemLabel>입금자명</DataList.ItemLabel>
+                                <DataList.ItemValue>{productOrderPayment?.deposit_name}</DataList.ItemValue>
+                            </DataList.Item>
+                        )}
                         <DataList.Item>
                             <DataList.ItemLabel>주문일시</DataList.ItemLabel>
                             <DataList.ItemValue>{formatDate(productOrder?.created_at)}</DataList.ItemValue>
@@ -510,11 +517,7 @@ function OrderDetail() {
                             </DataList.ItemValue>
                         </DataList.Item>
                         <DataList.Item>
-                            <DataList.ItemLabel>현금영수증 신청여부</DataList.ItemLabel>
-                            <DataList.ItemValue>미신청</DataList.ItemValue>
-                        </DataList.Item>
-                        <DataList.Item>
-                            <DataList.ItemLabel>세금계산서 신청여부</DataList.ItemLabel>
+                            <DataList.ItemLabel>현금영수증 / 세금계산서 신청여부</DataList.ItemLabel>
                             <DataList.ItemValue>미신청</DataList.ItemValue>
                         </DataList.Item>
                     </DataList.Root>

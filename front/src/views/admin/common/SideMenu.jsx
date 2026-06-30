@@ -77,6 +77,13 @@ function SideMenu() {
             children: [
                 { path: ['banners'], label: '메인 배너' },
             ]
+        },
+        {
+            path: 'notice', label: '공지사항',
+            children: [
+                { path: ['list'], label: '공지사항 리스트' },
+                { path: ['register', 'update'], label: '공지사항 등록' },
+            ]
         }
     ];
 

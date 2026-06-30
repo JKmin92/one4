@@ -45,6 +45,32 @@ export const updateOrderCompleted = async (req, res, next) => {
     }
 }
 
+export const updateOrderAddress = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+        const order_code = req.params.order_code;
+        const data = req.body;
+        const result = await orderService.updateOrderAddress(order_code, user.user_code, data);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const updateDepositName = async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(404).send({ message: 'no user' });
+        const order_code = req.params.order_code;
+        const { deposit_name } = req.body;
+        const result = await orderService.updateDepositName(order_code, user.user_code, deposit_name);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export const insertProductOrderClaim = async (req, res, next) => {
     try {
         const data = req.body;

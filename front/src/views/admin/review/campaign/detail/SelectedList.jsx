@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../../../utils/api";
 import { toaster } from "../../../../../components/ui/toaster";
 
-function UserAddressDisplay({ addressCode }) {
+function UserAddressDisplay({ applicationCode }) {
     const [addressText, setAddressText] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
 
     useEffect(() => {
-        if (!addressCode) return;
+        if (!applicationCode) return;
         const fetchAddress = async () => {
             try {
-                const response = await axiosInstance.get(`/admin/review/campaign/userAddress/${addressCode}`);
+                const response = await axiosInstance.get(`/admin/review/campaign/userAddress/${applicationCode}`);
                 if (response.data && response.data.length > 0) {
                     const addr = response.data[0];
                     setUserInfo(`${addr.name} ${addr.phone}`);
@@ -25,7 +25,7 @@ function UserAddressDisplay({ addressCode }) {
             }
         };
         fetchAddress();
-    }, [addressCode]);
+    }, [applicationCode]);
 
     //if (!addressText) return <Text fontSize="sm" color="gray.500">불러오는 중...</Text>;
     return (
@@ -148,7 +148,7 @@ function SelectedList({ selectedList, reviewCampaignChannelView, campaign, fetch
                             <HStack gap="12">
                                 <Stack gap="0">
                                     <Badge colorPalette="blue" w="fit-content" mb="1">배송지 정보</Badge>
-                                    <UserAddressDisplay addressCode={app.address_code} />
+                                    <UserAddressDisplay applicationCode={app.campaign_application_code} />
                                 </Stack>
                                 <ApplicationDelivery campaign_application_code={app.campaign_application_code} />
                             </HStack>

@@ -1,4 +1,4 @@
-import { Button, Field, Fieldset, Heading, HStack, Input, Link, Stack, StackSeparator, Text } from "@chakra-ui/react";
+import { Button, Field, Fieldset, Heading, HStack, Input, Link, Stack, StackSeparator, Text, Box, Switch } from "@chakra-ui/react";
 import { PasswordInput } from "../../components/ui/password-input";
 import { useAuth } from "../../utils/useAuth";
 import { useForm } from "react-hook-form";
@@ -22,7 +22,7 @@ function Login() {
 
     const onSubmit = async (data) => {
         try {
-            const userData = await login({email:data.email, password:data.password});
+            const userData = await login({email:data.email, password:data.password, autoLogin: data.autoLogin});
             if(userData) {
                 const localRecentList = getLocalRecentProducts();
                 if (localRecentList.length > 0) {
@@ -73,7 +73,12 @@ function Login() {
                                 <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
                             </Field.Root>
                         </Fieldset.Content>
-                        <HStack justifyContent="end">
+                        <HStack justifyContent="space-between">
+                            <Switch.Root colorPalette="blue" size="sm">
+                                <Switch.HiddenInput {...register('autoLogin')} />
+                                <Switch.Control />
+                                <Switch.Label fontSize="sm" cursor="pointer">자동 로그인</Switch.Label>
+                            </Switch.Root>
                             <Link href="#" fontSize="sm">계정 찾기</Link>
                         </HStack>
                         <Button type="submit">로그인</Button>

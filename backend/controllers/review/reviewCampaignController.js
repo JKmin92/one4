@@ -41,23 +41,17 @@ export const getReviewCampaignList = async (req, res, next) => {
 
 export const insertReviewCampaignApplication = async (req, res, next) => {
     try {
-        const { campaign_code, user_code } = req.body;
-        let { address_code } = req.body; // const 대신 let을 사용하여 재할당 가능하게 선언
+        const { campaign_code, user_code, address_code, addressData } = req.body;
         const campaign_application_code = generateUniqueId();
         const user = req.user;
 
-        if (!address_code && req.body.postcode) {
-            const name = user.name;
-            const phone = user.phone; // user.name에서 user.phone으로 오타 수정
-            const address = req.body.address; // 프론트엔드에서 보낸 address 사용
-            const detailAddress = req.body.detailAddress; // 프론트엔드에서 보낸 detailAddress 사용
-            const postcode = req.body.postcode; // 프론트엔드에서 보낸 postcode 사용
+        if (!address_code && addressData?.postcode) {
+            const { name, phone, address, detailAddress, postcode } = addressData;
             const isDefault = 0;
-
-            address_code = await reviewCampaignService.insertUserAddress({ user_code, name, phone, address, detailAddress, postcode, isDefault });
+            await reviewCampaignService.insertUserAddress({ user_code, name, phone, address, detailAddress, postcode, isDefault });
         }
 
-        await reviewCampaignService.insertReviewCampaignApplication({ campaign_code, user_code, address_code, campaign_application_code });
+        await reviewCampaignService.insertReviewCampaignApplication({ campaign_code, user_code, address: addressData, campaign_application_code });
 
         const reward_options = req.body.options || []; // 프론트엔드에서 options로 보냄
         for (let i = 0; i < reward_options.length; i++) {

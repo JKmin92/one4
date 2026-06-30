@@ -340,12 +340,12 @@ export const selectReviewCampaignApplication = async (campaign_application_code)
 
 /**
  * @description 리뷰 캠페인 리뷰어 배송지 조회
- * @param {string} address_code 배송지 코드
+ * @param {string} campaign_application_code 캠페인 신청 코드
  * @returns {Object} 리뷰 캠페인 리뷰어 배송지 정보
  */
-export const getUserAddress = async (address_code) => {
-    const sql = `SELECT * FROM user_address WHERE address_code = ?`;
-    const [rows] = await db.query(sql, [address_code]);
+export const getUserAddress = async (campaign_application_code) => {
+    const sql = `SELECT * FROM review_campaign_application_address WHERE campaign_application_code = ?`;
+    const [rows] = await db.query(sql, [campaign_application_code]);
     return rows;
 }
 

@@ -43,7 +43,8 @@ export const updatePaidCheckTime = async (order_codes) => {
 }
 
 export const getProductOrderClaimByType = async (type) => {
-    return await orderModel.getProductOrderClaimByType(type);
+    const claim_type = type === 'auto_cancel' ? 'CANCEL' : type;
+    return await orderModel.getProductOrderClaimByType(claim_type);
 }
 
 export const updateProductOrderClaimProcessing = async (order_claim_code) => {
