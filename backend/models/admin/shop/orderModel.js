@@ -170,6 +170,7 @@ export const updateOrderStatus = async (order_codes, status) => {
     let timestampField = '';
     if (status === 'PAID') timestampField = ', paided_at = NOW()';
     else if (status === 'PROCESSING') timestampField = ', processed_at = NOW()';
+    else if (status === 'SHIPPING') timestampField = ', shipped_at = NOW()';
     else if (status === 'DELIVERED') timestampField = ', delivered_at = NOW()';
     else if (status === 'COMPLETED') timestampField = ', completed_at = NOW()';
     else if (status === 'CANCEL') timestampField = ', canceled_at = NOW()';

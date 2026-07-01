@@ -24,21 +24,38 @@ export const applyAutomaticOrderTransitions = async () => {
     const completeItemSql = `
         UPDATE product_order_item poi
         JOIN product_order po ON poi.order_code = po.order_code
-        JOIN shop_order_setting sos ON sos.id = 1
         SET poi.status = 'COMPLETED'
         WHERE po.status = 'DELIVERED'
-          AND DATE_ADD(po.delivered_at, INTERVAL sos.order_auto_complete_days DAY) < NOW()
+          AND poi.status NOT IN ('CANCEL', 'CLAIM')
+          AND DATE_ADD(po.delivered_at, INTERVAL 5 DAY) < NOW()
     `;
     await db.query(completeItemSql);
 
     const completeOrderSql = `
         UPDATE product_order po
-        JOIN shop_order_setting sos ON sos.id = 1
         SET po.status = 'COMPLETED', po.completed_at = NOW()
         WHERE po.status = 'DELIVERED'
-          AND DATE_ADD(po.delivered_at, INTERVAL sos.order_auto_complete_days DAY) < NOW()
+          AND DATE_ADD(po.delivered_at, INTERVAL 5 DAY) < NOW()
     `;
     await db.query(completeOrderSql);
+
+    const deliverItemSql = `
+        UPDATE product_order_item poi
+        JOIN product_order po ON poi.order_code = po.order_code
+        SET poi.status = 'DELIVERED'
+        WHERE po.status = 'SHIPPING'
+          AND poi.status NOT IN ('CANCEL', 'CLAIM')
+          AND DATE_ADD(po.shipped_at, INTERVAL 5 DAY) < NOW()
+    `;
+    await db.query(deliverItemSql);
+
+    const deliverOrderSql = `
+        UPDATE product_order po
+        SET po.status = 'DELIVERED', po.delivered_at = NOW()
+        WHERE po.status = 'SHIPPING'
+          AND DATE_ADD(po.shipped_at, INTERVAL 5 DAY) < NOW()
+    `;
+    await db.query(deliverOrderSql);
 }
 
 export const insertProductOrder = async (product_order) => {
