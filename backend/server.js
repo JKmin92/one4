@@ -7,6 +7,9 @@ dotenv.config({path:path.join(__dirname, 'backend/config/.env')});
 
 const PORT = process.env.PORT || 5000;
 
+import { initScheduler } from './cron/scheduler.js';
+
 app.listen(PORT, () => {
     console.log(`server is running on ${PORT}`);
+    initScheduler();
 });

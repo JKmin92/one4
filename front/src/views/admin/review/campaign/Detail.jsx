@@ -9,6 +9,7 @@ import { toaster } from "../../../../components/ui/toaster";
 import AppliedList from "./detail/AppliedList";
 import SelectedList from "./detail/SelectedList";
 import CompletedList from "./detail/CompletedList";
+import RejectedList from "./detail/RejectedList";
 
 function Detail() {
 
@@ -60,7 +61,7 @@ function Detail() {
             applied: reviewCampaignApplicationList.filter(app => app.status === 'APPLIED'),
             selected: reviewCampaignApplicationList.filter(app => app.status === 'SELECTED'),
             completed: reviewCampaignApplicationList.filter(app => ['SUBMITTED', 'RETURNED', 'COMPLETED'].includes(app.status)),
-            cancelled: reviewCampaignApplicationList.filter(app => app.status === 'CANCELLED')
+            cancelled: reviewCampaignApplicationList.filter(app => ['CANCELLED', 'REJECTED'].includes(app.status))
         };
     }, [reviewCampaignApplicationList]);
 
@@ -169,9 +170,7 @@ function Detail() {
                         <CompletedList completedList={lists.completed} reviewCampaignChannelView={reviewCampaignChannelView} campaign={campaign} fetchReviewCampaignApplicationList={fetchReviewCampaignApplicationList} />
                     </Tabs.Content>
                     <Tabs.Content value="CANCELLED">
-                        <Stack>
-                            <Text>총 {lists.cancelled.length}명의 데이터가 있습니다.</Text>
-                        </Stack>
+                        <RejectedList cancelledList={lists.cancelled} reviewCampaignChannelView={reviewCampaignChannelView} />
                     </Tabs.Content>
                 </Tabs.Root>
             </Stack>

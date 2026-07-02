@@ -34,6 +34,25 @@ export const updateOrderStatus = async (order_codes, status) => {
 
     await orderModel.updateOrderStatus(order_codes, status);
     await orderModel.updateOrderItemStatus(orderItemCodes, status);
+    
+    if (status === 'PAID' || status === 'DELIVERED') {
+        const db = await import("../../../config/db.js");
+        const notificationModel = await import("../../../models/notificationModel.js");
+        const [orders] = await db.default.query(`SELECT order_code, user_code FROM product_order WHERE order_code IN (?)`, [order_codes]);
+        
+        for (const order of orders) {
+            const message = status === 'PAID' 
+                ? `[결제완료] 상품의 결제가 완료되었습니다. (주문번호: ${order.order_code})`
+                : `[배송완료] 상품이 배송 완료되었습니다. (주문번호: ${order.order_code})`;
+            await notificationModel.insertNotification(
+                order.user_code,
+                'SHOP',
+                message,
+                `/mypage/shop/order/${order.order_code}`
+            );
+        }
+    }
+    
     return { success: true };
 }
 
@@ -78,9 +97,49 @@ export const updateProductOrderClaimDetailStatus = async (order_claim_codes, sta
 }
 
 export const updateProductOrderClaimsRejected = async (order_claim_codes) => {
-    return await orderModel.updateProductOrderClaimsRejected(order_claim_codes);
+    const result = await orderModel.updateProductOrderClaimsRejected(order_claim_codes);
+    
+    const db = await import("../../../config/db.js");
+    const notificationModel = await import("../../../models/notificationModel.js");
+    const [claims] = await db.default.query(`
+        SELECT poc.order_claim_code, po.user_code, po.order_code
+        FROM product_order_claim poc
+        JOIN product_order po ON poc.order_code = po.order_code
+        WHERE poc.order_claim_code IN (?)
+    `, [order_claim_codes]);
+    
+    for (const claim of claims) {
+        await notificationModel.insertNotification(
+            claim.user_code,
+            'SHOP',
+            `[요청 반려] 고객님의 취소/반품/교환 요청이 반려되었습니다. (주문번호: ${claim.order_code})`,
+            `/mypage/shop/order/${claim.order_code}`
+        );
+    }
+    
+    return result;
 }
 
 export const updateProductOrderClaimRefund = async ({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code }) => {
-    return await orderModel.updateProductOrderClaimRefund({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code });
+    const result = await orderModel.updateProductOrderClaimRefund({ total_product_amount, deducted_delivery_fee, refund_charge_amount, total_refund_amount, refund_method, order_claim_code });
+    
+    const db = await import("../../../config/db.js");
+    const notificationModel = await import("../../../models/notificationModel.js");
+    const [claims] = await db.default.query(`
+        SELECT poc.order_claim_code, po.user_code, po.order_code
+        FROM product_order_claim poc
+        JOIN product_order po ON poc.order_code = po.order_code
+        WHERE poc.order_claim_code = ?
+    `, [order_claim_code]);
+    
+    for (const claim of claims) {
+        await notificationModel.insertNotification(
+            claim.user_code,
+            'SHOP',
+            `[환불 완료] 고객님의 환불이 정상적으로 처리되었습니다. (주문번호: ${claim.order_code})`,
+            `/mypage/shop/order/${claim.order_code}`
+        );
+    }
+    
+    return result;
 }

@@ -1,4 +1,5 @@
 import db from '../../../config/db.js';
+import { applyAutomaticCampaignTransitions } from '../../review/reviewCampaignModel.js';
 
 /**
  * @description 리뷰 캠페인 입력
@@ -143,6 +144,7 @@ export const deleteReviewCampaignRewards = async (campaign_code) => {
  * @returns {Object} 리뷰 캠페인 전체 목록 정보
  */
 export const getReviewCampaignList = async () => {
+    await applyAutomaticCampaignTransitions();
     const updateSql = `
         UPDATE review_campaign
         SET state = CASE
@@ -214,6 +216,7 @@ export const getReviewCampaignChannelView = async () => {
  * @returns {Object} 리뷰 캠페인 상세 정보
  */
 export const getReviewCampaign = async (campaign_code) => {
+    await applyAutomaticCampaignTransitions();
     const updateSql = `
         UPDATE review_campaign
         SET state = CASE
@@ -262,6 +265,7 @@ export const getReviewCampaign = async (campaign_code) => {
  * @returns {Object} 리뷰 캠페인 리뷰어 선정 목록 정보
  */
 export const getReviewCampaignApplicationList = async (campaign_code) => {
+    await applyAutomaticCampaignTransitions();
     // 캠페인 상태 동기화: 리뷰 중(REVIEWING)인 캠페인의 모든 신청자가 완료(COMPLETED) 상태인지 확인
     const [campaignRows] = await db.query(`SELECT state FROM review_campaign WHERE campaign_code = ?`, [campaign_code]);
     if (campaignRows.length > 0 && campaignRows[0].state === 'REVIEWING') {

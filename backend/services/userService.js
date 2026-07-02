@@ -156,3 +156,33 @@ export const userWithdraw = async (user_code, password) => {
 export const updateLastLogin = async (user_code) => {
     await model.updateLastLogin(user_code);
 }
+
+export const findAccount = async (name, phone) => {
+    const user = await model.getUserByNameAndPhone(name, phone);
+    if (!user) return null;
+    
+    // Masking email (e.g. test@gmail.com -> te**@gmail.com)
+    const emailParts = user.email.split('@');
+    let maskedId = emailParts[0];
+    if (maskedId.length > 2) {
+        maskedId = maskedId.substring(0, 2) + '*'.repeat(maskedId.length - 2);
+    }
+    
+    return {
+        user_code: user.user_code,
+        email: `${maskedId}@${emailParts[1]}`,
+        name: user.name
+    };
+}
+
+export const resetPassword = async (user_code, name, phone, newPassword) => {
+    // Validate that the user exists with matching name and phone
+    const user = await model.getUserByNameAndPhone(name, phone);
+    if (!user || user.user_code !== user_code) {
+        return { result: false, message: '사용자 정보가 일치하지 않습니다.' };
+    }
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await model.updateUserPassword(user_code, hashedPassword);
+    return { result: true };
+}

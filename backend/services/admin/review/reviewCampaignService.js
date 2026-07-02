@@ -123,7 +123,27 @@ export const getReviewCampaignApplicationList = async (campaign_code) => {
 }
 
 export const selectReviewCampaignApplication = async (campaign_application_code) => {
-    return await model.selectReviewCampaignApplication(campaign_application_code);
+    const result = await model.selectReviewCampaignApplication(campaign_application_code);
+    
+    const db = await import("../../../config/db.js");
+    const notificationModel = await import("../../../models/notificationModel.js");
+    const [apps] = await db.default.query(`
+        SELECT rca.user_code, rc.title 
+        FROM review_campaign_application rca
+        JOIN review_campaign rc ON rca.campaign_code = rc.campaign_code
+        WHERE rca.campaign_application_code = ?
+    `, [campaign_application_code]);
+    
+    if (apps.length > 0) {
+        await notificationModel.insertNotification(
+            apps[0].user_code,
+            'REVIEW',
+            `[리뷰어 선정] 축하합니다! '${apps[0].title}' 캠페인의 리뷰어로 선정되셨습니다.`,
+            `/mypage/review/${campaign_application_code}`
+        );
+    }
+    
+    return result;
 }
 
 export const getUserAddress = async (address_code) => {
@@ -145,7 +165,27 @@ export const getReviewCampaignApplicationDelivery = async (campaign_application_
 
 export const insertReviewCampaignFeedback = async (data) => {
     const campaign_feedback_code = generateUniqueId();
-    return await model.insertReviewCampaignFeedback({ ...data, campaign_feedback_code });
+    const result = await model.insertReviewCampaignFeedback({ ...data, campaign_feedback_code });
+    
+    const db = await import("../../../config/db.js");
+    const notificationModel = await import("../../../models/notificationModel.js");
+    const [apps] = await db.default.query(`
+        SELECT rca.user_code, rc.title 
+        FROM review_campaign_application rca
+        JOIN review_campaign rc ON rca.campaign_code = rc.campaign_code
+        WHERE rca.campaign_application_code = ?
+    `, [data.campaign_application_code]);
+    
+    if (apps.length > 0) {
+        await notificationModel.insertNotification(
+            apps[0].user_code,
+            'REVIEW',
+            `[수정 요청] '${apps[0].title}' 캠페인 리뷰에 관리자의 피드백이 등록되었습니다.`,
+            `/mypage/review/${data.campaign_application_code}`
+        );
+    }
+    
+    return result;
 }
 
 export const updateReviewCampaignFeedback = async (data) => {

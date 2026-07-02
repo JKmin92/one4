@@ -12,6 +12,8 @@ router.get('/exists/email', userController.existsEmail);
 router.post('/signIn', userController.signIn);
 router.post('/signOut', userController.signOut);
 router.post('/refresh', userController.refreshToken);
+router.post('/find-account', userController.findAccount);
+router.put('/reset-password', userController.resetPassword);
 router.get('/', authMiddleware, userController.me);
 router.get('/profile', authMiddleware, userController.getUserProfile);
 router.put('/profile', authMiddleware, upload.single('profileImage'), userController.updateUserProfile);

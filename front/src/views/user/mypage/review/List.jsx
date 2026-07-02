@@ -1,12 +1,15 @@
-import { Button, Flex, Heading, HStack, Image, Link, Stack, Status, Text } from "@chakra-ui/react";
+import { Button, Flex, Heading, HStack, Image, Link, Stack, Status, Text, Tabs } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDDay, formatDateToMonthDay } from "../../../../utils/simpleUtils";
 
 function List() {
 
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const defaultTab = searchParams.get('tab') || 'all';
+
     const [reviewApplicationList, setReviewApplicationList] = useState([]);
     const [reviewCampaignChannelView, setReviewCampaignChannelView] = useState([]);
 
@@ -45,18 +48,51 @@ function List() {
             case 'COMPLETED':
                 return { color: 'blue', text: '리뷰캠페인 완료' };
             default:
-                return 'gray';
+                return { color: 'gray', text: status };
         }
     }
 
+    const filteredList = reviewApplicationList.filter(app => {
+        if (defaultTab === 'all') return true;
+        if (defaultTab === 'applied') return app.status === 'APPLIED';
+        if (defaultTab === 'writing') return app.status === 'SELECTED' && new Date() <= new Date(app.end_write_date);
+        if (defaultTab === 'unwritten') return app.status === 'SELECTED' && new Date() > new Date(app.end_write_date);
+        if (defaultTab === 'returned') return app.status === 'RETURNED';
+        if (defaultTab === 'rejected') return app.status === 'REJECTED' || app.status === 'CANCELLED';
+        if (defaultTab === 'completed') return app.status === 'SUBMITTED' || app.status === 'COMPLETED';
+        return true;
+    });
 
+    const handleTabChange = (details) => {
+        setSearchParams({ tab: details.value });
+    };
+
+    const counts = {
+        applied: reviewApplicationList.filter(app => app.status === 'APPLIED').length,
+        writing: reviewApplicationList.filter(app => app.status === 'SELECTED' && new Date() <= new Date(app.end_write_date)).length,
+        unwritten: reviewApplicationList.filter(app => app.status === 'SELECTED' && new Date() > new Date(app.end_write_date)).length,
+        returned: reviewApplicationList.filter(app => app.status === 'RETURNED').length,
+        completed: reviewApplicationList.filter(app => app.status === 'SUBMITTED' || app.status === 'COMPLETED').length
+    };
 
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
             <Heading fontSize="sm" textAlign="left">리뷰 캠페인</Heading>
 
+            <Tabs.Root value={defaultTab} onValueChange={handleTabChange} variant="enclosed">
+                <Tabs.List>
+                    <Tabs.Trigger value="all">전체</Tabs.Trigger>
+                    <Tabs.Trigger value="applied">신청({counts.applied})</Tabs.Trigger>
+                    <Tabs.Trigger value="writing">작성중({counts.writing})</Tabs.Trigger>
+                    <Tabs.Trigger value="unwritten">미작성(기한초과)({counts.unwritten})</Tabs.Trigger>
+                    <Tabs.Trigger value="returned">수정({counts.returned})</Tabs.Trigger>
+                    <Tabs.Trigger value="completed">작성완료({counts.completed})</Tabs.Trigger>
+                    <Tabs.Trigger value="rejected">미선정</Tabs.Trigger>
+                </Tabs.List>
+            </Tabs.Root>
+
             <Flex wrap="wrap" w="full" gap="4">
-                {reviewApplicationList.map((reviewApplication) => (
+                {filteredList.map((reviewApplication) => (
                     <Stack key={reviewApplication.campaign_application_code} w={{ base: "calc(50% - 8px)", md: "calc(25% - 12px)" }} rounded="md" border="1px solid #eee" gap="0" overflow="hidden">
                         <Link href={`/mypage/review/${reviewApplication.campaign_application_code}`}>
                             <Image src={reviewApplication.main_image} alt={reviewApplication.title} />
@@ -91,22 +127,20 @@ function List() {
                                         })}
                                     </HStack>
                                 )}
-                                <Heading fontSize="sm">{reviewApplication.title}</Heading>
+                                <Heading fontSize="sm" truncate>{reviewApplication.title}</Heading>
                             </HStack>
                         </Stack>
                     </Stack>
                 ))}
 
-                {reviewApplicationList.length <= 0 && (
+                {filteredList.length <= 0 && (
                     <Stack w="full" textAlign="center" alignItems="center" py="32">
-                        <Text>리뷰 캠페인 신청 내역이 없습니다.</Text>
-                        <Button onClick={() => navigate('/review')}>리뷰 캠페인</Button>
+                        <Text>해당하는 리뷰 캠페인 내역이 없습니다.</Text>
+                        <Button onClick={() => navigate('/review')}>리뷰 캠페인 보러가기</Button>
                     </Stack>
-
                 )}
             </Flex>
         </Stack>
-
     )
 }
 

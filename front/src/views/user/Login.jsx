@@ -79,7 +79,7 @@ function Login() {
                                 <Switch.Control />
                                 <Switch.Label fontSize="sm" cursor="pointer">자동 로그인</Switch.Label>
                             </Switch.Root>
-                            <Link href="#" fontSize="sm">계정 찾기</Link>
+                            <Link href="/find-account" fontSize="sm">계정 찾기</Link>
                         </HStack>
                         <Button type="submit">로그인</Button>
                         <Stack separator={<StackSeparator />} gap="6">

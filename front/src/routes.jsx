@@ -4,6 +4,7 @@ import GeneralLayout from './views/common/Layout';
 
 import Login from './views/user/Login';
 import Join from './views/user/Join';
+import FindAccount from './views/user/FindAccount';
 
 import MypageLayout from './views/user/mypage/Layout';
 import MypageMain from './views/user/mypage/Main';
@@ -14,6 +15,7 @@ import MypageOrderList from './views/user/mypage/shop/List';
 import MypageOrderDetail from './views/user/mypage/shop/Detail';
 import MypagePoint from './views/user/mypage/point/List';
 import MypageRecentProducts from './views/user/mypage/RecentProducts';
+import MypageNotificationList from './views/user/mypage/NotificationList';
 
 import ShopLayout from './views/shop/common/Layout';
 import ShopMain from './views/shop/Main';
@@ -83,7 +85,8 @@ const router = createBrowserRouter([
         element: <GeneralLayout />,
         children: [
             { path: '/login', element: <Login /> },
-            { path: '/join', element: <Join /> }
+            { path: '/join', element: <Join /> },
+            { path: '/find-account', element: <FindAccount /> }
         ]
     }, {
         path: '/mypage',
@@ -96,7 +99,8 @@ const router = createBrowserRouter([
             { path: 'order', element: <MypageOrderList /> },
             { path: 'order/:order_code', element: <MypageOrderDetail /> },
             { path: 'point', element: <MypagePoint /> },
-            { path: 'recent', element: <MypageRecentProducts /> }
+            { path: 'recent', element: <MypageRecentProducts /> },
+            { path: 'notifications', element: <MypageNotificationList /> }
         ]
     }, {
         path: '/admin',

@@ -1,7 +1,22 @@
 import db from "../../config/db.js";
 import { generateUniqueId } from "../../utils/customUtils.js";
 
+export const applyAutomaticCampaignTransitions = async () => {
+    // start_write_date의 자정(00:00:00)이 지났을 때 아직 APPLIED인 사람을 REJECTED로 일괄 업데이트합니다.
+    // 날짜 비교를 위해 DATE() 함수로 start_write_date를 비교할 수 있습니다. 
+    // 혹은 NOW() >= start_write_date 
+    const sql = `
+        UPDATE review_campaign_application rca
+        JOIN review_campaign rc ON rca.campaign_code = rc.campaign_code
+        SET rca.status = 'REJECTED'
+        WHERE rca.status = 'APPLIED'
+          AND rc.start_write_date <= NOW()
+    `;
+    await db.query(sql);
+};
+
 export const getReviewCampaign = async (campaign_code) => {
+    await applyAutomaticCampaignTransitions();
     const sql = `SELECT rc.*,
             (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = rc.campaign_code AND rca.status = 'APPLIED') AS application_count
             FROM review_campaign rc WHERE campaign_code = ?`;
@@ -38,6 +53,7 @@ export const getReviewCategory = async () => {
 }
 
 export const getReviewCampaignList = async (category_code) => {
+    await applyAutomaticCampaignTransitions();
     // 1. 데이터를 가져오기 전 현재 시간에 맞춰 상태(state) 최신화 업데이트
     const updateSql = `
         UPDATE review_campaign
@@ -121,6 +137,7 @@ export const insertUserAddress = async (user_address) => {
 }
 
 export const getUserReviewCampaignApplicationList = async (user_code) => {
+    await applyAutomaticCampaignTransitions();
     const sql = `
         SELECT 
             rca.*, 
@@ -150,6 +167,7 @@ export const getUserReviewCampaignApplicationList = async (user_code) => {
 }
 
 export const getUserReviewCampaignApplication = async (campaign_application_code, user_code) => {
+    await applyAutomaticCampaignTransitions();
     const sql = `
         SELECT 
             rca.*, 

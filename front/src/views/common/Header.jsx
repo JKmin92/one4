@@ -3,6 +3,7 @@ import { LuAlignJustify, LuBell, LuEye, LuSearch, LuShoppingCart, LuUserRound } 
 import { useAuth } from "../../utils/useAuth";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/api";
+import NotificationDropdown from "../../components/common/NotificationDropdown";
 import Category from "./Category";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -101,12 +102,14 @@ function Header() {
                                         <Icon size="md"><LuEye /></Icon>
                                         <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
                                     </Link>
-                                ) : <Link href="/cart">
-                                    <Icon size="md"><LuShoppingCart /></Icon>
-                                    <Float><Circle size="4" bg="red" color="white" fontSize="xs">{basketCount}</Circle></Float>
-                                </Link>}
+                                ) : !isUserPage ? (
+                                    <Link href="/cart">
+                                        <Icon size="md"><LuShoppingCart /></Icon>
+                                        <Float><Circle size="4" bg="red" color="white" fontSize="xs">{basketCount}</Circle></Float>
+                                    </Link>
+                                ) : null}
                             </Group>
-                            <Icon size="md"><LuBell /></Icon>
+                            <NotificationDropdown />
                             <Menu.Root>
                                 <Menu.Trigger>
                                     <Avatar.Root>

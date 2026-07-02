@@ -2,6 +2,8 @@ import { Avatar, Button, Circle, CloseButton, Flex, Float, Group, HStack, Icon, 
 import { useState } from "react";
 import { LuAlignJustify, LuBell, LuSearch, LuShoppingCart, LuUserRound } from "react-icons/lu";
 import { useAuth } from "../../../utils/useAuth";
+import axiosInstance from "../../../utils/api";
+import NotificationDropdown from "../../../components/common/NotificationDropdown";
 
 function Header() {
 
@@ -70,7 +72,7 @@ function Header() {
                         </HStack>
                     ) : (
                         <>
-                            <Icon size="md"><LuBell /></Icon>
+                            <NotificationDropdown />
                             <Menu.Root>
                                 <Menu.Trigger rounded="full">
                                     <Avatar.Root><LuUserRound /></Avatar.Root>

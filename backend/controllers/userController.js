@@ -356,3 +356,29 @@ export const userWithdraw = async (req, res, next) => {
         next(err);
     }
 }
+
+export const findAccount = async (req, res, next) => {
+    try {
+        const { name, phone } = req.body;
+        const result = await userService.findAccount(name, phone);
+        if (!result) {
+            return res.status(404).json({ message: '일치하는 계정 정보가 없습니다.' });
+        }
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { user_code, name, phone, newPassword } = req.body;
+        const result = await userService.resetPassword(user_code, name, phone, newPassword);
+        if (!result.result) {
+            return res.status(400).json(result);
+        }
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}

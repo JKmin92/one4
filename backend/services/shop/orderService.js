@@ -83,6 +83,17 @@ export const insertProductOrder = async (data) => {
             await orderModel.insertProductOrderItem(product_order_items[i]);
         }
         await orderModel.insertProductOrderPayment(product_order_payment);
+
+        if (data.selectedPayment.payment_type === 'BANK') {
+            const notificationModel = await import("../../models/notificationModel.js");
+            await notificationModel.insertNotification(
+                data.user_code,
+                'SHOP',
+                `[결제대기] 주문이 정상적으로 접수되었습니다. 무통장 입금을 진행해 주세요. (주문번호: ${order_code})`,
+                `/mypage/shop/order/${order_code}`
+            );
+        }
+
         return { result: true, order_code: order_code };
     } catch (error) {
         console.log(error);

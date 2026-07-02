@@ -11,6 +11,11 @@ export const insertUser = async (data) => {
     return rows[0];
 }
 
+export const getUserByNameAndPhone = async (name, phone) => {
+    const [rows] = await db.query(`SELECT user_code, email, name FROM user WHERE name = ? AND phone = ? AND status != 'WITHDRAW'`, [name, phone]);
+    return rows[0];
+}
+
 export const login = async ({ email }) => {
     const [rows] = await db.query(`SELECT user_code, email, name, password, marketingAgree, profile, role, status FROM user WHERE email = ? AND status != 'WITHDRAW'`, [email]);
     if (rows[0]) await db.query(`UPDATE user SET last_login_at = NOW() WHERE user_code = ?`, [rows[0].user_code]);
