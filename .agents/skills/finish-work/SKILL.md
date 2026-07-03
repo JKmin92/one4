@@ -7,10 +7,10 @@ description: Automatically dump database to backend/db, commit all changes with 
 
 When this skill is triggered (e.g., the user says "오늘 마무리다", "오늘 끝이야", "오늘 작업은 끝났다"), you must perform the following actions:
 
-1. **Dump Database**:
-   - Check the database configuration (e.g., `DB_USER`, `DB_PASSWORD`, `DB_NAME` in `backend/config/.env` or root `.env`).
+1. **Dump Database (Docker)**:
+   - Check that Docker is running.
    - Create the `backend/db/` directory if it does not already exist.
-   - Run `mysqldump -u <DB_USER> -p<DB_PASSWORD> <DB_NAME> > backend/db/backup.sql` (or similar command depending on the OS and mysql installation) to export the database tables and data.
+   - Use the `run_command` tool to run: `cmd /c "docker exec one4_mysql mysqldump -uroot newone4 > backend\db\backup.sql"`
    - Wait for the dump command to complete successfully.
 
 2. **Stage Changes**:
@@ -23,9 +23,11 @@ When this skill is triggered (e.g., the user says "오늘 마무리다", "오늘
 4. **Push to Remote**:
    - Run `git push` to push the commit to the remote GitHub repository.
 
-5. **Stop Development Servers**:
-   - Use the `manage_task` tool with `Action='list'` to find any running background tasks.
-   - If there are any background tasks running the frontend or backend servers (e.g. `Start frontend`, `Start backend`, `npm run dev`, `nodemon`), use the `manage_task` tool with `Action='kill'` to terminate them.
+5. **Stop Development Servers (Docker)**:
+   - Use the `run_command` tool.
+   - `CommandLine`: `docker-compose stop`
+   - `Cwd`: `c:\Users\정기민\Documents\one4`
+   - `WaitMsBeforeAsync`: 5000
 
 6. **Notify User**:
    - Once all steps are completed successfully, notify the user that the database was backed up, files were successfully committed/pushed, and the development servers were safely shut down. Wish them a good day/night!
