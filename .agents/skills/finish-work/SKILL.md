@@ -23,5 +23,9 @@ When this skill is triggered (e.g., the user says "오늘 마무리다", "오늘
 4. **Push to Remote**:
    - Run `git push` to push the commit to the remote GitHub repository.
 
-5. **Notify User**:
-   - Once all steps are completed successfully, notify the user that the database was backed up and all files were successfully committed and pushed. Wish them a good day/night!
+5. **Stop Development Servers**:
+   - Use the `manage_task` tool with `Action='list'` to find any running background tasks.
+   - If there are any background tasks running the frontend or backend servers (e.g. `Start frontend`, `Start backend`, `npm run dev`, `nodemon`), use the `manage_task` tool with `Action='kill'` to terminate them.
+
+6. **Notify User**:
+   - Once all steps are completed successfully, notify the user that the database was backed up, files were successfully committed/pushed, and the development servers were safely shut down. Wish them a good day/night!

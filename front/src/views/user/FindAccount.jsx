@@ -14,9 +14,19 @@ export default function FindAccount() {
     const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
     const navigate = useNavigate();
 
+    const handlePhoneChange = (e) => {
+        let val = e.target.value.replace(/[^0-9]/g, '');
+        if (val.length > 3 && val.length <= 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3);
+        } else if (val.length > 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+        }
+        setPhone(val);
+    };
+
     const handleFindAccount = async () => {
-        if (!name || !phone) {
-            toaster.create({ title: '이름과 핸드폰 번호를 입력해주세요.', type: 'warning' });
+        if (!name || phone.length < 13) {
+            toaster.create({ title: '이름과 핸드폰 번호(11자리)를 정확히 입력해주세요.', type: 'warning' });
             return;
         }
         try {
@@ -62,7 +72,7 @@ export default function FindAccount() {
                         </Field.Root>
                         <Field.Root>
                             <Text fontSize="sm" fontWeight="bold" mb="1">핸드폰 번호</Text>
-                            <Input placeholder="010-1234-5678" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                            <Input placeholder="010-1234-5678" maxLength={13} value={phone} onChange={handlePhoneChange} />
                         </Field.Root>
                         <Button width="full" onClick={handleFindAccount} mt={4}>계정 찾기</Button>
                     </Stack>

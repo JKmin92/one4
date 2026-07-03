@@ -9,9 +9,19 @@ import { useAuth } from "../../utils/useAuth";
 
 function Join() {
 
-    const { register, handleSubmit, formState: { errors }, setError } = useForm();
+    const { register, handleSubmit, formState: { errors }, setError, setValue } = useForm();
     const { setUser, setAccessToken } = useAuth();
     const [step, setStep] = useState(0);
+
+    const handlePhoneChange = (e) => {
+        let val = e.target.value.replace(/[^0-9]/g, '');
+        if (val.length > 3 && val.length <= 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3);
+        } else if (val.length > 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+        }
+        setValue('phone', val);
+    };
 
     const agreementInitValues = [
         { label: '이용 약관에 동의 하시겠습니까?', checked: false, value: 'agree1', essential: true },
@@ -36,7 +46,7 @@ function Join() {
         if (data.password.length < 8) { setError('password', { message: '비밀번호는 8자 이상 입력해주세요.' }); checkData = false; }
         if (data.password != data.password2) { setError('password2', { message: '비밀번호가 맞지 않습니다.' }); checkData = false; }
         if (data.name.length < 1) { setError('name', { message: '이름을 입력해주세요.' }); checkData = false; }
-        if (data.phone.length < 1) { setError('phone', { message: '연락처를 입력해주세요.' }); checkData = false; }
+        if (data.phone.length < 13) { setError('phone', { message: '연락처 11자리를 정확히 입력해주세요.' }); checkData = false; }
 
         agreementValues.map((agreeVal) => {
             if (agreeVal.essential && !agreeVal.checked) {
@@ -111,7 +121,11 @@ function Join() {
 
                                                 <Field.Root invalid={!!errors.phone}>
                                                     <InputGroup startAddon={<LuSmartphone />}>
-                                                        <Input placeholder="연락처" {...register("phone", { required: "연락처를 입력해주세요." })} />
+                                                        <Input placeholder="연락처" maxLength={13} {...register("phone", { 
+                                                            required: "연락처를 입력해주세요.", 
+                                                            minLength: { value: 13, message: "연락처 11자리를 정확히 입력해주세요." },
+                                                            onChange: handlePhoneChange 
+                                                        })} />
                                                     </InputGroup>
                                                     <Field.ErrorText>{errors.phone?.message}</Field.ErrorText>
                                                 </Field.Root>

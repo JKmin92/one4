@@ -42,7 +42,22 @@ function PrivateInfo({ user }) {
         }
     }
 
+    const handlePhoneChange = (e) => {
+        let val = e.target.value.replace(/[^0-9]/g, '');
+        if (val.length > 3 && val.length <= 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3);
+        } else if (val.length > 7) {
+            val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+        }
+        setPhone(val);
+    };
+
     const onSubmit = async () => {
+        if (!phone || phone.length < 13) {
+            toaster.create({ title: '연락처 11자리를 정확히 입력해주세요.', type: 'warning' });
+            return;
+        }
+
         const formData = new FormData();
         formData.append('name', name);
         formData.append('phone', phone);
@@ -127,7 +142,7 @@ function PrivateInfo({ user }) {
                                     </Table.Row>
                                     <Table.Row>
                                         <Table.ColumnHeader>연락처</Table.ColumnHeader>
-                                        <Table.Cell><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Table.Cell>
+                                        <Table.Cell><Input value={phone} maxLength={13} onChange={handlePhoneChange} /></Table.Cell>
                                     </Table.Row>
                                     <Table.Row>
                                         <Table.ColumnHeader>마케팅 수신동의</Table.ColumnHeader>
