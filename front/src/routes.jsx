@@ -5,6 +5,7 @@ import GeneralLayout from './views/common/Layout';
 import Login from './views/user/Login';
 import Join from './views/user/Join';
 import FindAccount from './views/user/FindAccount';
+import AdminLogin from './views/admin/Login';
 
 import MypageLayout from './views/user/mypage/Layout';
 import MypageMain from './views/user/mypage/Main';
@@ -66,6 +67,12 @@ import AdminMemberUserList from './views/admin/member/user/List';
 import AdminMemberUserDetail from './views/admin/member/user/Detail';
 import AdminMemberPointPayoutList from './views/admin/member/point/PayoutList';
 
+import AdminMemberList from './views/admin/manager/List';
+import AdminMemberRegister from './views/admin/manager/Register';
+
+import AdminPopupList from './views/admin/popup/List';
+import AdminPopupRegister from './views/admin/popup/Register';
+
 const router = createBrowserRouter([
     {
         path: '/',
@@ -103,6 +110,9 @@ const router = createBrowserRouter([
             { path: 'notifications', element: <MypageNotificationList /> }
         ]
     }, {
+        path: '/admin/login',
+        element: <AdminLogin />
+    }, {
         path: '/admin',
         element: <AdminLayout />,
         children: [
@@ -137,7 +147,13 @@ const router = createBrowserRouter([
             { path: 'review/notice/update/:id', element: <AdminReviewNoticeRegister /> },
             { path: 'member/user/list', element: <AdminMemberUserList /> },
             { path: 'member/user/:id', element: <AdminMemberUserDetail /> },
-            { path: 'member/point/payout/list', element: <AdminMemberPointPayoutList /> }
+            { path: 'member/point/payout/list', element: <AdminMemberPointPayoutList /> },
+            { path: 'manager/list', element: <AdminMemberList /> },
+            { path: 'manager/register', element: <AdminMemberRegister /> },
+            { path: 'manager/update/:id', element: <AdminMemberRegister /> },
+            { path: 'popup/list', element: <AdminPopupList /> },
+            { path: 'popup/register', element: <AdminPopupRegister /> },
+            { path: 'popup/update/:id', element: <AdminPopupRegister /> }
         ]
     }, {
         path: '/review',

@@ -64,6 +64,24 @@ export const signIn = async (req, res, next) => {
     }
 }
 
+export const adminSignIn = async (req, res, next) => {
+    try {
+        const data = req.body;
+        const autoLogin = true; // Admin logins can persist similarly
+        const user = await userService.signIn(data);
+        if (!user) return res.status(200).json({ success: false, error: '확인되는 계정이 없습니다.' });
+
+        if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+            return res.status(200).json({ success: false, error: '관리자 권한이 없습니다.' });
+        }
+
+        const accessToken = await issueTokens(user, res, autoLogin);
+        res.status(200).json({ ...user, accessToken });
+    } catch (err) {
+        next(err);
+    }
+}
+
 export const refreshToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.status(200).send({ accessToken: null });

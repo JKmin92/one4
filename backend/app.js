@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import userRoutes from './routes/userRoutes.js';
+import adminUserRoutes from './routes/admin/userRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import adminProductRoutes from './routes/admin/shop/productRoutes.js';
 import adminPromotionRoutes from './routes/admin/shop/promotionRoutes.js';
@@ -19,6 +20,9 @@ import adminMemberUserRoutes from './routes/admin/member/userRoutes.js';
 import adminReviewDisplayRoutes from './routes/admin/review/displayRoutes.js';
 import adminReviewNoticeRoutes from './routes/admin/review/noticeRoutes.js';
 import reviewNoticeRoutes from './routes/review/noticeRoutes.js';
+import adminManagerRoutes from './routes/admin/manager/managerRoutes.js';
+import adminPopupRoutes from './routes/admin/popup/popupRoutes.js';
+import commonPopupRoutes from './routes/common/popupRoutes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -35,6 +39,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/admin/shop/product', adminProductRoutes);
 app.use('/api/admin/shop/promotion', adminPromotionRoutes);
+app.use('/api/admin/user', adminUserRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/user/notifications', notificationRoutes);
 app.use('/api/shop/product', productRoutes);
@@ -50,6 +55,9 @@ app.use('/api/admin/shop/order', adminOrderRoutes);
 app.use('/api/admin/review/display', adminReviewDisplayRoutes);
 app.use('/api/admin/review/notice', adminReviewNoticeRoutes);
 app.use('/api/review/notice', reviewNoticeRoutes);
+app.use('/api/admin/manager', adminManagerRoutes);
+app.use('/api/admin/popup', adminPopupRoutes);
+app.use('/api/popup', commonPopupRoutes);
 
 app.use((err, req, res, next) => {
     console.error('🔥 Server Error:', err);

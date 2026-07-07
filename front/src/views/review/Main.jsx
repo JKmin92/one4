@@ -12,6 +12,16 @@ import axiosInstance from "../../utils/api";
 function Main() {
     const [mainBanner, setMainBanner] = useState([]);
     const [noticeList, setNoticeList] = useState([]);
+    const [popups, setPopups] = useState([]);
+
+    const fetchPopups = async () => {
+        try {
+            const res = await axiosInstance.get('/popup/review');
+            setPopups(res.data);
+        } catch (e) {
+            console.error("Failed to load review popups:", e);
+        }
+    };
 
     const fetchBanners = async () => {
         try {
@@ -32,6 +42,7 @@ function Main() {
     }
 
     useEffect(() => {
+        fetchPopups();
         fetchBanners();
         fetchNotices();
     }, []);
@@ -153,6 +164,16 @@ function Main() {
 
     return (
         <Stack p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }} gap="20">
+            {/* 팝업 데이터 렌더링 영역 (디자인 시 활용하세요) */}
+            {popups.map(popup => (
+                <Box key={popup.popup_code} position="fixed" top="100px" left="100px" zIndex="9999" bg="white" shadow="md" rounded="md" p="2" border="1px solid #ccc">
+                    <Text fontSize="sm" mb="2">{popup.title}</Text>
+                    <a href={popup.link_url || '#'} target={popup.is_new_tab ? '_blank' : '_self'} rel="noreferrer">
+                        <img src={popup.image_url} alt={popup.title} style={{ width: '200px', height: '200px', objectFit: 'cover' }} />
+                    </a>
+                </Box>
+            ))}
+
             <Stack gap="16">
                 <Box position="relative" className="Mainbanner">
                     <IconButton className="swiper_prev" {...swiperPrev}><LuChevronLeft /></IconButton>

@@ -87,7 +87,7 @@ function List() {
                     </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                    {userList.map((user) => {
+                    {(Array.isArray(userList) ? userList : []).map((user) => {
                         return (
                             <Table.Row key={user.user_code}>
                                 <Table.Cell textAlign="center">{user.user_code}</Table.Cell>
@@ -97,7 +97,7 @@ function List() {
                                 <Table.Cell textAlign="center">
                                     <HStack justifyContent="center">
                                         {channels.map((channel) => {
-                                            const matchChannel = user.review_channels.find(c => c.channel_url.includes(channel.value));
+                                            const matchChannel = user.review_channels?.find(c => c.channel_url?.includes(channel.value));
                                             return matchChannel ? (
                                                 <Link href={matchChannel.channel_url} target="_blank" key={channel.value} display="inline-block" flexShrink={0}>
                                                     <Image src={`/resources/img/logo/${channel.icon}`} w="5" h="5" rounded="md" />

@@ -2,7 +2,7 @@ import { Button, Field, Fieldset, Heading, HStack, Input, Link, Stack, StackSepa
 import { PasswordInput } from "../../components/ui/password-input";
 import { useAuth } from "../../utils/useAuth";
 import { useForm } from "react-hook-form";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { toaster } from "../../components/ui/toaster";
 import axiosInstance from "../../utils/api";
 import { getLocalRecentProducts, clearLocalRecentProducts } from "../../utils/recentProducts";
@@ -16,9 +16,13 @@ function Login() {
     const apple = {...snsButtonStyle, backgroundImage:'url(/resources/img/logo/apple.svg)', backgroundSize:'25px', borderWidth:'1px', borderColor:'border.emphasized', backgroundPosition:'center calc(50% - 2px)'}
 
     const { register, handleSubmit, formState: {errors}} = useForm();
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+
+    if (user) {
+        return <Navigate to="/" replace />;
+    }
 
     const onSubmit = async (data) => {
         try {

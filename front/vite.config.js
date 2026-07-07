@@ -7,6 +7,9 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 80,
+    watch: {
+      usePolling: true
+    },
     proxy: {
       '/api': {
         target : process.env.BACKEND_URL || 'http://localhost:5000',

@@ -102,6 +102,26 @@ function SideMenu() {
         }
     ];
 
+    const managerCategory = [
+        {
+            path: '', label: '권한 및 계정',
+            children: [
+                { path: ['list'], label: '관리자 리스트' },
+                { path: ['register', 'update'], label: '관리자 등록' },
+            ]
+        }
+    ];
+
+    const popupCategory = [
+        {
+            path: '', label: '팝업 관리',
+            children: [
+                { path: ['list'], label: '팝업 리스트' },
+                { path: ['register', 'update'], label: '팝업 등록' },
+            ]
+        }
+    ];
+
     const [opens, setOpens] = useState([]);
     const [activeCategory, setActiveCategory] = useState([]);
 
@@ -116,6 +136,12 @@ function SideMenu() {
         } else if (pathname.includes('/admin/member')) {
             setOpens(memberCategory.map(c => pathname.includes(`/${c.path}`)))
             setActiveCategory(memberCategory)
+        } else if (pathname.includes('/admin/manager')) {
+            setOpens(managerCategory.map(() => true))
+            setActiveCategory(managerCategory)
+        } else if (pathname.includes('/admin/popup')) {
+            setOpens(popupCategory.map(() => true))
+            setActiveCategory(popupCategory)
         }
     }, [pathname]);
 
@@ -133,11 +159,12 @@ function SideMenu() {
                                 <Stack>
                                     {category.children.map((children, i) => {
                                         const paths = Array.isArray(children.path) ? children.path : [children.path];
-                                        const isActive = paths.some(p => pathname.includes(`${category.path}/${p}`));
+                                        const categoryPrefix = category.path ? `${category.path}/` : '';
+                                        const isActive = paths.some(p => pathname.includes(`/${categoryPrefix}${p}`));
                                         return (
                                             <Link
                                                 key={i}
-                                                href={`/admin/${adminSubPath}/${category.path}/${paths[0]}`}
+                                                href={`/admin/${adminSubPath}/${categoryPrefix}${paths[0]}`}
                                                 {...linkStyle}
                                                 {...(isActive ? linkActiveStyle : null)}
                                             >
