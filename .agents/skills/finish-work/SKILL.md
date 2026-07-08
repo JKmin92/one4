@@ -29,5 +29,10 @@ When this skill is triggered (e.g., the user says "오늘 마무리다", "오늘
    - `Cwd`: `c:\Users\정기민\Documents\one4`
    - `WaitMsBeforeAsync`: 5000
 
-6. **Notify User**:
-   - Once all steps are completed successfully, notify the user that the database was backed up, files were successfully committed/pushed, and the development servers were safely shut down. Wish them a good day/night!
+6. **Notion Rollover (Uncompleted Tasks)**:
+   - Use `notion-mcp-server` tools (`API-post-search`, `API-get-block-children`) to find today's "업무 내역" page and check the `to_do` blocks.
+   - If there are unchecked tasks (`checked: false`), list them to the user.
+   - Ask the user for permission to move these tasks to tomorrow. If approved, use `API-post-page` to create tomorrow's "업무 내역" page with these uncompleted tasks.
+
+7. **Notify User**:
+   - Once all steps are completed successfully, notify the user that the database was backed up, files were successfully committed/pushed, the development servers were safely shut down, and the Notion rollover was handled. Wish them a good day/night!

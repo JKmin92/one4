@@ -11,6 +11,47 @@ export const getReviewCampaign = async (req, res, next) => {
     }
 }
 
+export const addCampaignViewLog = async (req, res, next) => {
+    try {
+        const { campaign_code } = req.body;
+        const user = req.user;
+        console.log(`[API CALL] POST /review/campaign/view - user: ${user?.user_code}, campaign: ${campaign_code}`);
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        await reviewCampaignService.addCampaignViewLog(user.user_code, campaign_code);
+        console.log(`[API CALL] Successfully inserted log for ${user.user_code} and ${campaign_code}`);
+        res.status(200).json(true);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const syncCampaignViewLog = async (req, res, next) => {
+    try {
+        const { campaign_codes } = req.body;
+        const user = req.user;
+        if (!user) return res.status(401).json({ message: "로그인이 필요합니다." });
+        
+        if (campaign_codes && campaign_codes.length > 0) {
+            await reviewCampaignService.syncCampaignViewLog(user.user_code, campaign_codes);
+        }
+        res.status(200).json(true);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getUserActivity = async (req, res, next) => {
+    try {
+        const { local_campaign_codes } = req.body;
+        const user = req.user;
+        
+        const activity = await reviewCampaignService.getUserActivity(user?.user_code, local_campaign_codes || []);
+        res.status(200).json(activity);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export const getReviewCampaignChannelView = async (req, res, next) => {
     try {
         const channels = await reviewCampaignService.getReviewCampaignChannelView();

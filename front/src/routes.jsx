@@ -33,6 +33,7 @@ import ReviewList from './views/review/List';
 import ReviewDetail from './views/review/Detail';
 import ReviewApplication from './views/review/Application';
 import ReviewNoticeDetail from './views/review/notice/Detail';
+import ReviewViewed from './views/review/Viewed';
 
 import AdminLayout from './views/admin/common/Layout';
 import AdminProductList from './views/admin/shop/product/List';
@@ -163,7 +164,8 @@ const router = createBrowserRouter([
             { path: 'categorys/:id', element: <ReviewList /> },
             { path: 'detail/:campaign_code', element: <ReviewDetail /> },
             { path: 'application/:campaign_code', element: <ReviewApplication /> },
-            { path: 'notice/:notice_code', element: <ReviewNoticeDetail /> }
+            { path: 'notice/:notice_code', element: <ReviewNoticeDetail /> },
+            { path: 'viewed', element: <ReviewViewed /> }
         ]
     }
 ])

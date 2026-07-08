@@ -38,6 +38,41 @@ import { LuCalendar, LuImage, LuInfo, LuPlus, LuTrash } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
+
+const LocalDatePicker = ({ value, onChange, ...props }) => {
+    return (
+        <LocaleProvider locale="ko-KR">
+            <DatePicker.Root 
+                value={value ? [value] : []} 
+                onValueChange={(e) => onChange(e.value[0] || "")}
+                {...props}
+            >
+            <DatePicker.Control>
+                <DatePicker.Input placeholder="YYYY/MM/DD" />
+                <DatePicker.IndicatorGroup>
+                    <DatePicker.Trigger><LuCalendar /></DatePicker.Trigger>
+                </DatePicker.IndicatorGroup>
+            </DatePicker.Control>
+            <DatePicker.Positioner>
+                <DatePicker.Content>
+                    <DatePicker.View view="year">
+                        <DatePicker.Header />
+                        <DatePicker.YearTable />
+                    </DatePicker.View>
+                    <DatePicker.View view="month">
+                        <DatePicker.Header />
+                        <DatePicker.MonthTable />
+                    </DatePicker.View>
+                    <DatePicker.View view="day">
+                        <DatePicker.Header />
+                        <DatePicker.DayTable />
+                    </DatePicker.View>
+                </DatePicker.Content>
+            </DatePicker.Positioner>
+        </DatePicker.Root>
+        </LocaleProvider>
+    );
+};
 import RegisterEditor from "./RegisterEditor";
 import { ToggleTip } from "../../../../components/ui/toggle-tip";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -201,6 +236,7 @@ function Register() {
                     const toInputDate = (isoString) => {
                         if (!isoString) return "";
                         const date = new Date(isoString);
+                        if (isNaN(date.getTime())) return "";
                         const yyyy = date.getFullYear();
                         const mm = String(date.getMonth() + 1).padStart(2, '0');
                         const dd = String(date.getDate()).padStart(2, '0');
@@ -739,26 +775,26 @@ function Register() {
                 <HStack gap="6">
                     <Field.Root>
                         <Field.Label mb="2">모집 시작일</Field.Label>
-                        <Input type="date" value={startApplicationDate} onChange={(e) => setStartApplicationDate(e.target.value)} />
+                        <LocalDatePicker value={startApplicationDate} onChange={setStartApplicationDate} />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">모집 종료일</Field.Label>
-                        <Input type="date" value={endApplicationDate} onChange={(e) => setEndApplicationDate(e.target.value)} />
+                        <LocalDatePicker value={endApplicationDate} onChange={setEndApplicationDate} />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">발표일</Field.Label>
-                        <Input type="date" value={reviewerSelectionDate} onChange={(e) => setReviewerSelectionDate(e.target.value)} />
+                        <LocalDatePicker value={reviewerSelectionDate} onChange={setReviewerSelectionDate} />
                     </Field.Root>
                 </HStack>
 
                 <HStack gap="6">
                     <Field.Root>
                         <Field.Label mb="2">리뷰 작성 시작일</Field.Label>
-                        <Input type="date" value={startWriteDate} onChange={(e) => setStartWriteDate(e.target.value)} />
+                        <LocalDatePicker value={startWriteDate} onChange={setStartWriteDate} />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">리뷰 작성 종료일</Field.Label>
-                        <Input type="date" value={endWriteDate} onChange={(e) => setEndWriteDate(e.target.value)} />
+                        <LocalDatePicker value={endWriteDate} onChange={setEndWriteDate} />
                     </Field.Root>
                 </HStack>
             </Stack>

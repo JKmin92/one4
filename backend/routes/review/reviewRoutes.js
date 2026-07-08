@@ -1,6 +1,6 @@
 import * as reviewCampaignController from "../../controllers/review/reviewCampaignController.js";
 import * as displayController from "../../controllers/review/displayController.js";
-import { authMiddleware } from "../../middleware/authMiddleware.js";
+import { authMiddleware, optionalAuthMiddleware } from "../../middleware/authMiddleware.js";
 import express from "express";
 
 const router = express.Router();
@@ -10,6 +10,10 @@ router.get("/channel", reviewCampaignController.getReviewCampaignChannelView);
 router.get("/category", reviewCampaignController.getReviewCategory);
 router.get("/:campaign_code", reviewCampaignController.getReviewCampaign);
 router.get("/list/:category_id", reviewCampaignController.getReviewCampaignList);
+
+router.post("/view", authMiddleware, reviewCampaignController.addCampaignViewLog);
+router.post("/sync", authMiddleware, reviewCampaignController.syncCampaignViewLog);
+router.post("/user/activity", optionalAuthMiddleware, reviewCampaignController.getUserActivity);
 
 router.post("/application", authMiddleware, reviewCampaignController.insertReviewCampaignApplication);
 router.get("/user/application", authMiddleware, reviewCampaignController.getUserReviewCampaignApplicationList);

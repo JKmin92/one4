@@ -53,8 +53,7 @@ function List() {
             try {
                 const resources = await axiosInstance.get('/review/campaign/channel');
                 setReviewCampaignChannelView(resources.data);
-            } catch (error) {
-                console.error("Failed to fetch review campaign channel view", error);
+            } catch {
                 toaster.create({ title: '오류가 발생되었습니다.', type: 'error' });
             }
         };

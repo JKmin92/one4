@@ -2,9 +2,21 @@ import db from "../../config/db.js";
 import { generateUniqueId } from "../../utils/customUtils.js";
 
 export const applyAutomaticCampaignTransitions = async () => {
-    // start_write_date의 자정(00:00:00)이 지났을 때 아직 APPLIED인 사람을 REJECTED로 일괄 업데이트합니다.
-    // 날짜 비교를 위해 DATE() 함수로 start_write_date를 비교할 수 있습니다. 
-    // 혹은 NOW() >= start_write_date 
+    // 1. 캠페인 상태(state) 최신화 업데이트
+    const updateCampaignStateSql = `
+        UPDATE review_campaign
+        SET state = CASE
+            WHEN CURDATE() < DATE(start_application_date) THEN 'SCHEDULED'
+            WHEN CURDATE() >= DATE(start_application_date) AND CURDATE() <= DATE(end_application_date) THEN 'RECRUITING'
+            WHEN CURDATE() > DATE(end_application_date) THEN 'SELECTING'
+            ELSE state
+        END
+        WHERE is_display = 1 
+          AND state IN ('PENDING', 'SCHEDULED', 'RECRUITING', 'SELECTING')
+    `;
+    await db.query(updateCampaignStateSql);
+
+    // 2. start_write_date의 자정이 지났을 때 아직 APPLIED인 사람을 REJECTED로 일괄 업데이트
     const sql = `
         UPDATE review_campaign_application rca
         JOIN review_campaign rc ON rca.campaign_code = rc.campaign_code
@@ -13,6 +25,98 @@ export const applyAutomaticCampaignTransitions = async () => {
           AND rc.start_write_date <= NOW()
     `;
     await db.query(sql);
+};
+
+export const addCampaignViewLog = async (user_code, campaign_code) => {
+    const sql = `
+        INSERT INTO review_campaign_view_log (user_code, campaign_code, viewed_at)
+        VALUES (?, ?, NOW())
+        ON DUPLICATE KEY UPDATE viewed_at = NOW()
+    `;
+    await db.query(sql, [user_code, campaign_code]);
+};
+
+export const syncCampaignViewLog = async (user_code, campaign_codes) => {
+    if (!campaign_codes || campaign_codes.length === 0) return;
+    const values = campaign_codes.map(code => [user_code, code]);
+    const sql = `
+        INSERT INTO review_campaign_view_log (user_code, campaign_code)
+        VALUES ?
+        ON DUPLICATE KEY UPDATE id=id
+    `;
+    await db.query(sql, [values]);
+};
+
+export const getUserActivity = async (user_code, local_campaign_codes) => {
+    await applyAutomaticCampaignTransitions();
+    
+    let active = [];
+    let viewed = [];
+    
+    if (user_code) {
+        const cleanupSql = `
+            DELETE v FROM review_campaign_view_log v
+            JOIN review_campaign c ON v.campaign_code = c.campaign_code
+            WHERE v.user_code = ? AND c.state NOT IN ('SCHEDULED', 'RECRUITING')
+        `;
+        await db.query(cleanupSql, [user_code]);
+        
+        const viewedSql = `
+            SELECT c.*,
+            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = c.campaign_code AND rca.status = 'APPLIED') AS application_count
+            FROM review_campaign_view_log v
+            JOIN review_campaign c ON v.campaign_code = c.campaign_code
+            WHERE v.user_code = ? AND c.state = 'RECRUITING'
+            ORDER BY v.viewed_at DESC LIMIT 50
+        `;
+        const [viewedRows] = await db.query(viewedSql, [user_code]);
+        viewed = viewedRows;
+        
+        const activeSql = `
+            SELECT c.*, a.status,
+            (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = c.campaign_code AND rca.status = 'APPLIED') AS application_count
+            FROM review_campaign_application a
+            JOIN review_campaign c ON a.campaign_code = c.campaign_code
+            WHERE a.user_code = ? AND a.status IN ('APPLIED', 'SELECTED')
+            ORDER BY a.created_at DESC
+        `;
+        const [activeRows] = await db.query(activeSql, [user_code]);
+        active = activeRows;
+    } else {
+        if (local_campaign_codes && local_campaign_codes.length > 0) {
+            const viewedSql = `
+                SELECT *,
+                (SELECT COUNT(*) FROM review_campaign_application rca WHERE rca.campaign_code = review_campaign.campaign_code AND rca.status = 'APPLIED') AS application_count
+                FROM review_campaign
+                WHERE campaign_code IN (?) AND state = 'RECRUITING'
+            `;
+            const [viewedRows] = await db.query(viewedSql, [local_campaign_codes]);
+            
+            viewed = local_campaign_codes.map(code => viewedRows.find(r => r.campaign_code === code)).filter(Boolean);
+        }
+    }
+    
+    const allCampaigns = [...viewed, ...active];
+    if (allCampaigns.length > 0) {
+        const campaignCodes = [...new Set(allCampaigns.map(c => c.campaign_code))];
+        
+        const rewardSql = `SELECT * FROM review_campaign_reward WHERE campaign_code IN (?)`;
+        const [rewardRows] = await db.query(rewardSql, [campaignCodes]);
+        
+        const channelSql = `SELECT * FROM review_campaign_channel WHERE campaign_code IN (?)`;
+        const [channelRows] = await db.query(channelSql, [campaignCodes]);
+        
+        const attachExtras = (campaigns) => campaigns.map(c => ({
+            ...c,
+            rewards: rewardRows.filter(r => r.campaign_code === c.campaign_code),
+            channels: channelRows.filter(ch => ch.campaign_code === c.campaign_code)
+        }));
+        
+        viewed = attachExtras(viewed);
+        active = attachExtras(active);
+    }
+    
+    return { viewed, active };
 };
 
 export const getReviewCampaign = async (campaign_code) => {

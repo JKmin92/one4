@@ -6,6 +6,7 @@ import axiosInstance from "../../utils/api";
 import NotificationDropdown from "../../components/common/NotificationDropdown";
 import Category from "./Category";
 import { useLocation, useNavigate } from "react-router-dom";
+import CampaignActivityPopover from "./CampaignActivityPopover";
 
 function Header() {
     const [keyword, setKeyword] = useState('');
@@ -53,7 +54,7 @@ function Header() {
     }, [user]);
 
     return (
-        <Stack gap="0">
+        <Stack gap="0" position="relative" zIndex={1000}>
             <Flex {...headerLineStyle} justifyContent="space-between">
                 <HStack gap="20">
                     <HStack gap="2">
@@ -89,6 +90,7 @@ function Header() {
                     </form>
 
 
+
                     {!user ? (
                         <HStack gap={{ base: 2, md: 6 }}>
                             <Link href="/login" fontSize="sm" whiteSpace="nowrap">로그인</Link>
@@ -97,19 +99,18 @@ function Header() {
                     ) : (
                         <>
                             <Group>
-                                {location.pathname.includes('/review') ? (
-                                    <Link href="/review/viewed">
-                                        <Icon size="md"><LuEye /></Icon>
-                                        <Float><Circle size="4" bg="red" color="white" fontSize="xs">3</Circle></Float>
-                                    </Link>
-                                ) : !isUserPage ? (
+                                {location.pathname.includes('/review') && (
+                                    <CampaignActivityPopover />
+                                )}
+                                {!location.pathname.includes('/review') && !isUserPage && (
                                     <Link href="/cart">
                                         <Icon size="md"><LuShoppingCart /></Icon>
                                         <Float><Circle size="4" bg="red" color="white" fontSize="xs">{basketCount}</Circle></Float>
                                     </Link>
-                                ) : null}
+                                )}
+
+                                <NotificationDropdown />
                             </Group>
-                            <NotificationDropdown />
                             <Menu.Root>
                                 <Menu.Trigger>
                                     <Avatar.Root>

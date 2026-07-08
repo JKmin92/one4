@@ -8,6 +8,8 @@ import { useAuth } from "../../utils/useAuth";
 import { toaster } from "../../components/ui/toaster";
 import axiosInstance from "../../utils/api";
 
+import { addLocalRecentCampaign } from "../../utils/recentCampaigns";
+
 function Detail() {
 
     const [detailOpen, setDetailOpen] = useState(false);
@@ -41,16 +43,32 @@ function Detail() {
 
     useEffect(() => {
         const fetchCampaign = async () => {
-            const resource = await axiosInstance.get(`/review/campaign/${campaign_code}`);
-            setCampaign(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/${campaign_code}`);
+                setCampaign(resource.data);
+                if (user) {
+                    axiosInstance.post('/review/campaign/view', { campaign_code });
+                } else {
+                    addLocalRecentCampaign(campaign_code);
+                }
+            } catch {
+                toaster.create({ title: '페이지 정보를 불러오는 중 오류가 발생했습니다.', type: 'error' });
+                navigate('/review');
+            }
         };
         const fetchReviewCampaignApplication = async () => {
-            const resource = await axiosInstance.get(`/review/campaign/application/${campaign_code}`);
-            setReviewCampaignApplicationCode(resource.data);
+            if (!user) return;
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/application/${campaign_code}`);
+                setReviewCampaignApplicationCode(resource.data);
+            } catch {
+                toaster.create({ title: '페이지 정보를 불러오는 중 오류가 발생했습니다.', type: 'error' });
+                navigate('/review');
+            }
         };
         fetchCampaign();
         fetchReviewCampaignApplication();
-    }, [campaign_code]);
+    }, [campaign_code, user]);
 
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 

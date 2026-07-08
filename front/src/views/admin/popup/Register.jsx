@@ -5,7 +5,7 @@ import { toaster } from "../../../components/ui/toaster";
 import axiosInstance from "../../../utils/api";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { ko } from "date-fns/locale";
+import { ko } from "date-fns/locale/ko";
 
 function PopupRegister() {
     const { id } = useParams();

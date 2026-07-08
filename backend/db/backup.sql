@@ -786,7 +786,7 @@ CREATE TABLE `review_campaign` (
 
 LOCK TABLES `review_campaign` WRITE;
 /*!40000 ALTER TABLE `review_campaign` DISABLE KEYS */;
-INSERT INTO `review_campaign` VALUES (11,'202603251523561942','와바미 파데','와바미 뷰티','와바미에서 만든 뷰티 브랜드!!',1,'jeo7334Wt202601','20260402141854001','DELIVERY','COMPLETED',10,'/uploads/2026/03/25/review/20260325152356099/1774419836258-zxsqcl4be.webp','[\"/uploads/2026/03/27/review/20260327144427556_d0/1774590267260-yniyp0wrg.webp\",\"/uploads/2026/03/27/review/20260327143905099_d1/1774589945886-pqqagjgoe.webp\",\"/uploads/2026/03/27/review/20260327143905099_d0/1774589945778-iuy4g4waf.webp\",\"/uploads/2026/03/27/review/20260327143905099_d2/1774589946601-sw4g6bafx.webp\"]','이것 저것 그것 베이비','2026-02-26 00:00:00','2026-04-20 00:00:00','2026-04-21 00:00:00','2026-04-22 00:00:00','2026-04-26 00:00:00','2026-03-25 15:23:56','2026-04-22 12:04:27'),(12,'202604231037085673','와바미 닥터버니 티모시 베이직','와바미 토끼사료 닥터 버니','캠페인 테스트',1,'jeo7334Wt202601','20260402141854001','DELIVERY','COMPLETED',5,'/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp','[\"/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp\",\"/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp\",\"/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp\"]','이건 테스트임','2026-06-15 00:00:00','2026-06-23 00:00:00','2026-06-24 00:00:00','2026-06-24 00:00:00','2026-07-08 00:00:00','2026-04-23 10:37:11','2026-06-26 13:49:07'),(14,'202605121348356767','제품명 테스트','테스트2','ㅁㅇㄹ우ㅏ',1,'jeo7334Wt202601','20260402142217001','VISIT','REVIEWING',10,'/uploads/2026/05/12/review/20260512135111209/1778561471360-fpwth31r7.webp','[\"/uploads/2026/05/12/review/20260512135540197_d0/1778561740411-henle2u1t.webp\",\"/uploads/2026/05/12/review/20260512140252078_d0/1778562172308-gzmpx16kn.webp\"]','ㅁㄴㅇㄹㄴㅁㅇㄻㄴㅇㄹㄴㅁㅇㄹ\r\n\r\nㅁㄴㅇㄻㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄻ','2026-05-12 00:00:00','2026-05-20 00:00:00','2026-05-21 00:00:00','2026-05-21 00:00:00','2026-05-25 00:00:00','2026-05-12 13:48:35','2026-06-09 10:44:11'),(15,'202605121412250150','ㅁㄴㅇㅁㄴㅇ','loading test','',1,'jeo7334Wt202601','','VISIT','DRAFT',0,'',NULL,'','2026-05-12 00:00:00','2026-05-20 00:00:00','2026-05-21 00:00:00','2026-05-21 00:00:00','2026-06-01 00:00:00','2026-05-12 14:12:25','2026-05-12 14:12:25');
+INSERT INTO `review_campaign` VALUES (11,'202603251523561942','와바미 파데','와바미 뷰티','와바미에서 만든 뷰티 브랜드!!',1,'jeo7334Wt202601','20260402141854001','DELIVERY','COMPLETED',10,'/uploads/2026/03/25/review/20260325152356099/1774419836258-zxsqcl4be.webp','[\"/uploads/2026/03/27/review/20260327144427556_d0/1774590267260-yniyp0wrg.webp\",\"/uploads/2026/03/27/review/20260327143905099_d1/1774589945886-pqqagjgoe.webp\",\"/uploads/2026/03/27/review/20260327143905099_d0/1774589945778-iuy4g4waf.webp\",\"/uploads/2026/03/27/review/20260327143905099_d2/1774589946601-sw4g6bafx.webp\"]','이것 저것 그것 베이비','2026-02-26 00:00:00','2026-04-20 00:00:00','2026-04-21 00:00:00','2026-04-22 00:00:00','2026-04-26 00:00:00','2026-03-25 15:23:56','2026-04-22 12:04:27'),(12,'202604231037085673','와바미 닥터버니 티모시 베이직','와바미 토끼사료 닥터 버니','캠페인 테스트',1,'jeo7334Wt202601','20260402141854001','DELIVERY','COMPLETED',5,'/uploads/2026/04/23/review/20260423103708876/1776908228828-pkvk84bbc.webp','[\"/uploads/2026/04/23/review/20260423103708876_d0/1776908229020-ar09x4mea.webp\",\"/uploads/2026/04/23/review/20260423103708876_d1/1776908229796-n9c5fkpvj.webp\",\"/uploads/2026/04/23/review/20260423103708876_d2/1776908230511-ygi1hx21i.webp\"]','이건 테스트임','2026-06-15 00:00:00','2026-06-23 00:00:00','2026-06-24 00:00:00','2026-06-24 00:00:00','2026-07-08 00:00:00','2026-04-23 10:37:11','2026-06-26 13:49:07'),(14,'202605121348356767','제품명 테스트','테스트2','ㅁㅇㄹ우ㅏ',1,'jeo7334Wt202601','20260402142217001','VISIT','RECRUITING',10,'/uploads/2026/05/12/review/20260512135111209/1778561471360-fpwth31r7.webp','[\"/uploads/2026/05/12/review/20260512135540197_d0/1778561740411-henle2u1t.webp\",\"/uploads/2026/05/12/review/20260512140252078_d0/1778562172308-gzmpx16kn.webp\"]','ㅁㄴㅇㄹㄴㅁㅇㄻㄴㅇㄹㄴㅁㅇㄹ\r\n\r\nㅁㄴㅇㄻㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄹ\r\nㅁㄴㅇㄻ','2026-07-08 00:00:00','2026-07-15 00:00:00','2026-07-16 00:00:00','2026-07-20 00:00:00','2026-07-29 00:00:00','2026-05-12 13:48:35','2026-07-08 06:17:39'),(15,'202605121412250150','ㅁㄴㅇㅁㄴㅇ','loading test','',1,'jeo7334Wt202601','','VISIT','DRAFT',0,'',NULL,'','2026-05-12 00:00:00','2026-05-20 00:00:00','2026-05-21 00:00:00','2026-05-21 00:00:00','2026-06-01 00:00:00','2026-05-12 14:12:25','2026-05-12 14:12:25');
 /*!40000 ALTER TABLE `review_campaign` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -997,7 +997,7 @@ CREATE TABLE `review_campaign_channel` (
   KEY `FK_review_campaign_channel_review_campaign_channel_view` (`channel_code`),
   CONSTRAINT `FK__review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`),
   CONSTRAINT `FK_review_campaign_channel_review_campaign_channel_view` FOREIGN KEY (`channel_code`) REFERENCES `review_campaign_channel_view` (`channel_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1006,7 +1006,7 @@ CREATE TABLE `review_campaign_channel` (
 
 LOCK TABLES `review_campaign_channel` WRITE;
 /*!40000 ALTER TABLE `review_campaign_channel` DISABLE KEYS */;
-INSERT INTO `review_campaign_channel` VALUES (52,'202603251523561942','202603171602001'),(79,'202605121348356767','202603171602001'),(80,'202604231037085673','202603171602001');
+INSERT INTO `review_campaign_channel` VALUES (52,'202603251523561942','202603171602001'),(80,'202604231037085673','202603171602001'),(81,'202605121348356767','202603171602001');
 /*!40000 ALTER TABLE `review_campaign_channel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1161,7 +1161,7 @@ CREATE TABLE `review_campaign_reward` (
   KEY `FK_review_campaign_reward_review_campaign` (`campaign_code`),
   KEY `reward_code` (`reward_code`),
   CONSTRAINT `FK_review_campaign_reward_review_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1170,7 +1170,7 @@ CREATE TABLE `review_campaign_reward` (
 
 LOCK TABLES `review_campaign_reward` WRITE;
 /*!40000 ALTER TABLE `review_campaign_reward` DISABLE KEYS */;
-INSERT INTO `review_campaign_reward` VALUES (45,'202604211322287549','202603251523561942','PRODUCT','와바미 파데 50g','와바미 파데 21호, 23호 중 택 1',0,1),(64,'202605121412280799','202605121412250150','PRODUCT','','',0,0),(66,'202605121414128051','202605121348356767','PRODUCT','ㅁㄴㅇㄹ','ㅁㅇㄹ',0,1),(67,'202606151556254815','202604231037085673','PRODUCT','와바미 닥터버니 티모시 베이직 1kg','티모시가 주 성분으로 만든 토끼 사료',0,1);
+INSERT INTO `review_campaign_reward` VALUES (45,'202604211322287549','202603251523561942','PRODUCT','와바미 파데 50g','와바미 파데 21호, 23호 중 택 1',0,1),(64,'202605121412280799','202605121412250150','PRODUCT','','',0,0),(67,'202606151556254815','202604231037085673','PRODUCT','와바미 닥터버니 티모시 베이직 1kg','티모시가 주 성분으로 만든 토끼 사료',0,1),(68,'202607080617383799','202605121348356767','PRODUCT','ㅁㄴㅇㄹ','ㅁㅇㄹ',0,1);
 /*!40000 ALTER TABLE `review_campaign_reward` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1193,7 +1193,7 @@ CREATE TABLE `review_campaign_reward_option` (
   KEY `reward_option_code` (`reward_option_code`),
   KEY `FK_review_campaign_reward_option_review_campaign_reward` (`reward_code`),
   CONSTRAINT `FK_review_campaign_reward_option_review_campaign_reward` FOREIGN KEY (`reward_code`) REFERENCES `review_campaign_reward` (`reward_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1202,8 +1202,38 @@ CREATE TABLE `review_campaign_reward_option` (
 
 LOCK TABLES `review_campaign_reward_option` WRITE;
 /*!40000 ALTER TABLE `review_campaign_reward_option` DISABLE KEYS */;
-INSERT INTO `review_campaign_reward_option` VALUES (12,'202604211322287549','202604211322287031','색상','21호,23호','2026-04-21 13:22:28','2026-04-21 13:22:28'),(16,'202605121414128051','202605121414122783','ㅁㄴㅇㄹ','ㅁㅇㄹ,ㅁㄴㅇㄹ,ㅁㄴㅇㄹ','2026-05-12 14:14:12','2026-05-12 14:14:12');
+INSERT INTO `review_campaign_reward_option` VALUES (12,'202604211322287549','202604211322287031','색상','21호,23호','2026-04-21 13:22:28','2026-04-21 13:22:28'),(17,'202607080617383799','202607080617381733','ㅁㄴㅇㄹ','ㅁㅇㄹ,ㅁㄴㅇㄹ,ㅁㄴㅇㄹ','2026-07-08 06:17:38','2026-07-08 06:17:38');
 /*!40000 ALTER TABLE `review_campaign_reward_option` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `review_campaign_view_log`
+--
+
+DROP TABLE IF EXISTS `review_campaign_view_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `review_campaign_view_log` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `campaign_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `viewed_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_user_campaign` (`user_code`,`campaign_code`),
+  KEY `fk_rcvl_campaign` (`campaign_code`),
+  CONSTRAINT `fk_rcvl_campaign` FOREIGN KEY (`campaign_code`) REFERENCES `review_campaign` (`campaign_code`) ON DELETE CASCADE,
+  CONSTRAINT `fk_rcvl_user` FOREIGN KEY (`user_code`) REFERENCES `user` (`user_code`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `review_campaign_view_log`
+--
+
+LOCK TABLES `review_campaign_view_log` WRITE;
+/*!40000 ALTER TABLE `review_campaign_view_log` DISABLE KEYS */;
+INSERT INTO `review_campaign_view_log` VALUES (1,'jeo7334Wt202601','202605121348356767','2026-07-08 06:49:29');
+/*!40000 ALTER TABLE `review_campaign_view_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1349,7 +1379,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES ('jeo7334Wt202601','jeongkey3317@naver.com','민정기','010-6551-3317',NULL,'$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6','SUPER_ADMIN','ACTIVE',_binary '','2026-01-29 12:27:25',NULL,'2026-07-07 06:05:02'),('jeo7507NL202606','jeongkey3317@gmail.com','민정기','010-6551-3317','/uploads/jeo7507NL202606/profile/1782375041513.webp','$2b$10$1a3Zqa2xK5HsUa0Nq.tNuukJOPL/H2UR8RR5a1Op9gycUov2yCOc6','USER','ACTIVE',_binary '','2026-06-10 12:47:29',NULL,'2026-07-03 08:23:38');
+INSERT INTO `user` VALUES ('jeo7334Wt202601','jeongkey3317@naver.com','민정기','010-6551-3317',NULL,'$2b$10$Bxmg/Gd9ihF1Ttt6E1M7kuk6DH9185reVTNA4iT3ZacFnn/dqu3R6','SUPER_ADMIN','ACTIVE',_binary '','2026-01-29 12:27:25',NULL,'2026-07-08 07:32:42'),('jeo7507NL202606','jeongkey3317@gmail.com','민정기','010-6551-3317','/uploads/jeo7507NL202606/profile/1782375041513.webp','$2b$10$1a3Zqa2xK5HsUa0Nq.tNuukJOPL/H2UR8RR5a1Op9gycUov2yCOc6','USER','ACTIVE',_binary '','2026-06-10 12:47:29',NULL,'2026-07-03 08:23:38');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1633,4 +1663,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-07  8:17:22
+-- Dump completed on 2026-07-08  7:37:19

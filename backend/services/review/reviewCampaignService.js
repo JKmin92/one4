@@ -6,6 +6,18 @@ export const getReviewCampaign = async (campaign_code) => {
     return await reviewCampaignModel.getReviewCampaign(campaign_code);
 }
 
+export const addCampaignViewLog = async (user_code, campaign_code) => {
+    return await reviewCampaignModel.addCampaignViewLog(user_code, campaign_code);
+}
+
+export const syncCampaignViewLog = async (user_code, campaign_codes) => {
+    return await reviewCampaignModel.syncCampaignViewLog(user_code, campaign_codes);
+}
+
+export const getUserActivity = async (user_code, local_campaign_codes) => {
+    return await reviewCampaignModel.getUserActivity(user_code, local_campaign_codes);
+}
+
 export const getReviewCampaignChannelView = async () => {
     return await reviewCampaignModel.getReviewCampaignChannelView();
 }
