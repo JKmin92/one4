@@ -19,11 +19,11 @@ function Header() {
                 <HStack gap="6">
                     <Link href="/admin/review/campaign/list" fontSize="lg" color={pathname.includes('review') ? 'main' : null}>체험단</Link>
                     <Link href="/admin/shop/product/list" fontSize="lg" color={pathname.includes('shop') ? 'main' : null}>쇼핑몰</Link>
-                    <Link href="/admin/member/user/list" fontSize="lg" color={pathname.includes('/member/user') ? 'main' : null}>회원</Link>
+                    <Link href="/admin/member/user/list" fontSize="lg" color={pathname.includes('member') ? 'main' : null}>회원</Link>
                     {user?.role === 'SUPER_ADMIN' && (
-                        <Link href="/admin/manager/list" fontSize="lg" color={pathname.includes('/manager') ? 'main' : null}>관리자</Link>
+                        <Link href="/admin/manager/list" fontSize="lg" color={pathname.includes('manager') ? 'main' : null}>관리자</Link>
                     )}
-                    <Link href="/admin/popup/list" fontSize="lg" color={pathname.includes('/popup') ? 'main' : null}>팝업</Link>
+                    <Link href="/admin/popup/list" fontSize="lg" color={pathname.includes('popup') ? 'main' : null}>팝업</Link>
                 </HStack>
                 <Button variant="ghost" size="sm" onClick={handleLogout}>로그아웃</Button>
             </Flex>

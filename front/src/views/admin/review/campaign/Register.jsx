@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, CloseButton, DatePicker, Field, Heading, HStack, Image, Input, LocaleProvider, RadioGroup, Stack, TagsInput, Text, Textarea } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const LocalInput = ({ value, onChange, ...props }) => {
+const LocalInput = React.memo(({ value, onChange, ...props }) => {
     const [localValue, setLocalValue] = useState(value || "");
     useEffect(() => {
         setLocalValue(value || "");
@@ -16,9 +16,9 @@ const LocalInput = ({ value, onChange, ...props }) => {
             {...props}
         />
     );
-};
+});
 
-const LocalTextarea = ({ value, onChange, ...props }) => {
+const LocalTextarea = React.memo(({ value, onChange, ...props }) => {
     const [localValue, setLocalValue] = useState(value || "");
     useEffect(() => {
         setLocalValue(value || "");
@@ -33,46 +33,58 @@ const LocalTextarea = ({ value, onChange, ...props }) => {
             {...props}
         />
     );
-};
+});
 import { LuCalendar, LuImage, LuInfo, LuPlus, LuTrash } from "react-icons/lu";
 import { toaster } from "../../../../components/ui/toaster";
 import axiosInstance from "../../../../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
 
-const LocalDatePicker = ({ value, onChange, ...props }) => {
+const LocalDatePicker = React.memo(({ value, onChange, disabledReason, min, ...props }) => {
+    const handleInteract = (e) => {
+        if (disabledReason) {
+            e.preventDefault();
+            e.stopPropagation();
+            toaster.create({ title: disabledReason, type: "warning" });
+        }
+    };
+
     return (
-        <LocaleProvider locale="ko-KR">
-            <DatePicker.Root 
-                value={value ? [value] : []} 
-                onValueChange={(e) => onChange(e.value[0] || "")}
-                {...props}
-            >
-            <DatePicker.Control>
-                <DatePicker.Input placeholder="YYYY/MM/DD" />
-                <DatePicker.IndicatorGroup>
-                    <DatePicker.Trigger><LuCalendar /></DatePicker.Trigger>
-                </DatePicker.IndicatorGroup>
-            </DatePicker.Control>
-            <DatePicker.Positioner>
-                <DatePicker.Content>
-                    <DatePicker.View view="year">
-                        <DatePicker.Header />
-                        <DatePicker.YearTable />
-                    </DatePicker.View>
-                    <DatePicker.View view="month">
-                        <DatePicker.Header />
-                        <DatePicker.MonthTable />
-                    </DatePicker.View>
-                    <DatePicker.View view="day">
-                        <DatePicker.Header />
-                        <DatePicker.DayTable />
-                    </DatePicker.View>
-                </DatePicker.Content>
-            </DatePicker.Positioner>
-        </DatePicker.Root>
-        </LocaleProvider>
+        <Box onClickCapture={handleInteract} onPointerDownCapture={handleInteract} w="full">
+            <LocaleProvider locale="ko-KR">
+                <DatePicker.Root
+                    value={value ? [value] : []}
+                    onValueChange={(e) => onChange(e.value[0] || "")}
+                    disabled={!!disabledReason}
+                    min={min || undefined}
+                    {...props}
+                >
+                    <DatePicker.Control>
+                        <DatePicker.Input placeholder="YYYY/MM/DD" />
+                        <DatePicker.IndicatorGroup>
+                            <DatePicker.Trigger><LuCalendar /></DatePicker.Trigger>
+                        </DatePicker.IndicatorGroup>
+                    </DatePicker.Control>
+                    <DatePicker.Positioner>
+                        <DatePicker.Content>
+                            <DatePicker.View view="year">
+                                <DatePicker.Header />
+                                <DatePicker.YearTable />
+                            </DatePicker.View>
+                            <DatePicker.View view="month">
+                                <DatePicker.Header />
+                                <DatePicker.MonthTable />
+                            </DatePicker.View>
+                            <DatePicker.View view="day">
+                                <DatePicker.Header />
+                                <DatePicker.DayTable />
+                            </DatePicker.View>
+                        </DatePicker.Content>
+                    </DatePicker.Positioner>
+                </DatePicker.Root>
+            </LocaleProvider>
+        </Box>
     );
-};
+});
 import RegisterEditor from "./RegisterEditor";
 import { ToggleTip } from "../../../../components/ui/toggle-tip";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -779,22 +791,42 @@ function Register() {
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">모집 종료일</Field.Label>
-                        <LocalDatePicker value={endApplicationDate} onChange={setEndApplicationDate} />
+                        <LocalDatePicker
+                            value={endApplicationDate}
+                            onChange={setEndApplicationDate}
+                            disabledReason={!startApplicationDate ? "모집 시작일을 먼저 설정해주세요." : null}
+                            min={startApplicationDate}
+                        />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">발표일</Field.Label>
-                        <LocalDatePicker value={reviewerSelectionDate} onChange={setReviewerSelectionDate} />
+                        <LocalDatePicker
+                            value={reviewerSelectionDate}
+                            onChange={setReviewerSelectionDate}
+                            disabledReason={!endApplicationDate ? "모집 종료일을 먼저 설정해주세요." : null}
+                            min={endApplicationDate}
+                        />
                     </Field.Root>
                 </HStack>
 
                 <HStack gap="6">
                     <Field.Root>
                         <Field.Label mb="2">리뷰 작성 시작일</Field.Label>
-                        <LocalDatePicker value={startWriteDate} onChange={setStartWriteDate} />
+                        <LocalDatePicker
+                            value={startWriteDate}
+                            onChange={setStartWriteDate}
+                            disabledReason={!reviewerSelectionDate ? "발표일을 먼저 설정해주세요." : null}
+                            min={reviewerSelectionDate}
+                        />
                     </Field.Root>
                     <Field.Root>
                         <Field.Label mb="2">리뷰 작성 종료일</Field.Label>
-                        <LocalDatePicker value={endWriteDate} onChange={setEndWriteDate} />
+                        <LocalDatePicker
+                            value={endWriteDate}
+                            onChange={setEndWriteDate}
+                            disabledReason={!startWriteDate ? "리뷰 작성 시작일을 먼저 설정해주세요." : null}
+                            min={startWriteDate}
+                        />
                     </Field.Root>
                 </HStack>
             </Stack>

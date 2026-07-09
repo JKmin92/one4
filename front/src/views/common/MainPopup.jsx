@@ -41,7 +41,6 @@ function MainPopup({ popupList }) {
             width="100vw"
             height="100vh"
             bg="blackAlpha.700"
-            zIndex="9999"
             display="flex"
             flexDirection="column"
             justifyContent="center"

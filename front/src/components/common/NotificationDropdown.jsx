@@ -1,4 +1,4 @@
-import { Box, Text, VStack, Button, Badge, Menu, IconButton } from "@chakra-ui/react";
+import { Box, Text, VStack, Button, Badge, Menu, IconButton, Float } from "@chakra-ui/react";
 import { LuBell } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/api";
@@ -46,17 +46,9 @@ export default function NotificationDropdown() {
                 <IconButton variant="ghost" rounded="full" position="relative">
                     <LuBell size={24} />
                     {unreadCount > 0 && (
-                        <Badge
-                            position="absolute"
-                            top="0"
-                            right="0"
-                            colorPalette="red"
-                            borderRadius="full"
-                            px={1}
-                            fontSize="xs"
-                        >
-                            {unreadCount > 99 ? '99+' : unreadCount}
-                        </Badge>
+                        <Float offset="1">
+                            <Circle size="4" bg="red" color="white" fontSize="xs">{unreadCount > 99 ? '99+' : unreadCount}</Circle>
+                        </Float>
                     )}
                 </IconButton>
             </Menu.Trigger>

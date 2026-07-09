@@ -1,4 +1,4 @@
-import { Avatar, Button, Circle, CloseButton, Flex, Float, Group, HStack, Icon, Image, Input, InputGroup, Link, Menu, Stack, Text } from "@chakra-ui/react";
+import { Avatar, Button, Circle, CloseButton, Flex, Float, Group, HStack, Icon, IconButton, Image, Input, InputGroup, Link, Menu, Portal, Stack, Text } from "@chakra-ui/react";
 import { LuAlignJustify, LuBell, LuEye, LuSearch, LuShoppingCart, LuUserRound } from "react-icons/lu";
 import { useAuth } from "../../utils/useAuth";
 import { useEffect, useState } from "react";
@@ -19,6 +19,34 @@ function Header() {
 
     const isUserPage = location.pathname.includes('/mypage') || location.pathname.includes('/login') || location.pathname.includes('/join');
     const categoryLocation = location.pathname.includes('/review') ? '/review' : '';
+
+    const [isVisible, setIsVisible] = useState(true);
+
+    useEffect(() => {
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const currentScrollY = window.scrollY;
+                    if (currentScrollY < 50) {
+                        setIsVisible(true);
+                    } else if (currentScrollY > lastScrollY) {
+                        setIsVisible(false); // 스크롤 내릴 때 숨김
+                    } else {
+                        setIsVisible(true);  // 스크롤 올릴 때 보임
+                    }
+                    lastScrollY = currentScrollY;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -54,27 +82,19 @@ function Header() {
     }, [user]);
 
     return (
-        <Stack gap="0" position="relative" zIndex={1000}>
+        <Stack
+            gap="0"
+            position="sticky"
+            top="0"
+            zIndex={1000}
+            bg="white"
+            transform={isVisible ? "translateY(0)" : "translateY(-100%)"}
+            transition="transform 0.3s ease-in-out"
+        >
             <Flex {...headerLineStyle} justifyContent="space-between">
                 <HStack gap="20">
                     <HStack gap="2">
-                        <Menu.Root>
-                            <Menu.Trigger asChild>
-                                <Button variant="ghost" display={{ base: 'block', md: 'none' }}>
-                                    <Icon size="lg"><LuAlignJustify /></Icon>
-                                </Button>
-                            </Menu.Trigger>
-                            <Menu.Positioner>
-                                <Menu.Content>
-                                    <Stack gap="2">
-                                        <Menu.Item><Link href="/categorys/12345">카테고리 1</Link></Menu.Item>
-                                        <Menu.Item>카테고리 2</Menu.Item>
-                                        <Menu.Item>카테고리 3</Menu.Item>
-                                        <Menu.Item>카테고리 4</Menu.Item>
-                                    </Stack>
-                                </Menu.Content>
-                            </Menu.Positioner>
-                        </Menu.Root>
+                        <Category categories={categories} location={categoryLocation} onToggle={true} />
                         <Link href={location.pathname.includes('/review') ? '/review' : '/'}><Image src="/resources/img/logo/logo.svg" alt="logo" width="100px" /></Link>
                     </HStack>
                     <HStack gap="12" display={{ base: 'none', md: 'flex' }}>
@@ -104,29 +124,33 @@ function Header() {
                                 )}
                                 {!location.pathname.includes('/review') && !isUserPage && (
                                     <Link href="/cart">
-                                        <Icon size="md"><LuShoppingCart /></Icon>
-                                        <Float><Circle size="4" bg="red" color="white" fontSize="xs">{basketCount}</Circle></Float>
+                                        <IconButton size="md" variant="ghost" rounded="full">
+                                            <Icon size="md"><LuShoppingCart /></Icon>
+                                            <Float offset="1"><Circle size="4" bg="red" color="white" fontSize="xs">{basketCount}</Circle></Float>
+                                        </IconButton>
                                     </Link>
                                 )}
 
                                 <NotificationDropdown />
                             </Group>
                             <Menu.Root>
-                                <Menu.Trigger>
+                                <Menu.Trigger rounded="full">
                                     <Avatar.Root>
                                         {user.profile ? <Avatar.Image src={user.profile} /> : <LuUserRound />}
                                     </Avatar.Root>
                                 </Menu.Trigger>
-                                <Menu.Positioner>
-                                    <Menu.Content>
-                                        <Menu.Item display="block" asChild>
-                                            <Link href="/mypage" fontSize="sm" textAlign="center" p="10px" cursor="pointer" _hover={{ backgroundColor: 'gray.100' }}>마이페이지</Link>
-                                        </Menu.Item>
-                                        <Menu.Item display="block" onClick={logout} asChild>
-                                            <Text fontSize="sm" textAlign="center" p="10px" cursor="pointer" _hover={{ backgroundColor: 'gray.100' }}>로그아웃</Text>
-                                        </Menu.Item>
-                                    </Menu.Content>
-                                </Menu.Positioner>
+                                <Portal>
+                                    <Menu.Positioner>
+                                        <Menu.Content>
+                                            <Menu.Item display="block" asChild>
+                                                <Link href="/mypage" fontSize="sm" textAlign="center" p="10px" cursor="pointer" _hover={{ backgroundColor: 'gray.100' }}>마이페이지</Link>
+                                            </Menu.Item>
+                                            <Menu.Item display="block" onClick={logout} asChild>
+                                                <Text fontSize="sm" textAlign="center" p="10px" cursor="pointer" _hover={{ backgroundColor: 'gray.100' }}>로그아웃</Text>
+                                            </Menu.Item>
+                                        </Menu.Content>
+                                    </Menu.Positioner>
+                                </Portal>
                             </Menu.Root>
                         </>
                     )}

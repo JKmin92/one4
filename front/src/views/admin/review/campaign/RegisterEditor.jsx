@@ -5,9 +5,9 @@ import { Control, RichTextEditor, useRichTextEditorContext } from "../../../../c
 import { Box, Button, Dialog, FileUpload, Icon } from "@chakra-ui/react";
 import DragHandle from "@tiptap/extension-drag-handle-react";
 import { LuGripVertical, LuImage, LuUpload } from "react-icons/lu";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import axiosInstance from "../../../../utils/api";
-function RegisterEditor({ content, setContent }) {
+const RegisterEditor = memo(function RegisterEditor({ content, setContent }) {
     const editor = useEditor({
         extensions: [StarterKit, Image],
         content: content,
@@ -58,7 +58,7 @@ function RegisterEditor({ content, setContent }) {
 
         </>
     )
-}
+})
 
 function InsertImageControl() {
     const { editor } = useRichTextEditorContext();

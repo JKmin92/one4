@@ -1,7 +1,7 @@
 import { Box, Button, Collapsible, Drawer, HStack, Icon, IconButton, Link, Stack, Text, useDisclosure } from "@chakra-ui/react";
 import { LuAlignJustify, LuChevronDown, LuChevronRight } from "react-icons/lu";
 
-function CategoryItem({ category }) {
+function CategoryItem({ category, sub = false }) {
     const { open, onToggle } = useDisclosure();
     const hasChildren = category.children && category.children.length > 0;
 
@@ -14,19 +14,19 @@ function CategoryItem({ category }) {
                             {open ? <LuChevronDown /> : <LuChevronRight />}
                         </Icon>
                     </IconButton>
-                ) : (<Box width="6" />)}
+                ) : (<IconButton visibility="hidden" size="xs"><Icon size="2xs"><LuChevronDown /></Icon></IconButton>)}
 
                 <Link href={`/categorys/${category.id}`} flex="1">
-                    <Text fontSize="md" fontWeight="medium">{category.name}</Text>
+                    <Text fontSize={!sub ? "md" : 'sm'} fontWeight="medium">{category.name}</Text>
                 </Link>
             </HStack>
 
             {hasChildren && (
                 <Collapsible.Root open={open}>
-                    <Collapsible.Content>
-                        <Stack pl="6" gap="1" borderLeft="1px solid" borderColor="gray.100" ml="3">
+                    <Collapsible.Content >
+                        <Stack gap="1" my="1" borderLeft="1px solid" borderColor="gray.100" ml="3">
                             {category.children.map(child => (
-                                <CategoryItem key={child.id} category={child} />
+                                <CategoryItem key={child.id} category={child} sub={true} />
                             ))}
                         </Stack>
                     </Collapsible.Content>
@@ -36,8 +36,9 @@ function CategoryItem({ category }) {
     );
 }
 
-function Category({ categories = [], location = '' }) {
-    const headerLineStyle = { p: '15px', px: { base: '5px', md: 'layoutX' }, width: '100%', borderBottom: '1px solid #e5e5e5' };
+function Category({ categories = [], location = '', onToggle = false }) {
+    const headerLineStyle = { px: { base: '5px', md: 'layoutX' } };
+    const headerLineStyle2 = !onToggle ? { p: '15px', borderBottom: '1px solid #e5e5e5', width: '100%' } : {}
 
     const buildCategoryTree = (categories) => {
         const categoryMap = {};
@@ -63,17 +64,33 @@ function Category({ categories = [], location = '' }) {
     if (categories.length === 0) return null;
 
     return (
-        <HStack gap="16" {...headerLineStyle} display={{ md: 'flex', base: 'none' }}>
+        <HStack gap="16" {...headerLineStyle} {...headerLineStyle2} display={!onToggle ? { md: 'flex', base: 'none' } : { md: 'none', base: 'flex' }}>
 
             <Drawer.Root placement="start">
                 <Drawer.Trigger asChild>
-                    <IconButton variant="ghost"><LuAlignJustify /></IconButton>
+                    <IconButton variant="ghost" rounded="full"><LuAlignJustify /></IconButton>
                 </Drawer.Trigger>
                 <Drawer.Backdrop />
                 <Drawer.Positioner>
                     <Drawer.Content>
                         <Drawer.Header>
-                            <Drawer.Title>카테고리</Drawer.Title>
+                            <Drawer.Title asChild>
+                                <HStack gap="3" fontSize="lg">
+                                    {location === '/review' ? (
+                                        <>
+                                            <Link href="/review" _hover={{ textDecoration: 'none' }}><Text color="main" fontWeight="bold">Review</Text></Link>
+                                            <Text color="gray.300">|</Text>
+                                            <Link href="/" _hover={{ textDecoration: 'none' }}><Text color="black" fontWeight="medium">Shopping</Text></Link>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Link href="/" _hover={{ textDecoration: 'none' }}><Text color="main" fontWeight="bold">Shopping</Text></Link>
+                                            <Text color="gray.300">|</Text>
+                                            <Link href="/review" _hover={{ textDecoration: 'none' }}><Text color="black" fontWeight="medium">Review</Text></Link>
+                                        </>
+                                    )}
+                                </HStack>
+                            </Drawer.Title>
                         </Drawer.Header>
                         <Drawer.Body>
                             <Stack gap="2">
@@ -87,14 +104,16 @@ function Category({ categories = [], location = '' }) {
                 </Drawer.Positioner>
             </Drawer.Root>
 
-            <HStack gap="12">
-                {categories.filter(c => c.is_visible === 1 && c.parent_code === null).map((category) => (
-                    <Link key={category.category_code} href={`${location}/categorys/${category.category_code}`}>
-                        <Text fontSize="md" fontWeight="medium">{category.name}</Text>
-                    </Link>
-                ))}
-            </HStack>
-        </HStack>
+            {!onToggle && (
+                <HStack gap="12">
+                    {categories.filter(c => c.is_visible === 1 && c.parent_code === null).map((category) => (
+                        <Link key={category.category_code} href={`${location}/categorys/${category.category_code}`}>
+                            <Text fontSize="md" fontWeight="medium">{category.name}</Text>
+                        </Link>
+                    ))}
+                </HStack>
+            )}
+        </HStack >
     )
 }
 
