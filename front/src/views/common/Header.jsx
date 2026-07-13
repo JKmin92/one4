@@ -136,7 +136,7 @@ function Header() {
                             <Menu.Root>
                                 <Menu.Trigger rounded="full">
                                     <Avatar.Root>
-                                        {user.profile ? <Avatar.Image src={user.profile} /> : <LuUserRound />}
+                                        {user?.profile ? <Avatar.Image src={user.profile} /> : <LuUserRound />}
                                     </Avatar.Root>
                                 </Menu.Trigger>
                                 <Portal>

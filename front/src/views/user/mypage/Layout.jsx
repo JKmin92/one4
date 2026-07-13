@@ -1,20 +1,25 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Header from '../../common/Header';
 import Footer from '../../common/Footer';
 import { Avatar, Box, Float, HStack, Image, Link, Stack, StackSeparator, Text } from '@chakra-ui/react';
 import { useAuth } from '../../../utils/useAuth';
 import { toaster } from '../../../components/ui/toaster';
-import { useNavigate } from 'react-router-dom';
 import { LuSettings, LuUserRound } from 'react-icons/lu';
 
 function Layout() {
 
     const navigate = useNavigate();
     const { user } = useAuth();
-    if (!user) {
-        toaster.create({ title: '로그인 후 접근 가능합니다.', type: 'error' });
-        navigate('/login');
-    }
+    
+    useEffect(() => {
+        if (!user) {
+            toaster.create({ title: '로그인 후 접근 가능합니다.', type: 'error' });
+            navigate('/login');
+        }
+    }, [user, navigate]);
+
+    if (!user) return null;
 
     return (
         <>

@@ -81,4 +81,26 @@ export const initScheduler = () => {
             console.error('[Cron Job Error]', error);
         }
     });
+
+    // 매일 오전 4시 실행 (만료된 세션 및 기기 정보 청소)
+    cron.schedule('0 4 * * *', async () => {
+        try {
+            console.log('[Cron Job] Running expired token and device cleanup...');
+            
+            // 1. 수명이 다 된 토큰 삭제
+            await pool.query(`DELETE FROM refresh_tokens WHERE expiresAt < NOW()`);
+            
+            // 2. 고아가 된 기기 정보 삭제 (연결된 유효한 토큰이 없는 기기)
+            await pool.query(`
+                DELETE FROM device_info 
+                WHERE device_code NOT IN (
+                    SELECT device_code FROM refresh_tokens WHERE device_code IS NOT NULL
+                )
+            `);
+            
+            console.log('[Cron Job] Token and device cleanup completed.');
+        } catch (error) {
+            console.error('[Cron Job Error]', error);
+        }
+    });
 }

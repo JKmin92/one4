@@ -18,6 +18,9 @@ router.get('/', authMiddleware, userController.me);
 router.get('/profile', authMiddleware, userController.getUserProfile);
 router.put('/profile', authMiddleware, upload.single('profileImage'), userController.updateUserProfile);
 
+router.get('/sessions', authMiddleware, userController.getUserSessions);
+router.delete('/sessions/:device_code', authMiddleware, userController.revokeUserSession);
+
 router.get('/address', authMiddleware, userController.getUserAddress);
 router.post('/address', authMiddleware, userController.insertUserAddress);
 router.put('/address', authMiddleware, userController.updateUserAddress);

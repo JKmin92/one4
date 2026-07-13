@@ -1,11 +1,8 @@
-import { Box, Button, Field, Fieldset, Heading, HStack, Input, Stack, Text, Image, Checkbox, RadioGroup } from "@chakra-ui/react";
+import { Box, Button, Field, Fieldset, Heading, HStack, Input, Stack, Text, Image, Checkbox, RadioGroup, DatePicker } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toaster } from "../../../components/ui/toaster";
 import axiosInstance from "../../../utils/api";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { ko } from "date-fns/locale/ko";
 
 function PopupRegister() {
     const { id } = useParams();

@@ -5,14 +5,47 @@ import { createAccessToken, createRefreshToken } from '../utils/token.js';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
+import { UAParser } from 'ua-parser-js';
+import crypto from 'crypto';
+import * as deviceModel from '../models/deviceModel.js';
 
-const issueTokens = async (user, res, autoLogin = true) => {
+const issueTokens = async (user, res, req, autoLogin = true) => {
 
     const accesstoken = createAccessToken(user);
     const refreshToken = createRefreshToken(user);
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    await tokenModel.create(user.user_code, refreshToken, expiresAt);
+
+    let device_code = null;
+
+    if (autoLogin && req) {
+        const parser = new UAParser(req.headers['user-agent']);
+        const result = parser.getResult();
+        
+        let device_type = 'PC';
+        if (result.device.type === 'mobile') device_type = 'MOBILE';
+        else if (result.device.type === 'tablet') device_type = 'TABLET';
+        
+        const device_name = result.os.name ? `${result.os.name} ${result.os.version || ''}`.trim() : 'Unknown OS';
+        const browser_info = result.browser.name ? `${result.browser.name} ${result.browser.version || ''}`.trim() : 'Unknown Browser';
+        // Get IP behind proxy if exists
+        const ip_address = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'Unknown IP';
+        
+        device_code = req.cookies.device_code;
+        if (!device_code) {
+            device_code = crypto.randomUUID();
+            res.cookie('device_code', device_code, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV == 'production',
+                sameSite: 'lax',
+                expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+            });
+        }
+        
+        await deviceModel.createDevice(device_code, user.user_code, device_type, device_name, browser_info, ip_address);
+    }
+
+    await tokenModel.create(user.user_code, refreshToken, expiresAt, device_code);
 
     const cookieOptions = {
         httpOnly: true,
@@ -34,7 +67,7 @@ export const createUser = async (req, res, next) => {
         const data = req.body;
         const newUser = await userService.createUser(data);
 
-        const accessToken = await issueTokens(newUser, res, true);
+        const accessToken = await issueTokens(newUser, res, req, true);
         res.status(201).json({ ...newUser, accessToken });
     } catch (err) {
         next(err);
@@ -57,7 +90,7 @@ export const signIn = async (req, res, next) => {
         const user = await userService.signIn(data);
         if (!user) return res.status(200).json({ success: false, error: '확인되는 계정이 없습니다.' });
 
-        const accessToken = await issueTokens(user, res, autoLogin);
+        const accessToken = await issueTokens(user, res, req, autoLogin);
         res.status(200).json({ ...user, accessToken });
     } catch (err) {
         next(err);
@@ -75,7 +108,7 @@ export const adminSignIn = async (req, res, next) => {
             return res.status(200).json({ success: false, error: '관리자 권한이 없습니다.' });
         }
 
-        const accessToken = await issueTokens(user, res, autoLogin);
+        const accessToken = await issueTokens(user, res, req, autoLogin);
         res.status(200).json({ ...user, accessToken });
     } catch (err) {
         next(err);
@@ -186,7 +219,7 @@ export const updateUserProfile = async (req, res, next) => {
         }
 
         const updatedUser = await userService.updateUserProfile(updateData);
-        const newAccessToken = await issueTokens(updatedUser, res);
+        const newAccessToken = await issueTokens(updatedUser, res, req);
 
         res.status(200).json({ ...updatedUser, accessToken: newAccessToken });
     } catch (err) {
@@ -396,6 +429,40 @@ export const resetPassword = async (req, res, next) => {
             return res.status(400).json(result);
         }
         res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUserSessions = async (req, res, next) => {
+    try {
+        const user = req.user;
+        const sessions = await tokenModel.getUserSessions(user.user_code);
+        
+        const currentToken = req.cookies.refreshToken;
+        const result = sessions.map(s => ({
+            ...s,
+            isCurrent: s.token === currentToken
+        }));
+        
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const revokeUserSession = async (req, res, next) => {
+    try {
+        const { device_code } = req.params;
+        const sessions = await tokenModel.getUserSessions(req.user.user_code);
+        const session = sessions.find(s => s.device_code === device_code);
+        
+        if (!session) {
+            return res.status(403).json({ message: 'Unauthorized or session not found' });
+        }
+        
+        await deviceModel.deleteDevice(device_code);
+        res.status(200).json({ message: 'Session revoked' });
     } catch (err) {
         next(err);
     }

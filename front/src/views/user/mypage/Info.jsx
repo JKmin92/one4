@@ -9,6 +9,7 @@ import Password from "./info/Password";
 import PrivateInfo from "./info/PrivateInfo";
 import Account from "./info/Account";
 import Withdraw from "./info/Withdraw";
+import DeviceManagement from "./info/DeviceManagement";
 
 function Info() {
 
@@ -71,6 +72,7 @@ function Info() {
                     <Delivery deliveryList={deliveryList} setDeliveryList={setDeliveryList} />
                     <ReviewChannel reviewChannelList={reviewChannelList} setReviewChannelList={setReviewChannelList} reviewCampaignChannelViewList={reviewCampaignChannelViewList} />
                     <Button variant="ghost" justifyContent="space-between">알림 설정<LuChevronRight /></Button>
+                    <DeviceManagement />
                     <Account />
                     <Withdraw />
                 </Stack>

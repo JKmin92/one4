@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Flex, HStack, Button, Image, Link, Text, Container } from '@chakra-ui/react';
+import { Box, Flex, HStack, Button, Image, Link, Text, Container, Portal } from '@chakra-ui/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -34,20 +34,22 @@ function MainPopup({ popupList }) {
     };
 
     return (
-        <Box
-            position="fixed"
-            top="0"
-            left="0"
-            width="100vw"
-            height="100vh"
-            bg="blackAlpha.700"
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            p={4}
-        >
-            <Container maxW="5xl" p={0} w="auto">
+        <Portal>
+            <Box
+                position="fixed"
+                top="0"
+                left="0"
+                width="100vw"
+                height="100vh"
+                bg="blackAlpha.700"
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                p={4}
+                zIndex={9999}
+            >
+                <Container maxW="5xl" p={0} w="auto">
                 {popupList.length === 1 ? (
                     // 팝업이 1개일 때
                     <Flex justify="center" w="100%">
@@ -87,7 +89,8 @@ function MainPopup({ popupList }) {
                     </Button>
                 </Flex>
             </Container>
-        </Box>
+            </Box>
+        </Portal>
     );
 }
 
