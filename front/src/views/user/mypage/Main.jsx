@@ -1,6 +1,6 @@
-import { Alert, Box, Button, Heading, HStack, Image, Link, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
+import { Alert, Box, Button, Float, Heading, HStack, Icon, Image, Link, Span, Stack, StackSeparator, Status, Text } from "@chakra-ui/react";
 import { formatDate, formatDateToMonthDay, formatNumber, getProductOrderStatus, getReviewCampaignApplicationStatus } from "../../../utils/simpleUtils";
-import { LuChevronRight } from "react-icons/lu";
+import { LuChevronRight, LuSettings, LuUserRound } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/api";
 import 'swiper/css';
@@ -110,7 +110,23 @@ function Main() {
 
 
     return (
-        <Stack w="full" minW="0" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
+        <Stack w="full" minW="0" rounded="md" border="1px solid #eee" p={{ base: '15px', md: "20px" }} gap="6" textAlign="left">
+            <HStack justifyContent="space-between" display={{ base: 'flex', md: 'none' }} alignItems="center">
+                <Text fontSize="xl">안녕하세요.<br /><Span fontWeight="medium">{user.name}</Span>님</Text>
+                <Box position="relative">
+                    {user.profile ? <Image src={user.profile} w="85px" h="85px" rounded="full" />
+                        : (
+                            <Box w="85px" h="85px" rounded="full" bg="gray.200" position="relative" display="flex" alignItems="center" justifyContent="center">
+                                <LuUserRound size="20" />
+                            </Box>
+                        )}
+                    <Float offset="2" placement="bottom-end">
+                        <Link href="/mypage/info">
+                            <Icon size="md" color="bg.inverted"><LuSettings /></Icon>
+                        </Link>
+                    </Float>
+                </Box>
+            </HStack>
             {noWriteReviewCampaignList.length > 0 && (
                 <Box w="full" overflow="hidden">
                     <Swiper {...swiperSet}>
@@ -133,7 +149,7 @@ function Main() {
                 </Box>
             )}
 
-            <Link display="flex" justifyContent="space-between" p="5" bg="blue.solid" w="full" color="#fff" rounded="md" href="/mypage/point">
+            <Link display="flex" justifyContent="space-between" p={{ base: '2', md: "5" }} px={{ base: '4', md: '5' }} bg="blue.solid" w="full" color="#fff" rounded="md" href="/mypage/point">
                 <HStack>
                     <Text fontSize="xs">포인트</Text>
                     <Text fontSize="lg">{formatNumber(userPoint?.current_point ?? 0)}</Text>
@@ -215,29 +231,21 @@ function Main() {
                 </Stack>
             )}
 
-            <Stack separator={<StackSeparator />}>
+            <Stack separator={<StackSeparator />} gap="3">
                 <Link href="/mypage/order" display="flex" justifyContent="space-between" w="full">
-                    <Stack>
-                        <Text fontSize="sm">상품 주문 내역</Text>
-                    </Stack>
+                    <Text fontSize="sm">상품 주문 내역</Text>
                     <LuChevronRight size="18" />
                 </Link>
                 <Link href="/mypage/order?status=CLAIM" display="flex" justifyContent="space-between" w="full">
-                    <Stack>
-                        <Text fontSize="sm">취소/반품/교환 내역</Text>
-                    </Stack>
+                    <Text fontSize="sm">취소/반품/교환 내역</Text>
                     <LuChevronRight size="18" />
                 </Link>
                 <Link href="/mypage/recent" display="flex" justifyContent="space-between" w="full">
-                    <Stack>
-                        <Text fontSize="sm">최근 본 상품</Text>
-                    </Stack>
+                    <Text fontSize="sm">최근 본 상품</Text>
                     <LuChevronRight size="18" />
                 </Link>
                 <Link href="/mypage/review" display="flex" justifyContent="space-between" w="full">
-                    <Stack>
-                        <Text fontSize="sm">리뷰 캠페인 리스트</Text>
-                    </Stack>
+                    <Text fontSize="sm">리뷰 캠페인 리스트</Text>
                     <LuChevronRight size="18" />
                 </Link>
             </Stack>

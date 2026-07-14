@@ -8,7 +8,9 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 80,
     watch: {
-      usePolling: true
+      usePolling: true,
+      interval: 1000,
+      ignored: ['**/node_modules/**', '**/.git/**']
     },
     proxy: {
       '/api': {

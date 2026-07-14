@@ -52,7 +52,7 @@ function Info() {
 
     return (
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
-            <Stack w="2xl" margin="0 auto" gap="6">
+            <Stack w="2xl" margin="0 auto" gap="6" maxW="full">
                 <HStack gap="5">
                     {user.profile ? (
                         <Image src={user.profile} w="100px" h="100px" rounded="full" />

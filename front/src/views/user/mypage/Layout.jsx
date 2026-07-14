@@ -11,7 +11,7 @@ function Layout() {
 
     const navigate = useNavigate();
     const { user } = useAuth();
-    
+
     useEffect(() => {
         if (!user) {
             toaster.create({ title: '로그인 후 접근 가능합니다.', type: 'error' });
@@ -25,9 +25,9 @@ function Layout() {
         <>
             <Header />
             <main>
-                <Stack direction='row' maxW="breakpoint-2xl" w="full" margin="auto" gap="6" textAlign="center" p={{ base: '40px 0', md: "80px 0" }} px={{ base: '15px', md: "layoutX" }}>
-                    <Box position="relative" w="1/5">
-                        <Stack position="sticky" top="100px" border="1px solid #eee" rounded="lg" p="20px 0" gap="6" separator={<StackSeparator />}>
+                <Stack direction='row' maxW="breakpoint-2xl" w="full" margin="auto" gap="6" textAlign="center" p={{ base: '40px 0', md: "80px 0" }} px={{ base: '10px', md: "layoutX" }}>
+                    <Box position="relative" w="1/5" minW={{ base: 'auto', md: '230px' }} display={{ base: 'none', md: 'flex' }}>
+                        <Stack position="sticky" top="100px" border="1px solid #eee" w="full" rounded="lg" p="20px 0" gap="6" separator={<StackSeparator />}>
                             <Stack>
                                 {
                                     user.profile

@@ -1,7 +1,7 @@
 import { Box, Button, Collapsible, Drawer, HStack, Icon, IconButton, Link, Stack, Text, useDisclosure } from "@chakra-ui/react";
 import { LuAlignJustify, LuChevronDown, LuChevronRight } from "react-icons/lu";
 
-function CategoryItem({ category, sub = false }) {
+function CategoryItem({ category, sub = false, location = '' }) {
     const { open, onToggle } = useDisclosure();
     const hasChildren = category.children && category.children.length > 0;
 
@@ -16,7 +16,7 @@ function CategoryItem({ category, sub = false }) {
                     </IconButton>
                 ) : (<IconButton visibility="hidden" size="xs"><Icon size="2xs"><LuChevronDown /></Icon></IconButton>)}
 
-                <Link href={`/categorys/${category.id}`} flex="1">
+                <Link href={`${location}/categorys/${category.category_code}`} flex="1">
                     <Text fontSize={!sub ? "md" : 'sm'} fontWeight="medium">{category.name}</Text>
                 </Link>
             </HStack>
@@ -26,7 +26,7 @@ function CategoryItem({ category, sub = false }) {
                     <Collapsible.Content >
                         <Stack gap="1" my="1" borderLeft="1px solid" borderColor="gray.100" ml="3">
                             {category.children.map(child => (
-                                <CategoryItem key={child.id} category={child} sub={true} />
+                                <CategoryItem key={child.id} category={child} sub={true} location={location} />
                             ))}
                         </Stack>
                     </Collapsible.Content>
@@ -95,7 +95,7 @@ function Category({ categories = [], location = '', onToggle = false }) {
                         <Drawer.Body>
                             <Stack gap="2">
                                 {categoryTree.map(category => (
-                                    <CategoryItem key={category.id} category={category} />
+                                    <CategoryItem key={category.id} category={category} location={location} />
                                 ))}
                             </Stack>
                         </Drawer.Body>
