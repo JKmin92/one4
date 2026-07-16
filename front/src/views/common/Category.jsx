@@ -61,7 +61,7 @@ function Category({ categories = [], location = '', onToggle = false }) {
     };
 
     const categoryTree = buildCategoryTree(categories);
-    if (categories.length === 0) return null;
+    //if (categories.length === 0) return null;
 
     return (
         <HStack gap="16" {...headerLineStyle} {...headerLineStyle2} display={!onToggle ? { md: 'flex', base: 'none' } : { md: 'none', base: 'flex' }}>

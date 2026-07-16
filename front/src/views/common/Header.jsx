@@ -51,9 +51,9 @@ function Header() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = !isUserPage && location.pathname.includes('/review')
+                const response = location.pathname.includes('/review')
                     ? await axiosInstance.get('/review/campaign/category')
-                    : !isUserPage ? await axiosInstance.get('/shop/product/category') : null;
+                    : await axiosInstance.get('/shop/product/category');
                 setCategories(response?.data ?? []);
             } catch {
                 setCategories([]);
