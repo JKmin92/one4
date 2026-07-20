@@ -79,15 +79,22 @@ function List() {
         <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
             <Heading fontSize="sm" textAlign="left">리뷰 캠페인</Heading>
 
-            <Tabs.Root value={defaultTab} onValueChange={handleTabChange} variant="enclosed">
-                <Tabs.List>
-                    <Tabs.Trigger value="all">전체</Tabs.Trigger>
-                    <Tabs.Trigger value="applied">신청({counts.applied})</Tabs.Trigger>
-                    <Tabs.Trigger value="writing">작성중({counts.writing})</Tabs.Trigger>
-                    <Tabs.Trigger value="unwritten">미작성(기한초과)({counts.unwritten})</Tabs.Trigger>
-                    <Tabs.Trigger value="returned">수정({counts.returned})</Tabs.Trigger>
-                    <Tabs.Trigger value="completed">작성완료({counts.completed})</Tabs.Trigger>
-                    <Tabs.Trigger value="rejected">미선정</Tabs.Trigger>
+            <Tabs.Root value={defaultTab} onValueChange={handleTabChange} variant="plain"
+                css={{
+                    "--tabs-indicator-bg": "colors.gray.subtle",
+                    "--tabs-indicator-shadow": "shadows.xs",
+                    "--tabs-trigger-radius": "radii.full",
+                }}
+            >
+                <Tabs.List overflowX="auto">
+                    <Tabs.Trigger value="all" flex="0 0 auto">전체</Tabs.Trigger>
+                    <Tabs.Trigger value="applied" flex="0 0 auto">신청({counts.applied})</Tabs.Trigger>
+                    <Tabs.Trigger value="writing" flex="0 0 auto">작성중({counts.writing})</Tabs.Trigger>
+                    <Tabs.Trigger value="unwritten" flex="0 0 auto">미작성(기한초과)({counts.unwritten})</Tabs.Trigger>
+                    <Tabs.Trigger value="returned" flex="0 0 auto">수정({counts.returned})</Tabs.Trigger>
+                    <Tabs.Trigger value="completed" flex="0 0 auto">작성완료({counts.completed})</Tabs.Trigger>
+                    <Tabs.Trigger value="rejected" flex="0 0 auto">미선정</Tabs.Trigger>
+                    <Tabs.Indicator />
                 </Tabs.List>
             </Tabs.Root>
 

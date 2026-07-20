@@ -4,6 +4,7 @@ import axiosInstance from "../../../../utils/api";
 import { LuChevronRight, LuDot, LuShoppingCart } from "react-icons/lu";
 import { formatDate, formatDateYMD, formatNumber } from "../../../../utils/simpleUtils";
 import { useSearchParams } from "react-router-dom";
+import { toaster } from "../../../../components/ui/toaster";
 
 function OrderList() {
 
@@ -21,8 +22,8 @@ function OrderList() {
             if (res.data) {
                 setOrderList(res.data);
             }
-        } catch (error) {
-            console.log(error);
+        } catch {
+            toaster.create({ title: '주문 내역을 불러올 수 없습니다.', type: 'error' })
         }
     }
 
@@ -131,12 +132,14 @@ function OrderList() {
                 <Stack gap="10">
                     {displayList.map((order) => (
                         <Stack key={order.order_code} shadow="md" rounded="md" p="20px" gap="5">
+
                             <HStack justifyContent="space-between">
-                                <Text fontWeight="medium">{formatDateYMD(order.created_at)} 주문</Text>
-                                <Link href={`/mypage/order/${order.order_code}`} fontSize="sm">상세 보기 <LuChevronRight /></Link>
+                                <Box display={{ base: 'flex', md: 'none' }}>{orderStatus(order.status, order.product_order_claims)}</Box>
+                                <Text fontWeight="medium" fontSize={{ base: 'sm', md: 'md' }}>{formatDateYMD(order.created_at)} 주문</Text>
+                                <Link href={`/mypage/order/${order.order_code}`} fontSize="sm" display={{ base: 'none', md: 'inline-flex' }}>상세 보기 <LuChevronRight /></Link>
                             </HStack>
 
-                            <Stack direction="row" justifyContent="space-between" alignItems="center" gap="10">
+                            <Stack direction={{ base: "column", md: "row" }} justifyContent="space-between" alignItems="center" gap={{ base: '5', md: "10" }}>
                                 <Stack w="full">
                                     {order.product_order_items.map((item) => (
                                         <Stack direction="row" key={item.order_item_code} justifyContent="space-between" alignItems="end">
@@ -156,24 +159,34 @@ function OrderList() {
                                                     <Text>{formatNumber(item.price)} 원</Text>
                                                 </Stack>
                                             </Stack>
-                                            <Button variant="outline" size="xs">장바구니 넣기</Button>
+
                                         </Stack>
                                     ))}
                                 </Stack>
 
-                                <Stack textAlign="end" justifyContent="end">
+                                <Stack textAlign="end" justifyContent="end" display={{ base: 'none', md: 'inline-flex' }}>
                                     <Box justifyContent="flex-end">
                                         {orderStatus(order.status, order.product_order_claims)}
                                     </Box>
                                     <Text>{formatNumber(order.total_product_price + order.delivery_price)} 원</Text>
-                                    <Button size="xs" as={Link} href={`/mypage/order/${order.order_code}`}>주문 상세보기</Button>
+                                    <HStack>
+                                        <Button variant="outline" size="xs">장바구니 넣기</Button>
+                                        <Button size="xs" as={Link} href={`/mypage/order/${order.order_code}`}>주문 상세보기</Button>
+                                    </HStack>
+
                                 </Stack>
+
+                                <HStack display={{ base: 'flex', md: 'none' }} w="full">
+                                    <Button variant="outline" size="xs" w="full" flex="1">장바구니 넣기</Button>
+                                    <Button size="xs" as={Link} href={`/mypage/order/${order.order_code}`} w="full" flex="1">주문 상세보기</Button>
+                                </HStack>
                             </Stack>
                         </Stack>
                     ))}
                 </Stack>
-            )}
-        </Stack>
+            )
+            }
+        </Stack >
     )
 }
 

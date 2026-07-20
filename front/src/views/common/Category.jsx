@@ -26,7 +26,7 @@ function CategoryItem({ category, sub = false, location = '' }) {
                     <Collapsible.Content >
                         <Stack gap="1" my="1" borderLeft="1px solid" borderColor="gray.100" ml="3">
                             {category.children.map(child => (
-                                <CategoryItem key={child.id} category={child} sub={true} location={location} />
+                                <CategoryItem key={child.c_num} category={child} sub={true} location={location} />
                             ))}
                         </Stack>
                     </Collapsible.Content>
@@ -95,7 +95,7 @@ function Category({ categories = [], location = '', onToggle = false }) {
                         <Drawer.Body>
                             <Stack gap="2">
                                 {categoryTree.map(category => (
-                                    <CategoryItem key={category.id} category={category} location={location} />
+                                    <CategoryItem key={category.c_num} category={category} location={location} />
                                 ))}
                             </Stack>
                         </Drawer.Body>
