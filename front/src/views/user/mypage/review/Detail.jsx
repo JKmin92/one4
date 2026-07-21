@@ -28,49 +28,73 @@ function Detail() {
 
     useEffect(() => {
         const getCampaign = async () => {
-            const resource = await axiosInstance.get(`/review/campaign/user/application/${campaign_application_code}`);
-            if (resource.status === 200) {
-                setCampaign(resource.data);
-                if (resource.data.address_code) {
-                    getUserAddress(resource.data.address_code);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/user/application/${campaign_application_code}`);
+                if (resource.status === 200) {
+                    setCampaign(resource.data);
+                    if (resource.data.address_code) {
+                        getUserAddress(resource.data.address_code);
+                    }
                 }
+            } catch {
+                toaster.create({ title: '캠페인을 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
         const getUserAddress = async (address_code) => {
-            const resource = await axiosInstance.get(`/review/campaign/user/address/${address_code}`);
-            if (resource.status === 200) {
-                setUserAddress(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/user/address/${address_code}`);
+                if (resource.status === 200) {
+                    setUserAddress(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '주소를 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
 
         const getReviewCampaignApplicationDelivery = async (campaign_application_code) => {
-            const resource = await axiosInstance.get(`/review/campaign/user/application/delivery/${campaign_application_code}`);
-            if (resource.status === 200) {
-                setReviewCampaignApplicationDelivery(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/user/application/delivery/${campaign_application_code}`);
+                if (resource.status === 200) {
+                    setReviewCampaignApplicationDelivery(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '배송정보를 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
 
         const getReviewCampaignApplicationPost = async (campaign_application_code) => {
-            const resource = await axiosInstance.get(`/review/campaign/application/post/${campaign_application_code}`);
-            if (resource.data.post_url) {
-                setPost(resource.data);
-                if (resource.data.status == 'SUBMITTED' || resource.data.status == 'RESUBMITTED' || resource.data.status == 'COMPLETED') {
-                    setLoadPost(true);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/application/post/${campaign_application_code}`);
+                if (resource.data.post_url) {
+                    setPost(resource.data);
+                    if (resource.data.status == 'SUBMITTED' || resource.data.status == 'RESUBMITTED' || resource.data.status == 'COMPLETED') {
+                        setLoadPost(true);
+                    }
                 }
+            } catch {
+                toaster.create({ title: '리뷰를 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
 
         const getReviewCampaignFeedbackList = async (campaign_application_code) => {
-            const resource = await axiosInstance.get(`/review/campaign/application/feedback/${campaign_application_code}`);
-            if (resource.status === 200) {
-                setReviewCampaignFeedbackList(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/application/feedback/${campaign_application_code}`);
+                if (resource.status === 200) {
+                    setReviewCampaignFeedbackList(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '피드백을 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
 
         const getReviewCampaignApplicationChannel = async (campaign_application_code) => {
-            const resource = await axiosInstance.get(`/review/campaign/user/application/channel/${campaign_application_code}`);
-            if (resource.status === 200) {
-                setReviewCampaignApplicationChannelList(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/user/application/channel/${campaign_application_code}`);
+                if (resource.status === 200) {
+                    setReviewCampaignApplicationChannelList(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '채널정보를 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
 
@@ -83,31 +107,41 @@ function Detail() {
     }, [campaign_application_code]);
 
     const submitReview = async (campaign_post_code) => {
-        if (campaign_post_code) {
-            const resource = await axiosInstance.put(`/review/campaign/application/post`, { campaign_post_code, post_url: post?.post_url });
-            if (resource.status === 200) {
-                toaster.create({ title: '리뷰가 수정되었습니다.', type: 'success' });
-                setLoadPost(true);
+        try {
+            if (campaign_post_code) {
+                const resource = await axiosInstance.put(`/review/campaign/application/post`, { campaign_post_code, post_url: post?.post_url });
+                if (resource.status === 200) {
+                    toaster.create({ title: '리뷰가 수정되었습니다.', type: 'success' });
+                    setLoadPost(true);
+                }
+            } else {
+                const resource = await axiosInstance.post(`/review/campaign/application/post`, { campaign_application_code, post_url: post?.post_url });
+                if (resource.status === 200) {
+                    toaster.create({ title: '리뷰가 제출되었습니다.', type: 'success' });
+                    setLoadPost(true);
+                }
             }
-        } else {
-            const resource = await axiosInstance.post(`/review/campaign/application/post`, { campaign_application_code, post_url: post?.post_url });
-            if (resource.status === 200) {
-                toaster.create({ title: '리뷰가 제출되었습니다.', type: 'success' });
-                setLoadPost(true);
-            }
+        } catch {
+            toaster.create({ title: '리뷰 제출/수정하는데 오류가 발생했습니다.', type: 'error' });
         }
+
     }
 
     const cancelCampaign = async (campaign_application_code) => {
-        setCancelDialogButtonLoading(true);
-        const resource = await axiosInstance.delete(`/review/campaign/application/${campaign_application_code}`);
-        if (resource.status === 200) {
-            toaster.create({ title: '캠페인이 취소되었습니다.', type: 'success' });
-            navigate(`/mypage/review`);
-        } else {
-            toaster.create({ title: '캠페인 취소에 오류가 발생했습니다.', type: 'error' });
+        try {
+            setCancelDialogButtonLoading(true);
+            const resource = await axiosInstance.delete(`/review/campaign/application/${campaign_application_code}`);
+            if (resource.status === 200) {
+                toaster.create({ title: '캠페인이 취소되었습니다.', type: 'success' });
+                navigate(`/mypage/review`);
+            } else {
+                toaster.create({ title: '캠페인 취소에 오류가 발생했습니다.', type: 'error' });
+            }
+        } catch {
+            toaster.create({ title: '캠페인 취소하는데 오류가 발생했습니다.', type: 'error' });
+        } finally {
+            setCancelDialogButtonLoading(false);
         }
-        setCancelDialogButtonLoading(false);
     }
 
     if (!campaign) return null;
@@ -255,9 +289,7 @@ function Detail() {
                                         <Text>{reviewCampaignApplicationDelivery?.tracking_number}</Text>
                                         <Button variant="outline" size="sm" onClick={() => {
                                             const query = `${reviewCampaignApplicationDelivery?.courier || ''} ${reviewCampaignApplicationDelivery?.tracking_number || ''}`.trim();
-                                            if (query) {
-                                                window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`, '_blank');
-                                            }
+                                            if (query) window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`, '_blank');
                                         }}>배송추적</Button>
                                     </HStack>
                                 )}

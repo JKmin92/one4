@@ -15,7 +15,7 @@ function DeviceManagement() {
             setLoading(true);
             const res = await axiosInstance.get('/user/sessions');
             setSessions(res.data);
-        } catch (e) {
+        } catch {
             toaster.create({ title: '기기 목록을 불러오지 못했습니다.', type: 'error' });
         } finally {
             setLoading(false);
@@ -33,7 +33,7 @@ function DeviceManagement() {
             await axiosInstance.delete(`/user/sessions/${device_code}`);
             toaster.create({ title: '해당 기기를 로그아웃했습니다.', type: 'success' });
             fetchSessions();
-        } catch (e) {
+        } catch {
             toaster.create({ title: '로그아웃 처리에 실패했습니다.', type: 'error' });
         }
     };

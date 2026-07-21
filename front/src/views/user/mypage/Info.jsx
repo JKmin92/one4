@@ -10,6 +10,7 @@ import PrivateInfo from "./info/PrivateInfo";
 import Account from "./info/Account";
 import Withdraw from "./info/Withdraw";
 import DeviceManagement from "./info/DeviceManagement";
+import { toaster } from "../../../components/ui/toaster";
 
 function Info() {
 
@@ -28,24 +29,36 @@ function Info() {
     }, []);
 
     const getUserAddressList = async () => {
-        const res = await axiosInstance.get('/user/address');
-        setDeliveryList(res.data);
+        try {
+            const res = await axiosInstance.get('/user/address');
+            setDeliveryList(res.data);
+        } catch {
+            toaster.create({ title: '배송지 정보를 불러오는데 오류가 발생했습니다.', type: 'error' });
+        }
     }
 
     const getUserReviewChannelList = async () => {
-        const res = await axiosInstance.get('/user/review/channel');
-        setReviewChannelList(res.data);
+        try {
+            const res = await axiosInstance.get('/user/review/channel');
+            setReviewChannelList(res.data);
+        } catch {
+            toaster.create({ title: '리뷰 채널 정보를 불러오는데 오류가 발생했습니다.', type: 'error' });
+        }
     }
 
     useEffect(() => {
         const getReviewCampaignChannelViewList = async () => {
-            const response = await axiosInstance.get('/review/campaign/channel');
-            // 원하는 채널 코드들을 배열로 관리
-            const targetCodes = ['202603171602001', '202603171603001', '202603171603002'];
-            const data = response.data.filter((channel) => {
-                return targetCodes.includes(channel.channel_code);
-            });
-            setReviewCampaignChannelViewList(data);
+            try {
+                const response = await axiosInstance.get('/review/campaign/channel');
+                // 원하는 채널 코드들을 배열로 관리
+                const targetCodes = ['202603171602001', '202603171603001', '202603171603002'];
+                const data = response.data.filter((channel) => {
+                    return targetCodes.includes(channel.channel_code);
+                });
+                setReviewCampaignChannelViewList(data);
+            } catch {
+                toaster.create({ title: '채널 정보를 불러오는데 오류가 발생했습니다.', type: 'error' });
+            }
         }
         getReviewCampaignChannelViewList();
     }, []);

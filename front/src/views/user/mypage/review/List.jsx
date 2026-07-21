@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDDay, formatDateToMonthDay } from "../../../../utils/simpleUtils";
+import { toaster } from "../../../../components/ui/toaster";
 
 function List() {
 
@@ -15,16 +16,24 @@ function List() {
 
     useEffect(() => {
         const getReviewApplicationList = async () => {
-            const resource = await axiosInstance.get(`/review/campaign/user/application`);
-            if (resource.status === 200) {
-                setReviewApplicationList(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/user/application`);
+                if (resource.status === 200) {
+                    setReviewApplicationList(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '신청내역을 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
 
         const getReviewCampaignChannelView = async () => {
-            const resource = await axiosInstance.get(`/review/campaign/channel`);
-            if (resource.status === 200) {
-                setReviewCampaignChannelView(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/channel`);
+                if (resource.status === 200) {
+                    setReviewCampaignChannelView(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '채널정보를 불러오는데 오류가 발생했습니다.', type: 'error' });
             }
         }
         getReviewApplicationList();

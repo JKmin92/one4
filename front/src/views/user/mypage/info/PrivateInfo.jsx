@@ -82,7 +82,7 @@ function PrivateInfo({ user }) {
             setOpen(false);
             // 필요하다면 프로필 변경 이벤트를 발생시켜 상단 헤더 등을 업데이트
             window.dispatchEvent(new Event('profile_updated'));
-        } catch (e) {
+        } catch {
             toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
         }
     }

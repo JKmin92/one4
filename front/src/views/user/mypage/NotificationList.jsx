@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../utils/useAuth";
+import { toaster } from "../../../components/ui/toaster";
 
 
 export default function NotificationList() {
@@ -20,8 +21,8 @@ export default function NotificationList() {
         try {
             const response = await axiosInstance.get('/user/notifications');
             setNotifications(response.data);
-        } catch (error) {
-            console.error("Failed to fetch notifications", error);
+        } catch {
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
         }
     };
 
@@ -33,8 +34,8 @@ export default function NotificationList() {
             } else {
                 fetchNotifications();
             }
-        } catch (error) {
-            console.error("Failed to mark as read", error);
+        } catch {
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
         }
     };
 
@@ -42,8 +43,8 @@ export default function NotificationList() {
         try {
             await axiosInstance.put('/user/notifications/read-all');
             fetchNotifications();
-        } catch (error) {
-            console.error("Failed to mark all as read", error);
+        } catch {
+            toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
         }
     };
 

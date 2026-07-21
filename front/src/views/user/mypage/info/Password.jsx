@@ -35,7 +35,7 @@ function Password() {
                     setError('현재 비밀번호가 일치하지 않습니다.');
                 }
             }
-        } catch (err) {
+        } catch {
             toaster.create({ title: '비밀번호 변경 중 오류가 발생했습니다.', type: 'error' });
         }
     }

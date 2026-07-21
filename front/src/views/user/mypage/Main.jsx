@@ -79,9 +79,13 @@ function Main() {
         }
 
         const getReviewCampaignChannelView = async () => {
-            const resource = await axiosInstance.get(`/review/campaign/channel`);
-            if (resource.status === 200) {
-                setReviewCampaignChannelView(resource.data);
+            try {
+                const resource = await axiosInstance.get(`/review/campaign/channel`);
+                if (resource.status === 200) {
+                    setReviewCampaignChannelView(resource.data);
+                }
+            } catch {
+                toaster.create({ title: '오류가 발생했습니다.', type: 'error' });
             }
         }
 
@@ -107,7 +111,6 @@ function Main() {
         pagination: { clickable: true },
         modules: [Pagination]
     }
-
 
     return (
         <Stack w="full" minW="0" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0 15px', md: "20px" }} gap="6" textAlign="left">

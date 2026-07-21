@@ -48,8 +48,7 @@ function Withdraw() {
             } else {
                 toaster.create({ title: '비밀번호가 일치하지 않습니다.', type: 'error' });
             }
-        } catch (e) {
-            console.error(e);
+        } catch {
             toaster.create({ title: '비밀번호 확인에 오류가 발생했습니다.', type: 'error' });
         }
     }
@@ -67,8 +66,7 @@ function Withdraw() {
                     navigate('/');
                 }
             }
-        } catch (e) {
-            console.error(e);
+        } catch {
             toaster.create({ title: '회원탈퇴에 오류가 발생했습니다.', type: 'error' });
         }
     }

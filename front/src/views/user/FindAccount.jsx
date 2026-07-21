@@ -33,8 +33,8 @@ export default function FindAccount() {
             const res = await axiosInstance.post('/user/find-account', { name, phone });
             setAccount(res.data);
             setStep(2);
-        } catch (err) {
-            toaster.create({ title: err.response?.data?.message || '계정을 찾을 수 없습니다.', type: 'error' });
+        } catch {
+            toaster.create({ title: '계정을 찾을 수 없습니다.', type: 'error' });
         }
     };
 
@@ -52,8 +52,8 @@ export default function FindAccount() {
             });
             toaster.create({ title: '비밀번호가 성공적으로 변경되었습니다.', type: 'success' });
             navigate('/login');
-        } catch (err) {
-            toaster.create({ title: err.response?.data?.message || '비밀번호 변경에 실패했습니다.', type: 'error' });
+        } catch {
+            toaster.create({ title: '비밀번호 변경에 실패했습니다.', type: 'error' });
         }
     };
 
