@@ -114,8 +114,8 @@ function OrderList() {
     const displayList = statusFilter ? orderList.filter(order => order.status === statusFilter) : orderList;
 
     return (
-        <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
-            <Heading fontSize="sm" textAlign="left">{statusFilter === 'CLAIM' ? '취소/반품/교환 내역' : '주문 내역'}</Heading>
+        <Stack w="full" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0 15px', md: "20px" }} gap="6" textAlign="left">
+            <Heading fontSize="md" textAlign="left">{statusFilter === 'CLAIM' ? '취소/반품/교환 내역' : '주문 내역'}</Heading>
             {(!displayList || displayList.length <= 0) ? (
                 <EmptyState.Root>
                     <EmptyState.Content>

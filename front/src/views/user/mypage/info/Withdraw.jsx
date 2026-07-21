@@ -104,7 +104,7 @@ function Withdraw() {
                                 <Checkbox.Root checked={isAgree} onCheckedChange={(e) => setIsAgree(!!e.checked)}>
                                     <Checkbox.HiddenInput />
                                     <Checkbox.Control />
-                                    <Checkbox.Label>위 내용을 확인하였으며, 회원탈퇴를 진행할 것에 동의합니다.</Checkbox.Label>
+                                    <Checkbox.Label fontSize={{ base: 'xs', md: 'sm' }}>위 내용을 확인하였으며, 회원탈퇴를 진행할 것에 동의합니다.</Checkbox.Label>
                                 </Checkbox.Root>
                                 <PasswordInput placeholder="비밀번호를 입력해주세요" value={checkPassword} onChange={(e) => setCheckPassword(e.target.value)} />
                                 <Button variant="solid" onClick={userWithdraw} disabled={buttonDisabled} bg="red.500">회원 탈퇴하기</Button>

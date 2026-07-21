@@ -21,6 +21,7 @@ function Header() {
     const categoryLocation = location.pathname.includes('/review') ? '/review' : '';
 
     const [isVisible, setIsVisible] = useState(true);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
     useEffect(() => {
         let lastScrollY = window.scrollY;
@@ -81,6 +82,10 @@ function Header() {
         return () => window.removeEventListener('basket_updated', getBasketCount);
     }, [user]);
 
+    useEffect(() => {
+        setKeyword(!isMobileSearchOpen ? '' : keyword);
+    }, [isMobileSearchOpen])
+
     return (
         <Stack
             gap="0"
@@ -91,7 +96,7 @@ function Header() {
             transform={isVisible ? "translateY(0)" : "translateY(-100%)"}
             transition="transform 0.3s ease-in-out"
         >
-            <Flex {...headerLineStyle} justifyContent="space-between">
+            <Flex {...headerLineStyle} justifyContent="space-between" position="relative">
                 <HStack gap="20">
                     <HStack gap="2">
                         <Category categories={categories} location={categoryLocation} onToggle={true} />
@@ -102,10 +107,35 @@ function Header() {
                         <Link href="/"><Text fontSize="lg" fontWeight="medium" color={location.pathname.includes('/review') || isUserPage ? 'black' : 'main'}>SHOPPING</Text></Link>
                     </HStack>
                 </HStack>
-                <HStack gap={{ base: 4, md: 6 }}>
+                <HStack gap={{ base: '2', md: '6' }} >
                     <form onSubmit={onSearchSubmit}>
-                        <InputGroup startElement={<Icon size="md"><LuSearch /></Icon>} endElement={keywordClearElement}>
-                            <Input rounded="full" width={{ base: "5", md: 'auto' }} value={keyword} onChange={(e) => setKeyword(e.currentTarget.value)} />
+                        <InputGroup
+                            startElement={
+                                <Icon size="md" onClick={() => setIsMobileSearchOpen(true)} cursor="pointer">
+                                    <LuSearch />
+                                </Icon>
+                            }
+                            endElement={keywordClearElement}
+                            position={{ base: isMobileSearchOpen ? 'absolute' : 'relative', md: 'relative' }}
+                            left={{ base: isMobileSearchOpen ? '50%' : 'auto', md: 'auto' }}
+                            top={{ base: isMobileSearchOpen ? '50%' : 'auto', md: 'auto' }}
+                            w={{ base: isMobileSearchOpen ? '95%' : '40px', md: 'auto' }}
+                            transform={{ base: isMobileSearchOpen ? 'translate(-50%, -50%)' : 'none', md: 'none' }}
+                            zIndex="10"
+                        >
+                            <Input
+                                rounded="full"
+                                bg="white"
+                                pr={{ base: isMobileSearchOpen ? '12' : '0', md: '12' }}
+                                border={{ base: !isMobileSearchOpen ? 'none' : '1px solid #e5e5e5', md: '1px solid #e5e5e5' }}
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.currentTarget.value)}
+                                onFocus={() => setIsMobileSearchOpen(true)}
+                                onBlur={() => {
+                                    // onBlur 시 0.2초 딜레이를 주어 검색 버튼 클릭(submit)이 씹히지 않게 함
+                                    setTimeout(() => setIsMobileSearchOpen(false), 200);
+                                }}
+                            />
                         </InputGroup>
                     </form>
 
@@ -119,7 +149,7 @@ function Header() {
                     ) : (
                         <>
                             <Group>
-                                {location.pathname.includes('/review') && (
+                                {!isUserPage && location.pathname.includes('/review') && (
                                     <CampaignActivityPopover />
                                 )}
                                 {!location.pathname.includes('/review') && !isUserPage && (

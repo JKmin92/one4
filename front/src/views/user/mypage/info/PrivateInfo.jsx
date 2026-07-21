@@ -131,6 +131,10 @@ function PrivateInfo({ user }) {
                                 </FileUpload.Root>
                             </Box>
                             <Table.Root>
+                                <Table.ColumnGroup>
+                                    <Table.Column minW="120px" />
+                                    <Table.Column minW="auto" />
+                                </Table.ColumnGroup>
                                 <Table.Body>
                                     <Table.Row>
                                         <Table.ColumnHeader>이메일</Table.ColumnHeader>
@@ -161,7 +165,7 @@ function PrivateInfo({ user }) {
                     <Dialog.Footer>
                         <Button onClick={onSubmit}>수정</Button>
                     </Dialog.Footer>
-                    <Dialog.CloseTrigger>
+                    <Dialog.CloseTrigger asChild>
                         <CloseButton />
                     </Dialog.CloseTrigger>
                 </Dialog.Content>

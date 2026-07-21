@@ -76,8 +76,8 @@ function List() {
     };
 
     return (
-        <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
-            <Heading fontSize="sm" textAlign="left">리뷰 캠페인</Heading>
+        <Stack w="full" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0 15px', md: "20px" }} gap="6" textAlign="left" overflow="hidden">
+            <Heading textAlign="left">리뷰 캠페인</Heading>
 
             <Tabs.Root value={defaultTab} onValueChange={handleTabChange} variant="plain"
                 css={{

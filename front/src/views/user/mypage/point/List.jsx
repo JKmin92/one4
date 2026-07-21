@@ -1,9 +1,10 @@
 import { Box, Button, Checkbox, CloseButton, Dialog, Field, Heading, HStack, Icon, IconButton, Input, InputGroup, Link, NativeSelect, NumberInput, RadioCard, Span, Stack, Table, Tabs, Text } from "@chakra-ui/react";
 import { LuChevronRight, LuEllipsis, LuMinus, LuPlus, LuTrash2 } from "react-icons/lu";
-import { formatDate, formatNumber, getBankList } from "../../../../utils/simpleUtils";
+import { formatDate, formatDateYMD, formatNumber, getBankList } from "../../../../utils/simpleUtils";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../../utils/api";
 import { toaster } from "../../../../components/ui/toaster";
+import PayoutDetailDialog from "./PayoutDetailDialog";
 
 function AccountDialog({ position = 'post', userAccountList = [], setUserAccountList, selectedAccountCode, setSelectedAccountCode }) {
     const [bank, setBank] = useState('');
@@ -270,7 +271,7 @@ function List() {
     }
 
     return (
-        <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
+        <Stack w="full" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0', md: "20px" }} gap="6" textAlign="left">
 
             <Box display="flex" justifyContent="space-between" p="5" bg="blue.solid" w="full" color="#fff" rounded="md">
                 <HStack>
@@ -286,7 +287,7 @@ function List() {
                     <Tabs.Trigger value="payout">출금 신청</Tabs.Trigger>
                     <Tabs.Trigger value="payoutList">출금 신청 내역</Tabs.Trigger>
                 </Tabs.List>
-                <Tabs.Content value="history">
+                <Tabs.Content value="history" minH="300px">
                     <Table.Root>
                         <Table.Header>
                             <Table.Row>
@@ -296,10 +297,10 @@ function List() {
                                 <Table.ColumnHeader textAlign="center">포인트</Table.ColumnHeader>
                             </Table.Row>
                         </Table.Header>
-                        <Table.Body>
+                        <Table.Body fontSize={{ base: 'xs', xs: 'sm' }}>
                             {userPointHistoryList.map((userPointHistory) => (
                                 <Table.Row key={userPointHistory.history_code}>
-                                    <Table.Cell textAlign="center">{formatDate(userPointHistory.created_at)}</Table.Cell>
+                                    <Table.Cell textAlign="center">{formatDateYMD(userPointHistory.created_at)}</Table.Cell>
                                     <Table.Cell textAlign="center">
                                         {userPointHistory.type == 'EARN' ? '지급' : userPointHistory.type == 'PAYOUT' ? '출금' : userPointHistory.type == 'PAYOUT_CANCEL' ? '출금 반려' : '출금'}
                                     </Table.Cell>
@@ -322,8 +323,8 @@ function List() {
                         </Table.Body>
                     </Table.Root>
                 </Tabs.Content>
-                <Tabs.Content value="payout">
-                    <Stack m="auto" w="sm" gap="4">
+                <Tabs.Content value="payout" minH="300px">
+                    <Stack m="auto" w="sm" maxW="full" gap="4">
                         {userAccountList.length === 0 ? (
                             <AccountDialog position="post" userAccountList={userAccountList} setUserAccountList={setUserAccountList} selectedAccountCode={selectedAccountCode} setSelectedAccountCode={setSelectedAccountCode} />
                         ) : (
@@ -402,27 +403,31 @@ function List() {
 
                     </Stack>
                 </Tabs.Content>
-                <Tabs.Content value="payoutList">
+                <Tabs.Content value="payoutList" minH="300px">
                     <Table.Root>
                         <Table.Header>
                             <Table.Row>
                                 <Table.ColumnHeader textAlign="center">신청 일시</Table.ColumnHeader>
                                 <Table.ColumnHeader textAlign="center">상태</Table.ColumnHeader>
-                                <Table.ColumnHeader textAlign="center">지급 일시</Table.ColumnHeader>
-                                <Table.ColumnHeader textAlign="center">계좌</Table.ColumnHeader>
+                                <Table.ColumnHeader textAlign="center" display={{ base: 'none', md: 'table-cell' }}>지급 일시</Table.ColumnHeader>
+                                <Table.ColumnHeader textAlign="center" display={{ base: 'none', md: 'table-cell' }}>계좌</Table.ColumnHeader>
                                 <Table.ColumnHeader textAlign="center">금액</Table.ColumnHeader>
+                                <Table.ColumnHeader textAlign="center" display={{ base: 'table-cell', md: 'none' }}>자세히보기</Table.ColumnHeader>
                             </Table.Row>
                         </Table.Header>
-                        <Table.Body>
+                        <Table.Body fontSize={{ base: 'xs', xs: 'sm' }}>
                             {userPointPayoutList.map((userPointPayout) => (
                                 <Table.Row key={userPointPayout.payout_code}>
-                                    <Table.Cell textAlign="center">{formatDate(userPointPayout.created_at)}</Table.Cell>
+                                    <Table.Cell textAlign="center">{formatDateYMD(userPointPayout.created_at)}</Table.Cell>
                                     <Table.Cell textAlign="center">
                                         {userPointPayout.status === 'REQUEST' ? '출금 신청' : userPointPayout.status === 'COMPLETED' ? '지급 완료' : '지급 반려'}
                                     </Table.Cell>
-                                    <Table.Cell textAlign="center">{userPointPayout.processed_at ? formatDate(userPointPayout.processed_at) : '-'}</Table.Cell>
-                                    <Table.Cell textAlign="center">[{userPointPayout.bank}] {userPointPayout.number} ({userPointPayout.holder})</Table.Cell>
-                                    <Table.Cell textAlign="center">{formatNumber(userPointPayout.amount)}</Table.Cell>
+                                    <Table.Cell textAlign="center" display={{ base: 'none', md: 'table-cell' }}>{userPointPayout.processed_at ? formatDateYMD(userPointPayout.processed_at) : '-'}</Table.Cell>
+                                    <Table.Cell textAlign="center" display={{ base: 'none', md: 'table-cell' }}>[{userPointPayout.bank}] {userPointPayout.number} ({userPointPayout.holder})</Table.Cell>
+                                    <Table.Cell textAlign="center">{formatNumber(userPointPayout.amount)}원</Table.Cell>
+                                    <Table.Cell textAlign="center" display={{ base: 'table-cell', md: 'none' }}>
+                                        <PayoutDetailDialog userPointPayout={userPointPayout} />
+                                    </Table.Cell>
                                 </Table.Row>
                             ))}
                             {userPointPayoutList.length === 0 && (

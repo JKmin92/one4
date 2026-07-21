@@ -1,4 +1,4 @@
-import { Alert, Button, CloseButton, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Table, Text } from "@chakra-ui/react";
+import { Alert, Box, Button, CloseButton, DataList, Dialog, Heading, HStack, Image, Link, Stack, Status, Table, Text, useBreakpointValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { toaster } from "../../../../components/ui/toaster";
 import { useParams } from "react-router-dom";
@@ -10,6 +10,7 @@ import DepositNameChangeDialog from "./DepositNameChangeDialog";
 import axiosInstance from "../../../../utils/api";
 
 function Detail() {
+    const cellColSpan = useBreakpointValue({ base: 2, md: 1 });
 
     const { order_code } = useParams();
     const [productOrder, setProductOrder] = useState();
@@ -203,15 +204,17 @@ function Detail() {
     }
 
     return (
-        <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left">
-            <Heading fontSize="sm" textAlign="left">주문 상세</Heading>
+        <Stack w="full" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0 15px', md: "20px" }} gap="8" textAlign="left">
+            <Heading textAlign="left">주문 상세</Heading>
             <Stack>
                 {orderStatus(productOrder?.status)}
-                <HStack gap="0">
+                <Stack direction={{ base: 'column', md: 'row' }} gap="0" alignItems={{ base: 'start', md: 'center' }}>
                     <Text fontWeight="medium">{formatDateYMD(productOrder?.created_at)} 주문</Text>
-                    <LuDot />
+                    <Box as="span" display={{ base: 'none', md: 'block' }}>
+                        <LuDot />
+                    </Box>
                     <Text>주문번호 {productOrder?.order_code}</Text>
-                </HStack>
+                </Stack>
             </Stack>
             {productOrder?.status === 'PENDING' && (
                 <Alert.Root status="warning">
@@ -356,7 +359,7 @@ function Detail() {
                                 productOrder?.status === 'COMPLETED' ||
                                 productOrder?.status === 'CLAIM') &&
                                 itemDelivery != null && (
-                                    <Stack alignItems="end">
+                                    <Stack alignItems="end" display={{ base: 'none', md: 'flex' }}>
                                         <HStack fontSize="sm">
                                             <Text>{itemDelivery.post_company}</Text>
                                             <Text>{itemDelivery.post_number}</Text>
@@ -369,6 +372,10 @@ function Detail() {
                 })}
             </Stack>
             <Table.Root>
+                <Table.ColumnGroup>
+                    <Table.Column w="100px" />
+                    <Table.Column w="auto" />
+                </Table.ColumnGroup>
                 <Table.Body>
                     <Table.Row>
                         <Table.Cell>
@@ -399,15 +406,19 @@ function Detail() {
             </Table.Root>
 
             <Table.Root>
+                <Table.ColumnGroup>
+                    <Table.Column w="2/3" />
+                    <Table.Column w="1/3" />
+                </Table.ColumnGroup>
                 <Table.Body>
                     <Table.Row>
-                        <Table.Cell w="2/3">
+                        <Table.Cell>
                             <Stack>
                                 <Text fontSize="sm" color="fg.muted">결제 수단</Text>
                                 <Text fontSize="md">{getPaymentMethod(productOrderPayment?.payment_type)}</Text>
                             </Stack>
                         </Table.Cell>
-                        <Table.Cell w="1/3">
+                        <Table.Cell>
                             <DataList.Root orientation="horizontal" gap="1">
                                 <DataList.Item>
                                     <DataList.ItemLabel>총 상품 가격</DataList.ItemLabel>
@@ -421,7 +432,7 @@ function Detail() {
                         </Table.Cell>
                     </Table.Row>
                     <Table.Row>
-                        <Table.Cell w="2/3">
+                        <Table.Cell colSpan={cellColSpan}>
                             {productOrderPayment?.payment_type === "BANK" && (
                                 <Stack gap="1" fontSize="sm">
                                     <Text>기업은행 123-45871-27156(예금주 : 에이민)</Text>
@@ -445,11 +456,21 @@ function Detail() {
                                 </Stack>
                             )}
                         </Table.Cell>
-                        <Table.Cell w="1/3">
+                        <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
                             <DataList.Root orientation="horizontal" fontWeight="medium">
                                 <DataList.Item>
                                     <DataList.ItemLabel>총 결제 금액</DataList.ItemLabel>
                                     <DataList.ItemValue>{formatNumber(productOrder?.actual_payment_amount)}</DataList.ItemValue>
+                                </DataList.Item>
+                            </DataList.Root>
+                        </Table.Cell>
+                    </Table.Row>
+                    <Table.Row display={{ base: 'table-row', md: 'none' }}>
+                        <Table.Cell colSpan='2'>
+                            <DataList.Root orientation="horizontal" fontWeight="medium">
+                                <DataList.Item>
+                                    <DataList.ItemLabel>총 결제 금액</DataList.ItemLabel>
+                                    <DataList.ItemValue justifyContent="end">{formatNumber(productOrder?.actual_payment_amount)}</DataList.ItemValue>
                                 </DataList.Item>
                             </DataList.Root>
                         </Table.Cell>

@@ -110,7 +110,7 @@ function Main() {
 
 
     return (
-        <Stack w="full" minW="0" rounded="md" border="1px solid #eee" p={{ base: '15px', md: "20px" }} gap="6" textAlign="left">
+        <Stack w="full" minW="0" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0 15px', md: "20px" }} gap="6" textAlign="left">
             <HStack justifyContent="space-between" display={{ base: 'flex', md: 'none' }} alignItems="center">
                 <Text fontSize="xl">안녕하세요.<br /><Span fontWeight="medium">{user.name}</Span>님</Text>
                 <Box position="relative">

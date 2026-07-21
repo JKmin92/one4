@@ -113,7 +113,7 @@ function Detail() {
     if (!campaign) return null;
 
     return (
-        <Stack w="full" rounded="md" border="1px solid #eee" p="20px" gap="6" textAlign="left" position="relative">
+        <Stack w="full" rounded="md" border={{ base: 'none', md: "1px solid #eee" }} p={{ base: '0 15px', md: "20px" }} gap="6" textAlign="left" position="relative">
             <HStack justifyContent="space-between">
                 <Stack gap="0">
                     <Status.Root colorPalette={getReviewCampaignApplicationStatus(campaign.status, campaign).color}>
